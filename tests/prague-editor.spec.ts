@@ -1,0 +1,36 @@
+import { expect, test } from '@playwright/test';
+import { storedWorld } from './draft-helper';
+
+test('celé skutečné pražské vrstvy se zobrazují nezávisle a poloha se vyhodnocuje i při jejich skrytí', async ({ page }) => {
+  await page.route('https://api.mapy.com/**', route => route.abort());
+  await page.goto('/');
+  const municipalButton = page.getByRole('button', { name: 'Městské části Prahy', exact: true });
+  await expect(municipalButton).toBeVisible({ timeout: 15000 });
+  await expect(page.locator('.layer-card').filter({ has: municipalButton })).toContainText('57');
+  await expect(page.locator('.layer-card').filter({ has: page.getByRole('button', { name: 'Katastrální území Prahy', exact: true }) })).toContainText('112');
+  await page.getByLabel('Zobrazit Městské části Prahy', { exact: true }).check();
+  await expect(page.locator('.leaflet-overlay-pane path.leaflet-interactive')).toHaveCount(57);
+  await municipalButton.click();
+  await page.getByRole('button', { name: 'Praha 5 MultiPolygon', exact: true }).click();
+  await expect(page.locator('.managed-properties h3')).toHaveText('Praha 5');
+  await expect(page.getByRole('button', { name: 'Polygon', exact: true })).toBeDisabled();
+  await page.getByRole('button', { name: 'Ověřit polohu', exact: true }).click();
+  const box = (await page.getByTestId('map').boundingBox())!;
+  await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+  await expect(page.getByTestId('position-municipal')).toContainText('Praha 2');
+  await expect(page.getByTestId('position-cadastral')).toContainText('Vinohrady');
+  await expect(page.getByTestId('position-game')).toContainText('Nelze určit');
+  await page.getByLabel('Zobrazit Městské části Prahy', { exact: true }).uncheck();
+  await expect(page.locator('.leaflet-overlay-pane path.leaflet-interactive')).toHaveCount(0);
+  await expect(page.getByTestId('position-municipal')).toContainText('Praha 2');
+  await page.getByLabel('Zobrazit Katastrální území Prahy', { exact: true }).check();
+  await expect(page.locator('.leaflet-overlay-pane path.leaflet-interactive')).toHaveCount(112);
+  await expect.poll(async () => (await storedWorld(page)).layers.find(l => l.kind === 'cadastral')?.visible).toBe(true);
+  const saved = await storedWorld(page);
+  expect(saved.layers.filter(l => l.dataset).flatMap(l => l.features)).toHaveLength(169);
+  expect(saved.layers.slice(0, 2).every(l => l.features.length === 0)).toBe(true);
+  await page.reload();
+  await expect(municipalButton).toBeVisible({ timeout: 15000 });
+  await expect(page.getByLabel('Zobrazit Katastrální území Prahy', { exact: true })).toBeChecked();
+  expect((await storedWorld(page)).layers.map(l => l.id)).toEqual(saved.layers.map(l => l.id));
+});

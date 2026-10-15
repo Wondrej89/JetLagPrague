@@ -3,14 +3,16 @@ import L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import 'leaflet/dist/leaflet.css';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
-import { distanceMeters, validateGeometry, type Geometry, type WorldDraft } from '@jetlag/geo-core';
+import { distanceMeters, isManagedLayer, validateGeometry, type Geometry, type WorldDraft } from '@jetlag/geo-core';
 import type { Position, Feature } from 'geojson';
 
-export type Tool = 'select' | 'point' | 'line' | 'polygon' | 'hole' | 'circle' | 'measure' | 'edit';
+export type Tool = 'select' | 'point' | 'line' | 'polygon' | 'hole' | 'circle' | 'measure' | 'edit' | 'inspect';
 export interface Selection { layerId: string; featureId: string }
 export interface MapHandle { prague(): void; fit(): void; saveEdit(): void }
 interface Props {
   world: WorldDraft; selected: Selection | null; tool: Tool; apiKey: string;
+  testPoint: Position | null;
+  onTestPoint(point: Position): void;
   onSelect(selection: Selection): void;
   onCreate(geometry: Geometry): void;
   onCircle(center: Position): void;
@@ -25,6 +27,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
   const map = useRef<L.Map | null>(null);
   const drawn = useRef<L.FeatureGroup>(L.featureGroup());
   const measurement = useRef<L.FeatureGroup>(L.featureGroup());
+  const testMarker = useRef<L.Marker | null>(null);
   const featureLayers = useRef(new Map<string, L.Marker | L.Polyline | L.Polygon>());
   const current = useRef(props);
   current.current = props;
@@ -98,7 +101,8 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
         const selected = props.selected?.layerId === layer.id && props.selected.featureId === f.id;
         const geoFeature: Feature = { type: 'Feature', properties: {}, geometry: f.geometry };
         const geo = L.geoJSON(geoFeature, {
-          style: { color: layer.color, weight: selected ? 4 : 2, fillOpacity: selected ? 0.23 : 0.10, dashArray: layer.kind === 'game_area' ? '8 5' : undefined },
+          pmIgnore: isManagedLayer(layer),
+          style: { color: layer.color, weight: selected ? 4 : isManagedLayer(layer) ? 1.5 : 2, fillOpacity: selected ? 0.30 : isManagedLayer(layer) ? 0.05 : 0.10, dashArray: layer.kind === 'game_area' ? '8 5' : undefined },
           pointToLayer: (_feature, latlng) => L.marker(latlng, { icon: L.divIcon({ className: '', html: `<span class="map-point${selected ? ' selected' : ''}" style="background:${layer.color}"></span>`, iconSize: [20, 20], iconAnchor: [10, 10] }) }),
         });
         geo.eachLayer(item => {
@@ -133,6 +137,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     if (tool === 'edit' && props.selected) featureLayers.current.get(`${props.selected.layerId}/${props.selected.featureId}`)?.pm?.enable({ allowSelfIntersection: false });
     if (tool === 'measure') current.current.onMeasure(null);
     const click = (event: L.LeafletMouseEvent) => {
+      if (tool === 'inspect') current.current.onTestPoint([event.latlng.lng, event.latlng.lat]);
       if (tool === 'circle') current.current.onCircle([event.latlng.lng, event.latlng.lat]);
       if (tool !== 'measure') return;
       if (points.length === 2) { points = []; measurement.current.clearLayers(); current.current.onMeasure(null); }
@@ -144,13 +149,27 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
       }
     };
     instance.on('click', click);
-    container.current?.classList.toggle('crosshair', ['circle', 'measure'].includes(tool));
+    container.current?.classList.toggle('crosshair', ['circle', 'measure', 'inspect'].includes(tool));
     return () => {
       instance.off('click', click);
       instance.pm.disableDraw();
       for (const layer of layers) layer.pm?.disable();
     };
   }, [props.tool, props.selected, props.world]);
+
+  useEffect(() => {
+    const instance = map.current;
+    if (!instance || props.tool !== 'inspect' || !props.testPoint) {
+      testMarker.current?.remove(); testMarker.current = null;
+      return;
+    }
+    const latlng: L.LatLngTuple = [props.testPoint[1], props.testPoint[0]];
+    if (!testMarker.current) {
+      const marker = L.marker(latlng, { draggable: true, pmIgnore: true, snapIgnore: true, zIndexOffset: 1000, title: 'Testovací poloha · přetáhněte', icon: L.divIcon({ className: 'test-position-pin', html: '<span>⌖</span>', iconSize: [30, 38], iconAnchor: [15, 34] }) });
+      marker.on('drag', () => { const p = marker.getLatLng(); current.current.onTestPoint([p.lng, p.lat]); });
+      marker.addTo(instance); testMarker.current = marker;
+    } else testMarker.current.setLatLng(latlng);
+  }, [props.testPoint, props.tool]);
 
   return <div ref={container} className="map-canvas" aria-label="Mapa geografického editoru" data-testid="map" />;
 });

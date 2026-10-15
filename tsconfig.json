@@ -14,5 +14,5 @@
     "baseUrl": ".",
     "paths": { "@jetlag/geo-core": ["packages/geo-core/src/index.ts"] }
   },
-  "include": ["apps", "packages", "tests", "*.ts"]
+  "include": ["apps", "packages", "tests", "scripts", "*.ts"]
 }

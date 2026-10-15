@@ -62,6 +62,14 @@ describe('validace a skutečná geometrie', () => {
     expect(() => importGeoJson({ type: 'FeatureCollection', crs: { name: 'EPSG:3857' }, features: [] }, { title: 'Test', source: 'Test' })).toThrow('WGS84');
     expect(() => importGeoJson({ type: 'FeatureCollection', features: [{ type: 'Feature', geometry: square }, { type: 'Feature', geometry: { type: 'Point', coordinates: [999, 50] } }] }, { title: 'Test', source: 'Test' })).toThrow('Objekt 2');
   });
+  it('nepřevezme pozdější změnu již zkontrolovaného vstupního objektu', () => {
+    const raw = structuredClone(square);
+    const checked = validateGeometry(raw);
+    raw.coordinates[0][0][0] = 999;
+    expect(() => validateGeometry(raw)).toThrow();
+    expect(checked.coordinates).toEqual(square.coordinates);
+    expect(Object.isFrozen(checked)).toBe(true);
+  });
   it('testuje skutečný polygon a jeho otvor, ne bounding box', () => {
     expect(pointInArea([14.41, 50.01], multi)).toBe(true);
     expect(pointInArea([14.43, 50.03], multi)).toBe(false);

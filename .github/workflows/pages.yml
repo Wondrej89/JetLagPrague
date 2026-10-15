@@ -23,6 +23,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - run: npm run data:check
       - run: npm run build
         env:
           VITE_MAPY_API_KEY: ${{ secrets.VITE_MAPY_API_KEY }}

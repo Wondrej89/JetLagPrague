@@ -1,0 +1,13 @@
+{
+  "schemaVersion": 1,
+  "datasets": [
+    {
+      "id": "praha-municipal",
+      "file": "municipal.json"
+    },
+    {
+      "id": "praha-cadastral",
+      "file": "cadastral.json"
+    }
+  ]
+}

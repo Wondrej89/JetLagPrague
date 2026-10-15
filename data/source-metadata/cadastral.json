@@ -1,0 +1,21 @@
+{
+  "id": "praha-cadastral",
+  "provider": "Český statistický úřad (ČSÚ), RSO — zdroj uvedený uživatelem",
+  "sourceUrl": "https://github.com/Wondrej89/JetLagPrague/blob/d5ea91fda24265c4bde3989976720d8cfe661a02/data/raw/katastralni-uzemi-praha.geojson",
+  "license": {
+    "name": "Licence geodat v dodaném souboru neuvedena",
+    "url": null
+  },
+  "dataDate": null,
+  "retrievedAt": "2026-10-15T17:40:29.000Z",
+  "version": "raw-2e4373babd15",
+  "codeField": "kod_ku",
+  "processing": "Beze změny souřadnic a pořadí vrcholů, bez zjednodušení geometrie. Zachovány všechny původní atributy a oficiální kódy. Ponechány pouze objekty s kod_obec = 554782 (Praha); vstup již obsahoval jen těchto 112 objektů. Pole platiod popisuje platnost jednotlivého záznamu, není použito jako datum datové sady.",
+  "provenance": {
+    "status": "user_supplied",
+    "rawFile": "data/raw/katastralni-uzemi-praha.geojson",
+    "rawSha256": "2e4373babd156644ae4aa1749bb80c10911be1ba73c89fcd4300a71a915827f6",
+    "note": "Katalogový odkaz ČSÚ pro tento soubor doložil uživatel. Datum platnosti a licence nejsou v dodaném souboru uvedeny; metadata poskytovatele nebyla v tomto cloudovém prostředí nezávisle ověřena.",
+    "upstreamUrl": "https://data.gov.cz/datov%C3%A1-sada?iri=https%3A%2F%2Fdata.gov.cz%2Fzdroj%2Fdatov%C3%A9-sady%2F00025593%2F952c52a45f233de3121e801b3fc33b81"
+  }
+}

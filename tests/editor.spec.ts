@@ -1,9 +1,9 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
-import { newWorld, newFeature, type WorldDraft } from '../packages/geo-core/src/index';
+import { newWorld, newFeature } from '../packages/geo-core/src/index';
+import { storedWorld as world } from './draft-helper';
 
 const key = 'jetlag-praha:world:v1';
-const world = (page: Page) => page.evaluate(storageKey => JSON.parse(localStorage.getItem(storageKey)!) as WorldDraft, key);
 async function clickMap(page: Page, x: number, y: number) {
   const box = (await page.getByTestId('map').boundingBox())!;
   await page.mouse.click(box.x + x, box.y + y);
@@ -65,6 +65,7 @@ test('nakreslí herní polygon s otvorem, bod a linii, upraví vrcholy, uloží 
   page.once('dialog', dialog => dialog.accept());
   await page.getByRole('button', { name: 'Importovat', exact: true }).click();
   await expect(page.getByRole('dialog')).not.toBeVisible();
+  await expect.poll(async () => JSON.stringify((await world(page)).layers)).toBe(JSON.stringify(saved.layers));
   const restored = await world(page);
   expect(restored.layers).toEqual(saved.layers);
   expect(restored.id).toBe(saved.id);
@@ -82,14 +83,14 @@ test('vytvoří metrický kruh nezávislý na zoomu, měří a zvládne opakovan
   expect((await world(page)).layers[1].features[0].geometry).toEqual(geometry);
   await page.getByLabel('Poloměr (m)', { exact: true }).fill('500');
   await page.getByRole('button', { name: 'Přepočítat kruh' }).click();
-  expect((await world(page)).layers[1].features[0].circle!.radiusMeters).toBe(500);
+  await expect.poll(async () => (await world(page)).layers[1].features[0].circle!.radiusMeters).toBe(500);
   await page.getByRole('button', { name: 'Zpět', exact: true }).click();
-  expect((await world(page)).layers[1].features[0].circle!.radiusMeters).toBe(250);
+  await expect.poll(async () => (await world(page)).layers[1].features[0].circle!.radiusMeters).toBe(250);
   await page.getByRole('button', { name: 'Zpět', exact: true }).click();
-  expect((await world(page)).layers[1].features.length).toBe(0);
+  await expect.poll(async () => (await world(page)).layers[1].features.length).toBe(0);
   await page.getByRole('button', { name: 'Znovu', exact: true }).click();
   await page.getByRole('button', { name: 'Znovu', exact: true }).click();
-  expect((await world(page)).layers[1].features[0].circle!.radiusMeters).toBe(500);
+  await expect.poll(async () => (await world(page)).layers[1].features[0].circle!.radiusMeters).toBe(500);
   await page.getByRole('button', { name: /Měření/, exact: true }).click();
   await clickMap(page, 300, 250); await clickMap(page, 400, 300);
   await expect(page.getByText(/km\. Další kliknutí/)).toBeVisible();

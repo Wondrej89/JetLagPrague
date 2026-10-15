@@ -4,9 +4,10 @@ import type { Point, LineString, Polygon, MultiPolygon, Position } from 'geojson
 
 export type Geometry = Point | LineString | Polygon | MultiPolygon;
 export type AreaGeometry = Polygon | MultiPolygon;
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
 
 const text = z.string().max(10000);
+const webUrl = z.url().refine(value => ['https:', 'http:'].includes(new URL(value).protocol), 'Zdroj a licence musí být HTTP nebo HTTPS odkazy.');
 const id = z.string().min(1).max(200);
 const position = z.array(z.number().finite()).min(2).max(3).refine(p => Math.abs(p[0]) <= 180 && Math.abs(p[1]) <= 90, 'Souřadnice musí být WGS84 [délka −180…180, šířka −90…90].');
 const ring = z.array(position).min(4).refine(r => JSON.stringify(r[0]) === JSON.stringify(r.at(-1)), 'Prstenec polygonu musí být uzavřený.');
@@ -16,6 +17,12 @@ const geometrySchema = z.discriminatedUnion('type', [
   z.object({ type: z.literal('Polygon'), coordinates: z.array(ring).min(1) }),
   z.object({ type: z.literal('MultiPolygon'), coordinates: z.array(z.array(ring).min(1)).min(1) }),
 ]);
+const validatedGeometries = new WeakSet<object>();
+function freezeCoordinates(value: unknown): void {
+  if (!Array.isArray(value)) return;
+  for (const child of value) freezeCoordinates(child);
+  Object.freeze(value);
+}
 
 function topologyError(geometry: Geometry): string | null {
   if (geometry.type === 'LineString' && geometry.coordinates.some((p, i, points) => i > 0 && p[0] === points[i - 1][0] && p[1] === points[i - 1][1])) return 'Linie obsahuje úsek s nulovou délkou. Odstraňte opakovaný vrchol.';
@@ -40,24 +47,52 @@ function topologyError(geometry: Geometry): string | null {
 }
 
 export function validateGeometry(input: unknown): Geometry {
+  // Pouze námi validované a zmrazené výstupy lze bezpečně použít opakovaně.
+  // Vstupní objekty volajícího se necachují: mohl by je později změnit.
+  if (input && typeof input === 'object' && validatedGeometries.has(input)) return input as Geometry;
   const parsed = geometrySchema.safeParse(input);
   if (!parsed.success) throw new Error(`Neplatná geometrie: ${parsed.error.issues.map(i => `${i.path.join('.')}: ${i.message}`).join('; ')}`);
   const result = parsed.data as Geometry;
   const error = topologyError(result);
   if (error) throw new Error(error);
+  freezeCoordinates(result.coordinates);
+  Object.freeze(result);
+  validatedGeometries.add(result);
   return result;
 }
+const checkedGeometrySchema = z.unknown().transform((input, context) => {
+  try { return validateGeometry(input); }
+  catch (error) { context.addIssue({ code: 'custom', message: error instanceof Error ? error.message : 'Neplatná geometrie.' }); return z.NEVER; }
+});
 
 const geoFeatureSchema = z.object({
   id, name: text, note: text, source: text, importedAt: z.iso.datetime(), status: z.literal('draft'),
-  geometry: geometrySchema,
+  geometry: checkedGeometrySchema,
   attributes: z.record(z.string(), z.json()),
   circle: z.object({ center: position, radiusMeters: z.number().positive().max(100000) }).optional(),
 });
+export const sourceDatasetSchema = z.object({
+  id: z.enum(['praha-municipal', 'praha-cadastral']),
+  provider: text.min(1), sourceUrl: webUrl,
+  license: z.object({ name: text.min(1), url: webUrl.nullable() }),
+  dataDate: z.iso.date().nullable(),
+  retrievedAt: z.iso.datetime(), version: id,
+  checksum: z.string().regex(/^[a-f0-9]{64}$/),
+  codeField: text.min(1), featureCount: z.number().int().positive(),
+  processing: text,
+  provenance: z.object({
+    status: z.enum(['user_supplied', 'provider_verified']),
+    upstreamUrl: webUrl.optional(),
+    rawFile: text.min(1), rawSha256: z.string().regex(/^[a-f0-9]{64}$/),
+    note: text,
+  }).optional(),
+});
+export type SourceDataset = z.infer<typeof sourceDatasetSchema>;
 const geoLayerSchema = z.object({
   id, title: text.min(1), kind: z.enum(['game_area', 'custom', 'municipal', 'cadastral', 'transit', 'poi']),
   color: z.string().regex(/^#[a-fA-F0-9]{6}$/), visible: z.boolean(), source: text,
   features: z.array(geoFeatureSchema).max(10000),
+  dataset: sourceDatasetSchema.optional(),
 });
 const worldSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION), id, title: text.min(1), updatedAt: z.iso.datetime(),
@@ -71,13 +106,15 @@ export function newLayer(title = 'Nová vrstva', kind: GeoLayer['kind'] = 'custo
   return { id: crypto.randomUUID(), title, kind, color: kind === 'game_area' ? '#d47e26' : '#267a72', visible: true, source: 'Vlastní úpravy', features: [] };
 }
 export function newWorld(): WorldDraft {
-  return { schemaVersion: 1, id: crypto.randomUUID(), title: 'Praha · nový svět', updatedAt: new Date().toISOString(), layers: [newLayer('Herní oblast', 'game_area'), newLayer('Vlastní objekty')] };
+  return { schemaVersion: SCHEMA_VERSION, id: crypto.randomUUID(), title: 'Praha · nový svět', updatedAt: new Date().toISOString(), layers: [newLayer('Herní oblast', 'game_area'), newLayer('Vlastní objekty')] };
 }
 export function newFeature(geometry: Geometry, name = 'Nový objekt', source = 'Vlastní kresba'): GeoFeature {
   return { id: crypto.randomUUID(), name, note: '', source, importedAt: new Date().toISOString(), status: 'draft', geometry: validateGeometry(geometry), attributes: {} };
 }
 export function validateWorld(input: unknown): WorldDraft {
-  const parsed = worldSchema.safeParse(input);
+  // Verze 1 neměla metadata spravovaných zdrojů; geometrie i identifikátory zůstávají beze změny.
+  const candidate = input && typeof input === 'object' && 'schemaVersion' in input && input.schemaVersion === 1 ? { ...input, schemaVersion: SCHEMA_VERSION } : input;
+  const parsed = worldSchema.safeParse(candidate);
   if (!parsed.success) throw new Error(`Neplatný datový balíček: ${parsed.error.issues.slice(0, 6).map(i => `${i.path.join('.')}: ${i.message}`).join('; ')}`);
   const world = parsed.data;
   if (world.layers.filter(l => l.kind === 'game_area').length !== 1) throw new Error('Svět musí mít právě jednu vrstvu Herní oblast.');
@@ -85,11 +122,17 @@ export function validateWorld(input: unknown): WorldDraft {
   for (const layer of world.layers) {
     if (ids.has(layer.id)) throw new Error('Duplicitní ID vrstvy.');
     ids.add(layer.id);
+    if (layer.dataset) {
+      const kind = layer.dataset.id === 'praha-municipal' ? 'municipal' : 'cadastral';
+      if (layer.kind !== kind || layer.id !== layer.dataset.id) throw new Error('Identita spravované administrativní vrstvy neodpovídá jejímu typu.');
+      if (layer.features.length !== layer.dataset.featureCount || (kind === 'municipal' && layer.features.length !== 57)) throw new Error('Administrativní vrstva nemá deklarovaný počet území (městských částí musí být 57).');
+    }
     if (layer.kind === 'game_area' && (layer.features.length > 1 || layer.features.some(f => !isArea(f.geometry)))) throw new Error('Herní oblast musí být jeden Polygon nebo MultiPolygon.');
     const featureIds = new Set<string>();
     for (const f of layer.features) {
       if (featureIds.has(f.id)) throw new Error('Duplicitní ID objektu ve vrstvě.');
       featureIds.add(f.id);
+      if (layer.dataset && (!isArea(f.geometry) || !f.name || typeof f.attributes.code !== 'string' || !f.attributes.code || f.id !== `${layer.id}:${f.attributes.code}`)) throw new Error('Administrativní objekt musí mít polygonovou geometrii, název a stabilní oficiální kód.');
       validateGeometry(f.geometry);
       if (f.circle) {
         const expected = makeMetricCircle(f.circle.center, f.circle.radiusMeters);
@@ -170,7 +213,7 @@ export function importGeoJson(input: unknown, options: { title: string; source: 
 
 export function exportWorld(input: WorldDraft, format: 'json' | 'geojson' = 'json'): string {
   const world = validateWorld(input);
-  const manifest = { format: 'jetlag-praha-world', schemaVersion: SCHEMA_VERSION, builtAt: new Date().toISOString(), status: 'draft', coordinateSystem: 'WGS84 / RFC 7946', distanceUnit: 'metres', sources: world.layers.map(l => ({ layerId: l.id, description: l.source })) };
+  const manifest = { format: 'jetlag-praha-world', schemaVersion: SCHEMA_VERSION, builtAt: new Date().toISOString(), status: 'draft', coordinateSystem: 'WGS84 / RFC 7946', distanceUnit: 'metres', sources: world.layers.map(l => ({ layerId: l.id, description: l.source, dataset: l.dataset })) };
   if (format === 'json') return JSON.stringify({ manifest, world }, null, 2);
   const layers = world.layers.map(l => ({ ...l, features: undefined }));
   return JSON.stringify({ type: 'FeatureCollection', manifest, world: { ...world, layers: undefined }, layers,
@@ -180,7 +223,7 @@ export function exportWorld(input: WorldDraft, format: 'json' | 'geojson' = 'jso
 export function importWorld(input: unknown): WorldDraft {
   const data = parseInput(input);
   const manifest = object(data.manifest);
-  if (manifest.format !== 'jetlag-praha-world' || manifest.schemaVersion !== SCHEMA_VERSION) throw new Error('Nepodporovaný formát nebo verze schématu datového balíčku.');
+  if (manifest.format !== 'jetlag-praha-world' || ![1, SCHEMA_VERSION].includes(manifest.schemaVersion as number)) throw new Error('Nepodporovaný formát nebo verze schématu datového balíčku.');
   if (data.type !== 'FeatureCollection') return validateWorld(data.world);
   const layers = z.array(geoLayerSchema.omit({ features: true })).parse(data.layers).map(l => ({ ...l, features: [] as GeoFeature[] }));
   if (!Array.isArray(data.features)) throw new Error('Balíček nemá seznam objektů.');
@@ -203,3 +246,5 @@ export function loadDraft(storage: DraftStorage): WorldDraft | null {
   const raw = storage.getItem(STORAGE_KEY);
   return raw === null ? null : validateWorld(JSON.parse(raw));
 }
+
+export * from './administrative';

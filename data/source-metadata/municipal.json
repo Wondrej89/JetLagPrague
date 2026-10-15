@@ -1,0 +1,21 @@
+{
+  "id": "praha-municipal",
+  "provider": "HMP / IPR Praha (atribut poskyt = HMP-IPR)",
+  "sourceUrl": "https://github.com/Wondrej89/JetLagPrague/blob/15de9690484156d7090891d729e4bb7fff17b60d/data/raw/mestskecasti.geojson",
+  "license": {
+    "name": "Licence geodat v dodaném souboru neuvedena",
+    "url": null
+  },
+  "dataDate": null,
+  "retrievedAt": "2026-10-15T16:59:33.000Z",
+  "version": "raw-4f71b0ef1b52",
+  "codeField": "kod_mc",
+  "processing": "Beze změny souřadnic a pořadí vrcholů, bez zjednodušení geometrie. Zachovány všechny původní atributy a oficiální kódy. Odstraněna pouze nadbytečná deklarace CRS84, která již definuje WGS84 [délka, šířka].",
+  "provenance": {
+    "status": "user_supplied",
+    "rawFile": "data/raw/mestskecasti.geojson",
+    "rawSha256": "4f71b0ef1b524b768b95622b6858eaf48e80094d15d4eb8f97f9f80a0fdf44fd",
+    "note": "Soubor převzat z uživatelova repozitáře. Původní distribuční URL, licence a datum platnosti nejsou v GeoJSON uvedeny; nejsou považovány za ověřené.",
+    "upstreamUrl": "https://data.gov.cz/dataset?iri=https://data.gov.cz/zdroj/datov%C3%A9-sady/70883858/f197f73c3094eb6291e61da50a03893d"
+  }
+}
