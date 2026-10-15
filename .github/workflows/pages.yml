@@ -3,6 +3,8 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
+  schedule:
+    - cron: '30 4 * * *'
 permissions:
   contents: read
 concurrency:
@@ -24,6 +26,11 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run data:check
+      - name: Refresh and verify PID publication
+        run: npm run pid:publish
+        env:
+          PID_PUBLISHED_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+      - run: npm run pid:check
       - run: npm run build
         env:
           VITE_MAPY_API_KEY: ${{ secrets.VITE_MAPY_API_KEY }}

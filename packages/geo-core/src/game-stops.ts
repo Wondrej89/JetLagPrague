@@ -20,6 +20,7 @@ export interface GameStop {
   modes: TransportMode[]; dominantMode: TransportMode | null; referenceModes: TransportMode[];
   platformIds: string[]; relevantPlatformIds: string[];
   point: [number, number] | null;
+  automaticPoint: [number, number] | null;
   pointMethod: 'platform-mean' | 'official' | 'manual' | 'unknown';
   eligibility: 'allowed' | 'excluded' | 'review'; reasons: string[];
   sourceSignature: string;
@@ -43,7 +44,7 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
   const configuration = validateGameStopConfiguration(input);
   const groups = new Map(snapshot.groups.map(group => [group.id, group]));
   const byGroup = new Map<string, PidPlatform[]>();
-  for (const platform of snapshot.platforms) if (platform.publicStop) {
+  for (const platform of snapshot.platforms) if (platform.publicStop && platform.services.length) {
     const list = byGroup.get(platform.groupId) ?? []; list.push(platform); byGroup.set(platform.groupId, list);
   }
   const linked = new Set(configuration.nodes.flatMap(node => node.groupIds));
@@ -58,6 +59,7 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
     const sourceSignature = signature(node.groupIds, platforms);
     const override = overrides.get(node.id);
     const reasons: string[] = [];
+    if (snapshot.quality?.status === 'review') reasons.push('Zdrojový snapshot není časově nebo vazebně konzistentní; aktuální povolenost nelze určit.');
     const signatureChanged = !!override && override.sourceSignature !== sourceSignature;
     const missingGroups = node.groupIds.filter(id => !groups.has(id));
     if (missingGroups.length) reasons.push(`Chybí původní skupiny: ${missingGroups.join(', ')}.`);
@@ -66,6 +68,7 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
     let referenceModes = dominantModes(modes);
     if (modes.some(mode => mode === 'ferry' || mode === 'funicular')) {
       if (trustedOverride?.mode && modes.includes(trustedOverride.mode)) referenceModes = [trustedOverride.mode];
+      else if (modes.length === 1) referenceModes = [modes[0]];
       else { referenceModes = []; reasons.push('Přívoz nebo lanovka vyžaduje výslovný výběr druhu dopravy a schválení.'); }
     } else if (trustedOverride?.mode) {
       // An administrator cannot silently override the fixed hierarchy for ordinary modes.
@@ -76,6 +79,7 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
     let point: GameStop['point'] = relevant.length ? mean(relevant.map(platform => platform.point)) : null;
     let pointMethod: GameStop['pointMethod'] = point ? 'platform-mean' : 'unknown';
     if (official.length === 1 && relevant.length) { point = official[0].point; pointMethod = 'official'; }
+    const automaticPoint = point;
     if (trustedOverride?.point && relevant.length) { point = trustedOverride.point; pointMethod = 'manual'; }
     if (!platforms.length) reasons.push('Žádná doložená aktivní veřejná stanoviště.');
     if (!point) reasons.push('Referenční bod nelze určit.');
@@ -84,7 +88,7 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
     // Exclusion remains conservative even after source membership changes.
     const eligibility = override?.decision === 'excluded' ? 'excluded' : reasons.length || requiresSpecialApproval ? 'review' : 'allowed';
     return { id: node.id, name: node.name, groupIds: [...node.groupIds], modes, dominantMode: referenceModes[0] ?? null, referenceModes,
-      platformIds: platforms.map(platform => platform.id), relevantPlatformIds: relevant.map(platform => platform.id), point, pointMethod,
+      platformIds: platforms.map(platform => platform.id), relevantPlatformIds: relevant.map(platform => platform.id), point, automaticPoint, pointMethod,
       eligibility, reasons, sourceSignature, service: period(platforms), serviceHasUnknown: platforms.some(platform => platform.services.some(service => service.period === 'unknown')), snapshotId: snapshot.id, snapshotDate: snapshot.serviceDate };
   });
 }
@@ -101,9 +105,13 @@ export function filterGameStops(stops: GameStop[], filter: StopFilter): GameStop
 /** Polygon approximation is display/export geometry only; it is never the distance test. */
 export function hidingZoneGeometry(stop: GameStop, area: AreaGeometry | null, radiusMeters = 400): AreaGeometry | null {
   if (!stop.point || stop.eligibility !== 'allowed' || !area) return null;
+  return referenceZoneGeometry(stop.point, area, radiusMeters);
+}
+export function referenceZoneGeometry(point: Position, area: AreaGeometry | null, radiusMeters = 400): AreaGeometry | null {
+  if (!area) return null;
   const checked = validateGeometry(area);
   if (!isArea(checked)) throw new Error('Herní oblast musí být polygon.');
-  return intersect(featureCollection([feature(makeMetricCircle(stop.point, radiusMeters)), feature(checked)]))?.geometry ?? null;
+  return intersect(featureCollection([feature(makeMetricCircle(point, radiusMeters)), feature(checked)]))?.geometry ?? null;
 }
 export interface HidingPositionResult {
   status: 'allowed' | 'forbidden' | 'unknown';
@@ -119,11 +127,11 @@ export function inspectHidingPosition(point: Position, stop: GameStop | null, ar
     if (!stop?.point) return unknown('Chybí spolehlivý referenční bod zastávky.');
     const measured = distanceMeters(point, stop.point);
     const withinRadius = measured <= radiusMeters + DISTANCE_TOLERANCE_METERS;
-    if (stop.eligibility === 'review') return unknown('Zastávka vyžaduje ruční revizi.', measured, withinRadius);
     if (!area) return unknown('Chybí definice herní oblasti.', measured, withinRadius);
     const checked = validateGeometry(area);
     if (!isArea(checked)) return unknown('Herní oblast nemá polygonovou geometrii.', measured, withinRadius);
     const insideGameArea = booleanPointInPolygon(point, checked);
+    if (stop.eligibility === 'review') return { status: 'unknown', distanceMeters: measured, withinRadius, insideGameArea, reason: stop.reasons.join(' ') || 'Zastávka vyžaduje ruční revizi.' };
     const allowed = stop.eligibility === 'allowed' && withinRadius && insideGameArea;
     return { status: allowed ? 'allowed' : 'forbidden', distanceMeters: measured, withinRadius, insideGameArea,
       reason: stop.eligibility === 'excluded' ? 'Zastávka je ručně vyloučená.' : !insideGameArea ? 'Bod leží mimo herní oblast.' : !withinRadius ? 'Bod je za povoleným poloměrem.' : 'Bod splňuje vzdálenost i herní oblast.' };

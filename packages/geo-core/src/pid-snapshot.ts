@@ -21,14 +21,21 @@ const sourceSchema = z.object({
 const groupSchema = z.object({
   id: identifier, name: z.string().trim().min(1),
   evidence: rawReferenceSchema,
+  codes: z.object({ node: z.string(), cis: z.string(), category: z.string(), anchorPlatform: z.string() }).optional(),
+  municipality: z.string().optional(),
 });
 const platformSchema = z.object({
   id: identifier, groupId: identifier, name: z.string().min(1), point: wgs84PointSchema,
   // The active record is positive evidence of service in the snapshot day.
   // No departure time, outgoing edge or terminal test is used to infer inactivity.
-  services: z.array(z.object({ mode: transportModeSchema, period: serviceSchema, evidence: rawReferenceSchema })).min(1),
+  services: z.array(z.object({ mode: transportModeSchema, period: serviceSchema, evidence: rawReferenceSchema })),
+  active: z.boolean().optional(),
   publicStop: z.boolean(),
   evidence: rawReferenceSchema,
+  activePoint: wgs84PointSchema.optional(),
+  gtfsIds: z.array(z.string()).optional(),
+  routeIds: z.array(z.string()).optional(),
+  joinMethod: z.enum(['gtfs-id', 'asw-ids']).optional(),
 });
 const routeSchema = z.object({
   id: identifier, number: z.string().min(1), mode: transportModeSchema,
@@ -37,6 +44,9 @@ const routeSchema = z.object({
     z.object({ type: z.literal('MultiLineString'), coordinates: z.array(z.array(wgs84PointSchema).min(2)).min(1) }),
   ]),
   evidence: rawReferenceSchema,
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
+  validity: z.array(z.iso.date()).optional(),
+  partBounds: z.array(z.tuple([z.number(), z.number(), z.number(), z.number()])).optional(),
 });
 const stationReferenceSchema = z.object({
   groupIds: uniqueStrings.nonempty(), mode: transportModeSchema, point: wgs84PointSchema,
@@ -44,7 +54,8 @@ const stationReferenceSchema = z.object({
 });
 const snapshotSchema = z.object({
   format: z.literal('jetlag-praha-pid'), schemaVersion: z.literal(1),
-  id: identifier, serviceDate: z.iso.date(), downloadedAt: z.iso.datetime(),
+  id: identifier, serviceDate: z.iso.date(), downloadedAt: z.iso.datetime().nullable(),
+  preparedAt: z.iso.datetime().optional(),
   checksum: digest,
   adapterVersion: identifier,
   sources: z.array(sourceSchema).length(3),
@@ -53,6 +64,7 @@ const snapshotSchema = z.object({
   stationReferences: z.array(stationReferenceSchema).max(100000),
   routes: z.array(routeSchema).min(1).max(100000),
   routePeriod: z.literal('seven-days'),
+  quality: z.object({ status: z.enum(['verified', 'review']), issues: z.array(z.string()), unmappedActiveIds: z.array(z.string()), groupsGeneratedAt: z.string() }).optional(),
 });
 export type PidSnapshot = z.infer<typeof snapshotSchema>;
 export type PidPlatform = PidSnapshot['platforms'][number];
@@ -82,6 +94,8 @@ export function validatePidSnapshot(input: unknown): PidSnapshot {
   if (new Set(snapshot.sources.map(source => source.id)).size !== 3) throw new Error('Snapshot musí obsahovat všechny tři různé povinné zdroje.');
   const groups = new Set(snapshot.groups.map(group => group.id));
   for (const platform of snapshot.platforms) {
+    if (!platform.services.length && platform.active !== false) throw new Error('Aktivní stanoviště musí mít doloženou obsluhu.');
+    if (platform.active === false && platform.services.length) throw new Error('Neaktivní stanoviště nesmí předstírat aktivní obsluhu.');
     if (!groups.has(platform.groupId)) throw new Error(`Stanoviště ${platform.id} odkazuje na neexistující skupinu.`);
     if (platform.evidence.source !== 'stop-groups' || platform.services.some(service => service.evidence.source !== 'active-stops')) throw new Error('Stanoviště a aktivní obsluha musí mít odpovídající zdrojové doklady.');
   }
@@ -102,8 +116,8 @@ export async function sha256(input: string | Uint8Array): Promise<string> {
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(value => value.toString(16).padStart(2, '0')).join('');
 }
 export async function pidChecksum(snapshot: Omit<PidSnapshot, 'checksum' | 'id'>): Promise<string> {
-  const { format, schemaVersion, serviceDate, downloadedAt, adapterVersion, sources, groups, platforms, stationReferences, routes, routePeriod } = snapshot;
-  return sha256(canonicalJson({ format, schemaVersion, serviceDate, downloadedAt, adapterVersion, sources, groups, platforms, stationReferences, routes, routePeriod }));
+  const { format, schemaVersion, serviceDate, downloadedAt, preparedAt, adapterVersion, sources, groups, platforms, stationReferences, routes, routePeriod, quality } = snapshot;
+  return sha256(canonicalJson({ format, schemaVersion, serviceDate, downloadedAt, preparedAt, adapterVersion, sources, groups, platforms, stationReferences, routes, routePeriod, quality }));
 }
 export async function createPidSnapshot(input: Omit<PidSnapshot, 'checksum' | 'id'>): Promise<PidSnapshot> {
   // Normalize first (for example whitespace in names), then hash exactly the
@@ -155,6 +169,7 @@ export async function refreshPidSnapshot(storage: PidSnapshotStorage, load: () =
   try {
     const next = await readPidSnapshot(await load());
     if (next.serviceDate !== today) throw new Error(`Zdroj nabízí datum ${next.serviceDate}, očekáváno ${today}.`);
+    if (next.quality?.status === 'review') throw new Error(`Zdroje PID vyžadují revizi: ${next.quality.issues.join(' ')}`);
     await storage.write(next);
     return { snapshot: next, refreshed: true, stale: false, error: null };
   } catch (error) {

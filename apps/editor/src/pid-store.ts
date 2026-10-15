@@ -62,3 +62,25 @@ export const indexedPidStorage: PidSnapshotStorage = {
     } finally { database.close(); }
   },
 };
+
+export interface PidAttempt { date: string; error: string | null }
+export async function readPidAttempt(): Promise<PidAttempt | null> {
+  const database = await openDatabase();
+  try {
+    return await new Promise((resolve, reject) => {
+      const request = database.transaction('state').objectStore('state').get('last-attempt');
+      request.onsuccess = () => resolve(request.result ?? null);
+      request.onerror = () => reject(request.error);
+    });
+  } finally { database.close(); }
+}
+export async function writePidAttempt(attempt: PidAttempt): Promise<void> {
+  const database = await openDatabase();
+  try {
+    await new Promise<void>((resolve, reject) => {
+      const transaction = database.transaction('state', 'readwrite');
+      transaction.objectStore('state').put(attempt, 'last-attempt');
+      transaction.oncomplete = () => resolve(); transaction.onerror = () => reject(transaction.error); transaction.onabort = () => reject(transaction.error);
+    });
+  } finally { database.close(); }
+}

@@ -22,7 +22,10 @@
     "data:check": "tsx scripts/check-administrative.ts",
     "data:bundle": "npm run data:prepare -- --input data/raw/mestskecasti.geojson --metadata data/source-metadata/municipal.json --code-field kod_mc --name-field nazev_mc && npm run data:prepare -- --input data/raw/katastralni-uzemi-praha.geojson --metadata data/source-metadata/cadastral.json --code-field kod_ku --name-field naz_ku --filter-field kod_obec --filter-value 554782",
     "pid:inspect": "tsx scripts/inspect-pid.ts",
-    "pid:download": "tsx scripts/download-pid.ts"
+    "pid:download": "tsx scripts/download-pid.ts",
+    "pid:bundle": "tsx scripts/prepare-pid.ts",
+    "pid:publish": "tsx scripts/refresh-pid-publication.ts",
+    "pid:check": "tsx scripts/check-pid.ts"
   },
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "2.20.2",

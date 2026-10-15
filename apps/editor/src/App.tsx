@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent } from 'react';
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { addHole, exportWorld, importGeoJson, importWorld, isArea, loadDraft, makeMetricCircle, newFeature, newLayer, newWorld, applyAdministrativeUpdate, isManagedLayer, verifyAdministrativeSources, validateGeometry, validateWorld, type GeoFeature, type GeoLayer, type Geometry, type WorldDraft } from '@jetlag/geo-core';
 import { MapCanvas, type MapHandle, type Selection, type Tool } from './MapCanvas';
 import type { Position } from 'geojson';
@@ -6,6 +6,11 @@ import { readIndexedDraft, persistWorld } from './draft-store';
 import { loadBundledAdministrativeData } from './administrative-data';
 import { AdministrativeDialog, SourceMetadata } from './AdministrativePanel';
 import { PositionInspector } from './PositionInspector';
+import { defaultGameStopConfiguration, filterGameStops, type AreaGeometry, type GameStop, type PidPlatform } from '@jetlag/geo-core';
+import { usePid } from './use-pid';
+import { defaultPidFilters, PidControls, PidSourceDialog } from './PidPanel';
+import { PidStopProperties } from './PidStopProperties';
+import type { RouteDrawing, ViewBounds } from './pid-types';
 
 interface History { past: WorldDraft[]; present: WorldDraft; future: WorldDraft[] }
 const toolNames: Record<Tool, string> = { select: 'Výběr', point: 'Bod', line: 'Linie', polygon: 'Polygon', hole: 'Otvor', circle: 'Kruh', measure: 'Měření', edit: 'Úprava vrcholů', inspect: 'Ověřit polohu' };
@@ -47,6 +52,56 @@ export function App() {
   const selectedLayer = world.layers.find(l => l.id === selected?.layerId);
   const selectedFeature = selectedLayer?.features.find(f => f.id === selected?.featureId);
   const editing = tool === 'edit';
+  const pidConfiguration = useMemo(() => world.gameStops ?? defaultGameStopConfiguration(), [world.gameStops]);
+  const pid = usePid(pidConfiguration);
+  const pidRequest = pid.request;
+  const [pidFilters, setPidFilters] = useState(defaultPidFilters);
+  const [pidSelected, setPidSelected] = useState<string | null>(null);
+  const [pidSources, setPidSources] = useState(false);
+  const [pidPlatforms, setPidPlatforms] = useState<PidPlatform[]>([]);
+  const [pidShowPlatforms, setPidShowPlatforms] = useState(false);
+  const [pidShowZone, setPidShowZone] = useState(false);
+  const [pidMoving, setPidMoving] = useState(false);
+  const [pidPreview, setPidPreview] = useState<[number, number] | null>(null);
+  const [pidZone, setPidZone] = useState<AreaGeometry | null>(null);
+  const [pidZoneStatus, setPidZoneStatus] = useState<'idle' | 'loading' | 'ready' | 'empty' | 'error'>('idle');
+  const [pidBounds, setPidBounds] = useState<ViewBounds>([14.1, 49.9, 14.8, 50.25]);
+  const [pidRoutes, setPidRoutes] = useState<RouteDrawing[]>([]);
+  const pidStop = useMemo(() => pid.view?.stops.find(stop => stop.id === pidSelected) ?? null, [pid.view, pidSelected]);
+  const pidPreviewStop: GameStop | null = useMemo(() => pidStop && (pidPreview || pid.deriving) ? { ...pidStop, point: pidPreview ?? pidStop.point, eligibility: 'review', reasons: [...pidStop.reasons, pid.deriving ? 'Přepočítávám pravidla PID; vyčkejte na ověřený výsledek.' : 'Návrh referenčního bodu ještě nebyl schválen.'] } : pidStop, [pidStop, pidPreview, pid.deriving]);
+  const gameGeometry = world.layers.find(layer => layer.kind === 'game_area')?.features[0]?.geometry;
+  const pidArea = gameGeometry && isArea(gameGeometry) ? gameGeometry : null;
+  const pidStops = useMemo(() => pidFilters.visible && pid.view ? filterGameStops(pid.view.stops, { modes: pidFilters.modes, dominant: pidFilters.dominant || undefined, period: pidFilters.period, search: pidFilters.search }) : [], [pid.view, pidFilters.visible, pidFilters.modes, pidFilters.dominant, pidFilters.period, pidFilters.search]);
+  useEffect(() => { setPidPreview(null); setPidMoving(false); }, [pidSelected]);
+  useEffect(() => { if (tool !== 'select') setPidMoving(false); }, [tool]);
+  useEffect(() => {
+    if (!pidStop) { setPidPlatforms([]); return; }
+    let cancelled = false;
+    pidRequest<PidPlatform[]>({ action: 'platforms', groupIds: pidStop.groupIds }).then(value => { if (!cancelled) setPidPlatforms(value); }).catch(error => { if (!cancelled) setError(errorText(error)); });
+    return () => { cancelled = true; };
+  }, [pidStop, pidRequest]);
+  useEffect(() => {
+    if (!pidPreviewStop?.point || !pidShowZone || !pidArea) { setPidZone(null); setPidZoneStatus('idle'); return; }
+    let cancelled = false;
+    setPidZone(null); setPidZoneStatus('loading');
+    pidRequest<AreaGeometry | null>({ action: 'zone', point: pidPreviewStop.point, area: pidArea, radius: pidConfiguration.radiusMeters }).then(value => { if (!cancelled) { setPidZone(value); setPidZoneStatus(value ? 'ready' : 'empty'); } }).catch(error => { if (!cancelled) { setPidZoneStatus('error'); setError(errorText(error)); } });
+    return () => { cancelled = true; };
+  }, [pidPreviewStop, pidShowZone, pidArea, pidConfiguration.radiusMeters, pidRequest]);
+  useEffect(() => {
+    if (!pid.ready || !pid.view || !pidFilters.routesVisible) { setPidRoutes([]); return; }
+    let cancelled = false;
+    pidRequest<RouteDrawing[]>({ action: 'routes', bounds: pidBounds, modes: pidFilters.modes, selected: pidFilters.selectedRoute, onlySelected: pidFilters.onlySelectedRoute }).then(value => { if (!cancelled) setPidRoutes(value); }).catch(error => { if (!cancelled) setError(errorText(error)); });
+    return () => { cancelled = true; };
+  }, [pid.ready, pid.view, pidBounds, pidFilters.modes, pidFilters.routesVisible, pidFilters.selectedRoute, pidFilters.onlySelectedRoute, pidRequest]);
+  function selectPid(stop: GameStop, focus = false) {
+    setPidSelected(stop.id); setSelected(null); setTool(value => value === 'inspect' ? 'inspect' : 'select');
+    if (focus && stop.point) map.current?.focus(stop.point);
+  }
+  async function exportPid() {
+    const bytes = await pidRequest<ArrayBuffer>({ action: 'export' });
+    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/gzip' }));
+    const link = document.createElement('a'); link.href = url; link.download = `jetlag-praha-pid-${pid.view?.summary.serviceDate ?? 'snapshot'}.json.gz`; link.click(); setTimeout(() => URL.revokeObjectURL(url), 1000);
+  }
 
   useEffect(() => {
     let cancelled = false;
@@ -106,6 +161,7 @@ export function App() {
     updateLayer(selectedLayer.id, { features: selectedLayer.features.map(f => f.id === selectedFeature.id ? { ...f, ...change } : f) });
   }
   function addGeometry(geometry: Geometry, circle?: { center: Position; radiusMeters: number }) {
+    setPidSelected(null);
     if (tool === 'hole') {
       if (!selectedFeature || !isArea(selectedFeature.geometry) || geometry.type !== 'Polygon') throw new Error('Nejprve vyberte polygon, do kterého chcete nakreslit otvor.');
       updateFeature({ geometry: addHole(selectedFeature.geometry, geometry) });
@@ -132,9 +188,10 @@ export function App() {
     <header className="app-header">
       <div className="brand-mark" aria-hidden="true">J<span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 13 13 3M3 3h10v10" /></svg></span></div>
       <div className="brand-copy"><span className="eyebrow">JET LAG / PRAHA</span><h1>Geografický editor</h1></div>
-      <span className="version-tag">ITERACE 02 <span>·</span> DRAFT</span>
+      <span className="version-tag">ITERACE 03 <span>·</span> DRAFT</span>
       <div className="header-actions">
         <button disabled={editing} onClick={() => setSourcesOpen(true)}>Správa zdrojů</button>
+        <button disabled={editing} onClick={() => setPidSources(true)}>Doprava PID</button>
         <button onClick={() => setMapSettings(v => !v)}>Nastavení mapy</button>
         <button disabled={editing} onClick={() => setImporting(true)}>↓ Import</button>
         <button className="primary" disabled={editing} onClick={() => attempt(() => download(exportWorld(world), 'jetlag-praha-draft.json'))}>↑ Export zálohy</button>
@@ -161,9 +218,10 @@ export function App() {
           </fieldset></form></details>}
         </article>)}</div>
         <button className="add-layer" disabled={editing} onClick={() => { const layer = newLayer(`Vrstva ${world.layers.length}`); attempt(() => commit({ ...world, layers: [...world.layers, layer] })); setActiveId(layer.id); }}>+ Přidat vrstvu</button>
+        <PidControls disabled={editing} view={pid.view} filters={pidFilters} onChange={setPidFilters} onSelect={stop => selectPid(stop, true)} selected={pidSelected} onSources={() => setPidSources(true)} busy={pid.busy} error={pid.error} radius={pidConfiguration.radiusMeters} onRadius={radiusMeters => attempt(() => commit({ ...world, gameStops: { ...pidConfiguration, radiusMeters } }))} />
         <div className="objects-heading"><h3>Objekty <span>{active.features.length}</span></h3><button onClick={() => map.current?.fit()}>Zobrazit vše</button></div>
         <label className="search-label"><input aria-label="Hledat objekty aktivní vrstvy" placeholder="Vyhledat oblast nebo objekt…" value={filter} onChange={e => setFilter(e.target.value)} /></label>
-        <div className="object-list">{active.features.filter(f => f.name.toLocaleLowerCase('cs').includes(filter.toLocaleLowerCase('cs'))).map(f => <button disabled={editing} key={f.id} className={selected?.featureId === f.id && selected.layerId === active.id ? 'chosen' : ''} onClick={() => { setSelected({ layerId: active.id, featureId: f.id }); setTool('select'); }}><span aria-hidden="true">{f.geometry.type === 'Point' ? '●' : f.geometry.type === 'LineString' ? '╱' : '⬡'}</span><span>{f.name}<small>{f.circle ? 'Metrický kruh' : f.geometry.type}</small></span></button>)}
+        <div className="object-list">{active.features.filter(f => f.name.toLocaleLowerCase('cs').includes(filter.toLocaleLowerCase('cs'))).map(f => <button disabled={editing} key={f.id} className={selected?.featureId === f.id && selected.layerId === active.id ? 'chosen' : ''} onClick={() => { setPidSelected(null); setSelected({ layerId: active.id, featureId: f.id }); setTool('select'); }}><span aria-hidden="true">{f.geometry.type === 'Point' ? '●' : f.geometry.type === 'LineString' ? '╱' : '⬡'}</span><span>{f.name}<small>{f.circle ? 'Metrický kruh' : f.geometry.type}</small></span></button>)}
           {!active.features.length && <p className="empty-copy">Vrstva je zatím prázdná.<br />Nakreslete první objekt nebo importujte GeoJSON.</p>}
         </div>
         {sourceError && <div className="source-load-error" role="status">{sourceError}</div>}
@@ -175,7 +233,7 @@ export function App() {
           <div className="history-buttons"><button aria-label="Zpět" disabled={!history.past.length || editing} onClick={() => undo()}>↶</button><button aria-label="Znovu" disabled={!history.future.length || editing} onClick={() => undo(true)}>↷</button></div>
         </div>
         <div className="map-stage">
-          <MapCanvas ref={map} testPoint={testPoint} onTestPoint={setTestPoint} world={world} selected={selected} tool={tool} apiKey={apiKey} onSelect={selection => { setSelected(selection); setActiveId(selection.layerId); }} onCreate={geometry => attempt(() => addGeometry(geometry))} onCircle={center => attempt(() => addGeometry(makeMetricCircle(center, Number(radius)), { center, radiusMeters: Number(radius) }))} onEdit={geometry => attempt(() => { updateFeature({ geometry }); setTool('select'); })} onMeasure={setMeasurement} onError={setError} onTileStatus={setTileStatus} />
+          <MapCanvas ref={map} pid={{ stops: pidStops, routes: pidRoutes, selected: pidPreviewStop, platforms: pidPlatforms, showPlatforms: pidShowPlatforms, zone: pidZone, moveReference: pidMoving, highlightedRoute: pidFilters.selectedRoute, onSelect: id => { const stop = pid.view?.stops.find(value => value.id === id); if (stop) selectPid(stop); }, onReference: setPidPreview, onBounds: setPidBounds }} testPoint={testPoint} onTestPoint={setTestPoint} world={world} selected={selected} tool={tool} apiKey={apiKey} onSelect={selection => { setPidSelected(null); setSelected(selection); setActiveId(selection.layerId); }} onCreate={geometry => attempt(() => addGeometry(geometry))} onCircle={center => attempt(() => addGeometry(makeMetricCircle(center, Number(radius)), { center, radiusMeters: Number(radius) }))} onEdit={geometry => attempt(() => { updateFeature({ geometry }); setTool('select'); })} onMeasure={setMeasurement} onError={setError} onTileStatus={setTileStatus} />
           {tileStatus !== 'ready' && <div className={`map-notice ${tileStatus === 'error' ? 'warning' : ''}`} role="status"><strong>{tileStatus === 'missing' ? 'Chybí API klíč Mapy.com' : tileStatus === 'error' ? 'Mapový podklad se nepodařilo načíst' : 'Načítám mapový podklad…'}</strong><span>{tileStatus === 'missing' ? 'Přidejte klientský klíč v Nastavení mapy nebo do .env.local. Geometrie lze editovat i bez podkladu.' : tileStatus === 'error' ? 'Ověřte klíč, povolený HTTP referer, službu maptiles, limit a síťové připojení. Vaše geometrie zůstávají zachované.' : 'Mapy.com REST API'}</span></div>}
           <button className="prague-button" onClick={() => map.current?.prague()}>⌖ Zpět na Prahu</button>
           <div className="map-help" aria-live="polite"><strong>{toolNames[tool]}</strong><span>{tool === 'select' ? 'Kliknutím vyberte objekt. Pro kreslení zvolte nástroj.' : tool === 'inspect' ? 'Klikněte na mapu nebo přetáhněte testovací špendlík. Výsledky jsou vpravo.' : tool === 'point' ? 'Klikněte na mapu a vložte bod.' : tool === 'circle' ? 'Kliknutím určete střed kruhu.' : tool === 'measure' ? measurement === null ? 'Klikněte na dva body. Měří se vzdálenost po povrchu Země.' : `${measurement.toLocaleString('cs', { maximumFractionDigits: 1 })} m · ${(measurement / 1000).toLocaleString('cs', { maximumFractionDigits: 3 })} km. Další kliknutí začne nové měření.` : tool === 'edit' ? 'Přetáhněte vrcholy. Klik na hranu přidá vrchol, pravé tlačítko vrchol odstraní. Potom změny uložte.' : tool === 'hole' ? 'Nakreslete otvor uvnitř vybraného polygonu. Kliknutím na první vrchol jej uzavřete.' : 'Klikáním přidávejte vrcholy. Polygon dokončíte prvním, linii posledním vrcholem.'}</span>
@@ -184,14 +242,15 @@ export function App() {
           </div>
           <div className="map-legend"><span className="legend-line" />Herní hranice <span className="legend-shape" />Vlastní geometrie</div>
         </div>
-        <div className="map-footer"><span>WGS84 · [délka, šířka] · metry</span><span className={areaReady ? '' : 'unconfigured'}>{areaReady ? '● Herní oblast definována' : '○ Herní oblast zatím není definována'}</span></div>
+        <div className="map-footer">{pidShowZone && pidStop && <span role="status">{!pidArea ? 'Pro průnik úkrytové zóny nejprve definujte herní oblast.' : !pidPreviewStop?.point ? 'Referenční bod nelze určit.' : pidZoneStatus === 'loading' ? 'Počítám průnik zóny s herní oblastí…' : pidZoneStatus === 'empty' ? 'Kruh nemá společnou plochu s herní oblastí.' : pidZoneStatus === 'ready' ? 'Úkrytová geometrie zobrazena' : 'Zónu nelze zobrazit.'}</span>}<span>WGS84 · [délka, šířka] · metry</span><span className={areaReady ? '' : 'unconfigured'}>{areaReady ? '● Herní oblast definována' : '○ Herní oblast zatím není definována'}</span></div>
       </main>
       <aside className="right-panel panel">
         <div className="panel-heading"><div><span className="eyebrow">VYBRANÝ OBJEKT</span><h2>Vlastnosti</h2></div><span className="draft-chip">draft</span></div>
-        {tool === 'inspect' ? <PositionInspector point={testPoint} world={world} /> : selectedFeature && selectedLayer?.dataset ? <div className="managed-properties"><h3>{selectedFeature.name}</h3><p>Oficiální kód: <code>{String(selectedFeature.attributes.code)}</code><br />{selectedFeature.geometry.type}</p><SourceMetadata layer={selectedLayer} /><details><summary>Zdrojové atributy</summary><pre>{JSON.stringify(selectedFeature.attributes, null, 2)}</pre></details><p>Oficiální geometrii lze nahradit ověřenou aktualizací zdroje.</p><button onClick={() => setSourcesOpen(true)}>Porovnat / aktualizovat zdroj</button></div> : selectedFeature ? <FeatureProperties key={`${selectedLayer!.id}/${selectedFeature.id}/${world.updatedAt}`} feature={selectedFeature} editing={editing} onChange={change => attempt(() => updateFeature(change))} onEdit={() => { if (!selectedLayer?.visible) { setError('Vybraná vrstva je skrytá. Před úpravou vrcholů ji zobrazte.'); return; } setTool('edit'); }} onSaveEdit={() => map.current?.saveEdit()} onDelete={() => { attempt(() => updateLayer(selectedLayer!.id, { features: selectedLayer!.features.filter(f => f.id !== selectedFeature.id) })); setSelected(null); setTool('select'); }} /> : <div className="selection-empty"><div aria-hidden="true"><CursorIcon /></div><h3>Prostor pro vaše data</h3><p>Vyberte objekt v mapě nebo v seznamu. Zde uvidíte jeho geometrii, původ a vlastnosti.</p><hr /><span className="eyebrow">JAK ZAČÍT</span><ol><li>Vyberte vrstvu Herní oblast.</li><li>Nakreslete její polygon.</li><li>Do vlastní vrstvy přidejte další objekty.</li><li>Exportujte zálohu svého světa.</li></ol></div>}
+        {tool !== 'inspect' && pidStop ? <PidStopProperties key={pidStop.id + ':' + (pidConfiguration.overrides.find(value => value.stopId === pidStop.id)?.approvedAt ?? '')} stop={pidStop} configuration={pidConfiguration} allStops={pid.view?.stops ?? []} platforms={pidPlatforms} point={pidPreview} moving={pidMoving} showPlatforms={pidShowPlatforms} showZone={pidShowZone} disabled={editing} onPoint={setPidPreview} onMove={value => { setPidMoving(value); setTool('select'); }} onPlatforms={setPidShowPlatforms} onZone={setPidShowZone} onConfiguration={value => attempt(() => commit({ ...world, gameStops: value }))} /> : tool === 'inspect' ? <><PositionInspector point={testPoint} world={world} stop={pidPreviewStop} radius={pidConfiguration.radiusMeters} />{pidStop && <button className="wide" aria-pressed={pidShowZone} onClick={() => setPidShowZone(value => !value)}>{pidShowZone ? "Skrýt úkrytovou zónu" : "Zobrazit úkrytovou zónu"}</button>}</> : selectedFeature && selectedLayer?.dataset ? <div className="managed-properties"><h3>{selectedFeature.name}</h3><p>Oficiální kód: <code>{String(selectedFeature.attributes.code)}</code><br />{selectedFeature.geometry.type}</p><SourceMetadata layer={selectedLayer} /><details><summary>Zdrojové atributy</summary><pre>{JSON.stringify(selectedFeature.attributes, null, 2)}</pre></details><p>Oficiální geometrii lze nahradit ověřenou aktualizací zdroje.</p><button onClick={() => setSourcesOpen(true)}>Porovnat / aktualizovat zdroj</button></div> : selectedFeature ? <FeatureProperties key={`${selectedLayer!.id}/${selectedFeature.id}/${world.updatedAt}`} feature={selectedFeature} editing={editing} onChange={change => attempt(() => updateFeature(change))} onEdit={() => { if (!selectedLayer?.visible) { setError('Vybraná vrstva je skrytá. Před úpravou vrcholů ji zobrazte.'); return; } setTool('edit'); }} onSaveEdit={() => map.current?.saveEdit()} onDelete={() => { attempt(() => updateLayer(selectedLayer!.id, { features: selectedLayer!.features.filter(f => f.id !== selectedFeature.id) })); setSelected(null); setTool('select'); }} /> : <div className="selection-empty"><div aria-hidden="true"><CursorIcon /></div><h3>Prostor pro vaše data</h3><p>Vyberte objekt v mapě nebo v seznamu. Zde uvidíte jeho geometrii, původ a vlastnosti.</p><hr /><span className="eyebrow">JAK ZAČÍT</span><ol><li>Vyberte vrstvu Herní oblast.</li><li>Nakreslete její polygon.</li><li>Do vlastní vrstvy přidejte další objekty.</li><li>Exportujte zálohu svého světa.</li></ol></div>}
         <div className="export-section"><h3>Přenosná data</h3><p>JSON obsahuje celý draft. GeoJSON navíc otevřete v běžných GIS nástrojích; metadata editoru jsou v rozšířených polích.</p><button disabled={editing} onClick={() => attempt(() => download(exportWorld(world, 'geojson'), 'jetlag-praha-draft.geojson'))}>Exportovat GeoJSON</button></div>
       </aside>
     </div>
+    {pidSources && <PidSourceDialog view={pid.view} busy={pid.busy} error={pid.error} configuration={pidConfiguration} onClose={() => setPidSources(false)} onRefresh={pid.refresh} onCompare={pid.compare} onApply={pid.apply} onExport={exportPid} onReview={stop => { selectPid(stop, true); setPidSources(false); }} />}
     {sourcesOpen && <AdministrativeDialog world={world} bundled={bundled} loadError={sourceError} onClose={() => setSourcesOpen(false)} onApply={layer => { commit(applyAdministrativeUpdate(world, layer)); setSelected(null); setTool('select'); }} />}
     {importing && <ImportDialog onClose={() => setImporting(false)} onImport={async (contents, mode, title, source) => {
       if (mode === 'world') {

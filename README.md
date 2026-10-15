@@ -1,38 +1,22 @@
 # Jet Lag Praha · geografický editor
 
-Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává spravované administrativní vrstvy a ověřování polohy.
+Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny.
 
 Iterace 02 používá dodané soubory `data/raw/mestskecasti.geojson` (**57 městských částí**) a `data/raw/katastralni-uzemi-praha.geojson` (**112 katastrálních území Prahy**). Zachovává všechny souřadnice a atributy, podporuje samostatné zobrazení vrstev, zvýraznění území, přesouvatelný testovací bod a kontrolovanou aktualizaci zdrojů. Mapy.com poskytuje pouze mapový podklad.
 
 Původ je zaznamenán v `data/source-metadata/`: městské části mají v dodaných datech poskytovatele HMP-IPR a katalogový odkaz IPR, katalogový odkaz ČSÚ pro katastry doložil uživatel. **Licence a datum platnosti celé sady nejsou v dodaných souborech uvedeny a zůstávají výslovně nedoložené.** Datum převzetí do repozitáře se za datum platnosti nevydává. MIT licence kódu automaticky neurčuje licenci zdrojových geodat.
 
-## Iterace 03 – rozpracováno, čeká na skutečné soubory PID
+## Iterace 03 – PID a úkrytové zóny
 
-Přímý přístup k `data.pid.cz` a dokumentaci `pid.cz` při přípravě blokovala síťová politika cloudového prostředí (HTTPS CONNECT 403). **Iterace 03 zatím není hotová a editor zatím nezobrazuje PID.** Není ověřené schéma originálních souborů, jejich stabilní ID a propojení, kódy dopravy, aktivita/konečné/provozní body, denní/noční atributy, licence, platnost ani CORS. Tyto údaje se nevymýšlejí a do aplikace se nepřidávají demonstrační zastávky.
+Editor podporuje skutečné zastávky a trasy PID, filtrování sedmi druhů dopravy a denního/nočního provozu, dopravní priority, jeden referenční bod, odůvodněné ruční výjimky, propojení skupin, skutečný průnik úkrytového kruhu s herní oblastí a ověření polohy podle geografické vzdálenosti. Zapnutí je vlevo v **Veřejná doprava PID**; správa verzí je pod tlačítkem **Doprava PID**.
 
-Do `data/raw/pid/` doplňte ve stejný den stažené nezměněné soubory:
+Dodaná trojice obsahuje **8 526 skupin, 17 229 fyzických stanovišť a 853 linek**. Z 16 118 bodů aktivního zdroje má 15 910 doloženou vazbu na fyzické stanoviště, což tvoří 8 066 herních zastávek s obsluhou ve zdrojovém období. Ostatních 208 bodů se nepřiřazuje odhadem. Zachovávají se všechny původní souřadnice a všech **1 101 102 vrcholů tras**; aktualizace zdrojů nepřepisuje vlastní vrstvy, herní hranici ani výjimky.
 
-- [`Zastavky_WGS84.json`](https://data.pid.cz/geodata/Zastavky_WGS84.json)
-- [`stops.json`](https://data.pid.cz/stops/json/stops.json)
-- [`Linky_7d_WGS84.json`](https://data.pid.cz/geodata/Linky_7d_WGS84.json)
+**Omezení dodaných dat:** aktivní zastávky mají platnost **2026-08-20**, trasy **2026-08-20 až 2026-08-26**, ale skupiny byly vygenerované **2026-10-15**. Přibalený referenční snapshot proto vyžaduje revizi a povolenost úkrytu vrací **„nelze určit“**. Body, trasy, měřená vzdálenost a skutečná geometrie průniku zůstávají dostupné. Čas původního stažení a licence dodaných souborů nejsou doložené; čas přípravy snapshotu se eviduje samostatně.
 
-Pak lze spustit `npm run pid:inspect`. Přijímá také **ZIP nebo GZIP**, takže velký soubor linek lze pro kontrolu předat komprimovaný. Webový upload GitHubu má limit 25 MiB; běžný Git dovoluje soubor do 100 MiB. Podrobnosti včetně bezpečného stahování přes `npm run pid:download` jsou v [návodu ke vstupním datům](data/raw/pid/README.md). Inspekce zapisuje pouze ignorovaný report; neupravuje surové zdroje, draft ani herní hranici. Po ověření těchto souborů zbývá dokončit zdrojový adaptér a jeho skutečné testy, propojit denní aktualizaci a ovládání PID s editorem, filtry, kreslením referenčních bodů/zón a trasami. Nedostupnost z tohoto cloudového stroje sama neprokazuje CORS problém v prohlížeči.
+První otevření v pražském dni zkusí všechny tři [oficiální URL](docs/PID_DATA.md). Pokud přímý přístup selže například kvůli CORS, použije denní publikaci na stejném hostingu. Ověřené snapshoty i denní pokusy se ukládají do samostatné IndexedDB; ruční aktualizace je dostupná ve správě PID. GitHub Actions má naplánovanou denní aktualizaci ve **04:30 UTC**. Chyba zdroje zachová poslední dostupnou verzi a zobrazí její datum; nekonzistentní data se automaticky neoznačí za dnešní.
 
-Prozkoumaný dodaný `Zastavky_WGS84.json` obsahuje **16 118 bodů**. Původně nahraný `stops.json` měl pouze 2 bílé znaky a byl odstraněný; platný obsah skupin a soubor linek při inspekci ještě chyběly. [Záznam inspekce](data/source-metadata/pid-source-audit.md) odlišuje zjištěné atributy od dosud neověřených vazeb a významu dat. Skupiny lze doplnit skutečným JSONem nebo ZIPem obsahujícím `stops.json`. Komprimované soubory slouží k ověření zdrojů a nebrání následným denním aktualizacím z oficiálních URL.
-
-Samostatně je implementovaný a testovaný základ bez závislosti na Leafletu:
-
-- `pid-model.ts`, `pid-snapshot.ts`: **interní** normalizovaný kontrakt, nikoli popis atributů PID; validace všech tří povinných zdrojů, doklady vazeb na zdrojové záznamy, WGS84, SHA-256 a verzovaná identita. Datum obsluhy se odlišuje od času stažení a případné deklarované platnosti. Sedmidenní trasy mají vlastní označení období.
-- `refreshPidSnapshot`: časové pásmo `Europe/Prague`, ověřená denní cache, vynucená aktualizace, přijetí až po úplné validaci a úspěšném uložení. Při selhání vrací poslední platný snapshot, jeho datum, stav zastaralosti a chybu. Funkce zatím nemá napojený zdrojový adaptér ani automatické spouštění v aplikaci.
-- `pid-store.ts`: oddělená IndexedDB `jetlag-praha-pid` s atomickým zápisem snapshotu a ukazatele na aktuální verzi. Starší verze zůstávají dostupné přes `SnapshotReference` pro budoucí uzamčení hry; herní místnosti se neimplementují. Databáze draftu se při zápisu PID neotevírá. Rozhraní zatím není zapojené do UI.
-- `game-stops.ts`: identity podle skupin, žádné slučování podle názvu či blízkosti; doložené ruční propojení; vlak → metro → tramvaj → autobus/trolejbus. Autobus a trolejbus přispívají do společné prioritní třídy; při jejich souběhu je stabilní dominantní označení `bus`, ale zachovají se oba aktivní druhy. Přívoz/lanovka vyžaduje výslovné schválení a volbu druhu dopravy.
-- Referenční bod je aritmetický průměr relevantních aktivních veřejných stanovišť prioritního druhu; pouze doložený bod přesně příslušného druhu a sady skupin jej může nahradit. Zdůvodněná ruční úprava má přednost. Zdrojová data se nemění, změna identity/skladby stanovišť nebo druhu dopravy vyvolá revizi; neplatná úprava se uchová a nepoužije k povolení polohy. Odebrané vazby zůstávají dohledatelné jako osiřelé výjimky. Konečná není vyřazená kvůli chybějícímu odjezdu.
-- `hidingZoneGeometry`: skutečný polygonový průnik jediného geodetického kruhu s herní oblastí včetně otvorů a MultiPolygonů. Výchozí poloměr 400 m je konfigurovatelný. `inspectHidingPosition` rozhoduje přes geodetickou vzdálenost a celý polygon herní oblasti, nikoli přes aproximovaný obvod kružnice. Bod přesně na 400 m se povoluje; numerická tolerance je 0,000001 m. Jde o numerickou toleranci výpočtu, nikoli o deklaraci přesnosti poloh PID. Chybějící oblast, nespolehlivý bod či nezrevidované rozhodnutí vrací „nelze určit“.
-- Volitelné `WorldDraft.gameStops` ukládá pravidla, ruční propojení a schválení odděleně od snapshotu. JSON i GeoJSON záloha jej zachovají, staré drafty bez něj zůstávají kompatibilní. Zdrojové snapshoty mají samostatné úložiště; export draftu je zatím neobsahuje.
-
-Nové testy priorit a úkrytů mají **výslovně syntetické vstupy** a nedokládají skutečnou identitu uzlů Anděl nebo železničních terminálů. Kompletní platná trojice zdrojů PID ještě není k dispozici. Dosavadní reálná administrativní data se testují samostatně.
-
-Pokud se po ověření skutečných zdrojů prokáže blokace CORS, minimální varianta pro GitHub Pages je plánovaný GitHub Actions job, který po pražské půlnoci stáhne všechny povinné zdroje, spustí ověřený adaptér, validaci a testy a zveřejní verzovaný statický snapshot společně s malým ukazatelem na aktuální verzi. Editor by ukládal přijatou verzi v IndexedDB a při selhání publikace ponechal poslední funkční snapshot s jeho stářím. Selhání adaptace musí publikaci zastavit. Tento job zatím není aktivní, protože neexistuje ověřený adaptér; samotný pravidelný deploy starého souboru by nebyl denní aktualizací dat.
+[Podrobný návod, architektura, pravidla a omezení PID](docs/PID_DATA.md) · [audit dodané trojice](data/source-metadata/pid-source-audit.md) · [vložení JSON/ZIP/GZIP](data/raw/pid/README.md)
 
 ## Spuštění
 
@@ -87,7 +71,7 @@ Nástroje **Zobrazit vše** a **Zpět na Prahu** upravují pouze pohled. Mapové
 
 - `apps/editor/src/App.tsx`: vrstvy, vlastnosti, import/export, historie a lokální ukládání.
 - `apps/editor/src/MapCanvas.tsx`: adaptér Leaflet + Geoman Free, Mapy.com podklad a kreslicí nástroje. Poskytovatel podkladu neovlivňuje datový kontrakt.
-- `packages/geo-core/src/index.ts`: sdílené typy `WorldDraft`, `GeoLayer`, `GeoFeature`, Zod validace a služby `importGeoJson`, `exportWorld`, `distanceMeters`, `makeMetricCircle`, `pointInArea`, `addHole`, `saveDraft`, `loadDraft`. Jádro nepoužívá DOM ani mapový klíč; lze je později využít na serveru. Verze 2 přidává zdrojová metadata vrstvy; volitelné `gameStops` zachovává oddělenou konfiguraci rozpracované iterace 03. POI zůstávají rezervované.
+- `packages/geo-core/src/index.ts`: sdílené typy `WorldDraft`, `GeoLayer`, `GeoFeature`, Zod validace a služby `importGeoJson`, `exportWorld`, `distanceMeters`, `makeMetricCircle`, `pointInArea`, `addHole`, `saveDraft`, `loadDraft`. Jádro nepoužívá DOM ani mapový klíč; lze je později využít na serveru. Verze 2 přidává zdrojová metadata vrstvy; volitelné `gameStops` zachovává oddělená pravidla, propojení a ruční výjimky iterace 03. POI zůstávají rezervované.
 - `packages/geo-core/src/administrative.ts`: stabilní oficiální identity, SHA-256, porovnání verzí, bezpečná aktualizace a klasifikace bodu.
 - `apps/editor/src/PositionInspector.tsx`, `AdministrativePanel.tsx`: diagnostika bodu a správa zdrojových verzí. `draft-store.ts` spravuje IndexedDB a kompatibilní zálohu.
 - `tests/editor.spec.ts`, `tests/administrative.spec.ts`, `tests/prague-editor.spec.ts`: funkční scénáře v reálném Chromiu, včetně migrace a zachování vlastních dat.
@@ -106,6 +90,7 @@ npx playwright install chromium
 npm run test:e2e
 # Povinná kontrola skutečných přibalených zdrojů před nasazením:
 npm run data:check
+npm run pid:check
 ```
 
 Playwright použije `/usr/bin/chromium`, pokud existuje; jinak svůj nainstalovaný prohlížeč. Vlastní cestu nastavíte přes `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Testy nepoužívají skutečný API klíč a nekontrolují dostupnost živého podkladu. Selhání dlaždic je simulováno; dostupnost živých Mapy.com dlaždic se musí ověřit s vlastním omezeným klíčem.
@@ -115,7 +100,7 @@ Playwright použije `/usr/bin/chromium`, pokud existuje; jinak svůj nainstalova
 1. V repozitáři nastavte **Settings → Pages → Source: GitHub Actions**.
 2. Do **Settings → Secrets and variables → Actions** přidejte secret `VITE_MAPY_API_KEY` s veřejným klientským klíčem, omezeným na svůj web Pages (a příslušnou cestu, pokud omezení poskytovatele cesty podporuje).
 3. Workflow **Deploy editor to GitHub Pages** se spustí po každém pushi do `main`; lze jej spustit také ručně v záložce Actions přes **Run workflow**.
-4. Workflow ověří lint, jednotkové testy, skutečná přibalená administrativní data (`data:check`) a build a nasadí `dist`. Chybějící nebo chybné hranice nasazení zastaví. Relativní Vite `base: './'` podporuje cestu `/JetLagPrague/` bez změny aplikace. Pro vlastní doménu upravte povolené referery klíče.
+4. Workflow ověří lint, jednotkové testy, administrativní data (`data:check`), aktualizuje a ověří publikaci PID (`pid:publish`, `pid:check`), provede build a nasadí `dist`. Stejný workflow běží denně ve 04:30 UTC; neúspěšná denní aktualizace předchozí nasazení nepřepíše. Chybějící nebo chybné hranice nasazení zastaví. Relativní Vite `base: './'` podporuje cestu `/JetLagPrague/` bez změny aplikace. Pro vlastní doménu upravte povolené referery klíče.
 
 Bez secretu se build úmyslně nezastaví: editor zobrazí stav chybějícího klíče. Pro funkční podklad musí být klíč doplněn při buildu nebo v Nastavení mapy.
 
@@ -162,4 +147,4 @@ Datum platnosti celé sady a její licence nejsou v dodaných souborech doložen
 
 Validace skutečných 169 geometrií a všech čtyř pražských referenčních bodů prošla. Při opakované práci se už ověřené geometrie používají jako neměnné objekty, aby každá úprava vlastností znovu neověřovala všech téměř 100 tisíc vrcholů. Po obnovení stránky proběhne validace uloženého draftu znovu. Pro plnou sadu je určená IndexedDB; pokud ji prohlížeč zakáže a localStorage nemá dost místa, editor oznámí neuložené změny a je potřeba použít export.
 
-PID je rozpracované podle stavu výše; jeho zdrojový adaptér a mapové ovládání čekají na skutečné soubory. POI, otázky, simulátor hráčů, multiplayer, obecné GIS union/difference/clipping v editoru a publikování neměnných herních release zůstávají odložené. Export je stále draft. Kreslení nové oddělené části vlastního MultiPolygonu nemá samostatný nástroj; podporuje se import, úprava vrcholů a validovaný editor GeoJSON. Souběžná editace více kartami není podporovaná.
+PID je implementované podle návodu výše; přibalená časově nesourodá data zůstávají výslovně označená k revizi. POI, otázky, simulátor hráčů, multiplayer, obecné GIS union/difference/clipping v editoru a publikování neměnných herních release zůstávají odložené. Export je stále draft. Kreslení nové oddělené části vlastního MultiPolygonu nemá samostatný nástroj; podporuje se import, úprava vrcholů a validovaný editor GeoJSON. Souběžná editace více kartami není podporovaná.

@@ -84,6 +84,13 @@ describe('Game stop rules (synthetic fixtures, not assertions about real PID nod
     expect(approved.eligibility).toBe('allowed'); expect(approved.relevantPlatformIds).toEqual(['ferry']);
     const [unapproved] = buildGameStops(snapshot, manual(stop, { mode: 'ferry' })); expect(unapproved.eligibility).toBe('review');
   });
+  it('shows a single-mode ferry reference for review without granting game permission', async () => {
+    const snapshot = await testSnapshot([testPlatform('ferry', 'g', 'ferry')]);
+    const [stop] = buildGameStops(snapshot);
+    expect(stop.point).toEqual([14.4, 50.07]); expect(stop.eligibility).toBe('review');
+    const [approved] = buildGameStops(snapshot, manual(stop, { decision: 'allowed' }));
+    expect(approved.eligibility).toBe('allowed'); expect(approved.automaticPoint).toEqual(stop.point);
+  });
   it('uses exact geodetic distance at 399, 400 and 401 m, including between circle vertices', async () => {
     const [stop] = buildGameStops(await testSnapshot());
     for (const bearing of [0, 1.4, 33, 118, 270]) {

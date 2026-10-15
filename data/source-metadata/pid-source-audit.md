@@ -1,35 +1,41 @@
-# Dosavadní inspekce skutečných zdrojů PID
+# Audit skutečných zdrojů PID
 
-Tento záznam popisuje dodané soubory; nenahrazuje dokumentaci významu atributů ani neprokazuje aktuální obsluhu v dnešním dni. Přímý přístup k poskytovateli z cloudového prostředí blokuje síťová politika (CONNECT 403).
+Podklady jsou nezměněné soubory v `data/raw/pid/` z revize `380ac21` repozitáře. Jejich obsah byl ověřený příkazem `pid:inspect`, adaptérem a automatickými testy. Audit neprokazuje licenci ani aktuálnost vůči živému serveru: přímý přístup z cloudového prostředí blokuje síťová politika (CONNECT 403).
 
-## `Zastavky_WGS84.json`
+| Zdroj | Původní bajty | SHA-256 rozbaleného originálu |
+| --- | ---: | --- |
+| `Zastavky_WGS84.json` | 9 423 075 | `1cdd825dd89f30d2d2052f9af5c545e28d55bab5b4d97debf3d7676edea9bad3` |
+| `stops.json` | 19 006 137 | `749c2809d53e29adcc0c0a25c53731c10c0cade0ba5975b1878b6bac0cc73869` |
+| `Linky_7d_WGS84.json` | 38 795 036 | `7ca7fa9c803d0fd1ba60bbcb970ab748a63dcf3f7f1c9f1752eaeb2c9df647cd` |
 
-- Vstup: `data/raw/pid/Zastavky_WGS84.json`, převzatý v commitu `950a53c9a79f15061e0bb4ab6364ec9070073451` dne 2026-10-15. Datum commitu je datum převzetí, nikoli datum platnosti.
-- 9 423 075 bajtů, SHA-256 `1cdd825dd89f30d2d2052f9af5c545e28d55bab5b4d97debf3d7676edea9bad3`.
-- GeoJSON `FeatureCollection`, `name = Zastavky_WGS84`, 16 118 geometrických bodů. Všech 16 118 geometrií prošlo validací WGS84 v geo-core. Žádné souřadnice nebyly změněné.
+Linky jsou dodané v `Linky_7d_WGS84.zip`, 6 677 294 bajtů, SHA-256 archivu `f922573c68b5cd7764640b499d8bba2d54d154cc7fdabaa126a9c3634cb784fb`. Archiv obsahuje původní `Linky_7d_WGS84.json`; rozbalení nemění souřadnice.
 
-| Atribut | Zjištění v tomto souboru |
-| --- | --- |
-| `stop_id` | 16 118 jedinečných textových hodnot, například `U1000Z1`; kandidát na vazbu stanoviště, musí se ověřit proti `stops.json`. |
-| `asw_node_id` | 7 676 různých textových hodnot; více bodů sdílí stejnou hodnotu. Toto samotné ještě neověřuje strukturu skupin druhého zdroje. |
-| `asw_stop_id` | Textový kód v rámci uzlu; sám o sobě není globálně jedinečný. |
-| `stop_name` | Název bodu; opakování názvu neprokazuje společnou identitu. |
-| `route_type` | Text s jedním nebo více kódy: `0`, `0,11`, `0,3`, `0,3,11`, `1`, `11`, `2`, `3`, `3,11`, `4`. Není to vždy jedno číslo. |
-| `is_night` | Textové hodnoty `0`, `1`, `0,1`. Obsahuje agregované příznaky; nelze obecně párovat položky seznamu s položkami `route_type` podle indexu. |
-| `routes_id`, `routes_names` | Čárkami oddělené seznamy. Vazba na geometrii linek není ověřena, protože soubor linek zatím chybí. |
-| `validity` | Všech 16 118 záznamů má text `20260820`. Význam pole není zatím doložen; neoznačujeme tento údaj automaticky za datum stažení ani za potvrzení dnešní platnosti. |
-| `OBJECTID` | Zde jedinečná pořadová čísla; nepoužíváme je jako stabilní identitu zastávek. |
+## Pozorovaná schémata a identity
 
-Další přítomná pole: `wheelchair_boarding`, `platform_code`, `is_regional`, `zones_id`, `on_request`. Samotná existence těchto atributů zatím neumožňuje bezpečně rozlišit všechny veřejné a pomocné provozní body nebo vyřazovat konečné stanice.
+`Zastavky_WGS84.json` je GeoJSON FeatureCollection s 16 118 Point. `stop_id` je v dodané sadě jedinečné. `asw_node_id` a `asw_stop_id` jsou textové oficiální složky ASW identity. `OBJECTID` je pořadové číslo a pro stabilní identity se nepoužívá. `route_type`, `routes_id`, `routes_names`, `is_night` a další atributy jsou často čárkami oddělené seznamy, nikoli jednotlivé hodnoty.
 
-Příklad skutečných zdrojových záznamů Anděla: devět bodů nese `asw_node_id = 1040`; `U1040Z101` má `route_type = 1`, souřadnice `[14.40367, 50.070026]`, `U1040Z102` má `route_type = 1`, souřadnice `[14.403957, 50.070001]`. Další body mají jiné kódy dopravy. Na základě těchto zjištění zatím nevytváříme normalizovaný herní uzel: nejprve se ověří identita a vazby proti skutečnému `stops.json` a význam kódů proti dokumentaci/ostatním zdrojům.
+`stops.json` má `dataFormatVersion = "3"`, `generatedAt` a 8 526 položek `stopGroups`. Skupina poskytuje `node`, `cis`, `idosCategory`, `name/fullName`, `municipality`, průměr skupiny a pole `stops`. Celkem je 17 229 fyzických stanovišť s jedinečným `id`, WGS84 `lon/lat`, `gtfsIds`, `mainTrafficType` a seznamem linek. Žádná skupina nemá prázdné `stops`.
 
-## `stops.json`
+**Samotné `node`, `cis` ani `uniqueName` nejsou globálně jedinečné.** Například Anděl, Na Knížecí a Pivovarská sdílejí `node = 1040`; dvě různě vymezené skupiny hlavního nádraží sdílejí i `node/cis/category`. Adaptér nikdy nesloučí záznamy jen podle těchto neúplných klíčů. Používá složenou identitu `asw:{node}:cis:{cis}:cat:{idosCategory}:p:{nejmenší_oficiální_id_stanoviště}`. Poslední složka je stabilní zdrojová kotva, nikoli index nebo název. Změna skladby, která kotvu změní, znamená změnu vazby k revizi. Herní automatická identita je `pid-group:{id_skupiny}`; ruční propojení má samostatné `manual:UUID`.
 
-Ve verzi `3e83b27` měl soubor pouze **2 bajty bílých znaků**, nikoli JSON data. V následující verzi `1aefd16` byl prázdný soubor odstraněný. Při této inspekci ještě chybí skutečná struktura skupin a stanovišť, kterou potřebujeme k doložení vazeb. Inspekce může načíst také ZIP se skutečným `stops.json`; chybějící či prázdné vstupy jasně oznámí a sama žádné zdrojové soubory nemaže.
+Přesná vazba stanoviště používá buď jediný odpovídající `gtfsIds`, nebo shodu oficiálních ASW složek s jedinečným fyzickým `id = node/stop`, včetně kontroly uzlu skupiny. **Přípona `P` se neodstraňuje, názvy ani vzdálenost neslouží k propojení.** 13 180 bodů se shoduje přesně přes GTFS alias; celkem lze jednoznačně přiřadit 15 910 aktivních bodů. U 208 chybí doložená vazba. Všechny fyzické body jsou zachované; bez doložené aktivní obsluhy nevstupují do herního středu.
 
-## `Linky_7d_WGS84.json`
+`Linky_7d_WGS84.json` obsahuje 1 297 variant, 1 236 MultiLineString a 61 LineString. `route_id` má 853 různých hodnot; varianty stejného ID mají shodný druh, číslo a barvu. Agregace zachovává všechny oddělené části a 1 101 102 původních vrcholů. `Shape_Length` se nepoužívá jako délka v metrech. Oficiální `route_color` se přebírá jako bezpečně validovaná šestice hexadecimálních číslic.
 
-Dosud není dodaný. Přijímá se původní JSON, `Linky_7d_WGS84.json.gz` nebo ZIP obsahující původní `Linky_7d_WGS84.json`, případně v podadresáři. Komprese nemění zdrojové atributy ani geometrii; inspekce eviduje kontrolní součet rozbalených bajtů. Podrobnosti: [návod k předání dat](../raw/pid/README.md).
+## Doprava, obsluha a konečné
 
-Příjem komprimovaného souboru je podpora kontroly vstupu. Nejde o již dokončený adaptér, vykreslování linek nebo denní aktualizaci aplikace. Licence, CORS a platnost celé trojice zůstávají neověřené.
+Kódy `route_type` odpovídají druhům pojmenovaným v příslušných zdrojových záznamech a GTFS: 0 tramvaj, 1 metro, 2 vlak, 3 autobus, 4 přívoz, 7 pozemní lanovka, 11 trolejbus. Dodané aktivní geodata obsahují 0/1/2/3/4/11, nikoli 7; současné skupiny přesto zachovávají i fyzické body lanovky bez prokázané aktivní obsluhy. Neznámý kód odmítne novou verzi.
+
+Každé `routes_id` aktivního bodu se propojuje **přesnou rovností** na `route_id` geometrie linky. Všechny uvedené linky existují. Pro konkrétní den zastávkového zdroje se vyberou jen varianty s příslušným `validity`. Jejich druhy a souhrn nočního příznaku ve všech záznamech odpovídají `route_type` a `is_night` bodu. Denní/noční obsluha jednotlivého druhu se proto odvozuje z konkrétních doložených linek; seznamy agregovaných atributů se nespojují podle pořadí.
+
+Aktivita nevyžaduje aktuální odjezd ani odchozí spoj. `stops.lines.exitOnly` je doložené například u Anděla `1040/11`; tento bod je zachovaný jako aktivní noční autobusové stanoviště příslušného zdrojového období. Body bez aktivních doložených linek nejsou povolenými herními zastávkami. Zdroj nerozlišuje samostatným spolehlivým příznakem všechny možné pomocné provozní body, proto se jejich veřejnost nevymýšlí podle názvu nebo blízkosti.
+
+## Platnost a geografická omezení
+
+Aktivní body deklarují jediný den `20260820`. Varianty tras deklarují dny od `20260820` do `20260826`. Naopak `stops.generatedAt = 2026-10-15T03:52:54` je říjnové a nemá uvedený offset. **Srpnovou aktivitu nelze bez revize kombinovat s říjnovou skladbou a polohami jako dnešní data.** U některých stanovišť se navíc mění poloha či obsluha. K dispozici je proto referenční snapshot s 8 066 herními jednotkami s obsluhou ve zdrojovém období a globálním stavem `review`; povolenost se vrací jako „nelze určit“.
+
+Například Anděl má dvě relevantní metrová stanoviště `1040/101` a `1040/102`. Průměr původních říjnových fyzických bodů je `[14.4037690, 50.0699500]`, zatímco srpnový aktivní zdroj má pro tyto body jiné souřadnice. Obě sady zůstávají uložené samostatně; tento výpočet se nevydává za potvrzení dnešní povolené oblasti. Smíšený průměr celého uzlu ani autobusová/tramvajová stanoviště se pro střed metra nepoužívají.
+
+Samostatně doložený reprezentativní bod železniční/metrové stanice není v této trojici k dispozici. Automatika používá aritmetický průměr relevantních bodů a dovoluje odůvodněnou ruční korekci. Vzdálenost počítá Turf jako velkou kružnici na kouli, nikoli v pixelech ani jako metry z rozdílu stupňů. Nezaokrouhlují se ani nezjednodušují zdrojové geometrie.
+
+Licenci ani skutečný čas původního stažení dodané trojice nelze ze souborů doložit. Hodnoty proto zůstávají `null`; `preparedAt` je samostatný čas přípravy, ne datum platnosti. Při živé aktualizaci se čas převzetí zaznamená a automatické přijetí vyžaduje dnešní pražský den i konzistentní zdroje. Podrobný provoz a testy: [PID_DATA.md](../../docs/PID_DATA.md).

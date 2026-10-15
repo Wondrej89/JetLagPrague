@@ -253,3 +253,4 @@ export function loadDraft(storage: DraftStorage): WorldDraft | null {
 export * from './administrative';
 export * from './pid-snapshot';
 export * from './game-stops';
+export * from './pid-adapter';
