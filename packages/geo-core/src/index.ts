@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { booleanPointInPolygon, booleanValid, circle, distance, feature, intersect, area, kinks, polygon } from '@turf/turf';
 import type { Point, LineString, Polygon, MultiPolygon, Position } from 'geojson';
+import { gameStopConfigurationSchema, validateGameStopConfiguration } from './game-stop-configuration';
 
 export type Geometry = Point | LineString | Polygon | MultiPolygon;
 export type AreaGeometry = Polygon | MultiPolygon;
@@ -97,6 +98,7 @@ const geoLayerSchema = z.object({
 const worldSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION), id, title: text.min(1), updatedAt: z.iso.datetime(),
   layers: z.array(geoLayerSchema).min(1).max(200),
+  gameStops: gameStopConfigurationSchema.optional(),
 });
 export type GeoFeature = z.infer<typeof geoFeatureSchema>;
 export type GeoLayer = z.infer<typeof geoLayerSchema>;
@@ -117,6 +119,7 @@ export function validateWorld(input: unknown): WorldDraft {
   const parsed = worldSchema.safeParse(candidate);
   if (!parsed.success) throw new Error(`Neplatný datový balíček: ${parsed.error.issues.slice(0, 6).map(i => `${i.path.join('.')}: ${i.message}`).join('; ')}`);
   const world = parsed.data;
+  if (world.gameStops) validateGameStopConfiguration(world.gameStops);
   if (world.layers.filter(l => l.kind === 'game_area').length !== 1) throw new Error('Svět musí mít právě jednu vrstvu Herní oblast.');
   const ids = new Set<string>();
   for (const layer of world.layers) {
@@ -248,3 +251,5 @@ export function loadDraft(storage: DraftStorage): WorldDraft | null {
 }
 
 export * from './administrative';
+export * from './pid-snapshot';
+export * from './game-stops';

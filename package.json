@@ -20,7 +20,9 @@
     "test:e2e": "playwright test",
     "data:prepare": "tsx scripts/prepare-administrative.ts",
     "data:check": "tsx scripts/check-administrative.ts",
-    "data:bundle": "npm run data:prepare -- --input data/raw/mestskecasti.geojson --metadata data/source-metadata/municipal.json --code-field kod_mc --name-field nazev_mc && npm run data:prepare -- --input data/raw/katastralni-uzemi-praha.geojson --metadata data/source-metadata/cadastral.json --code-field kod_ku --name-field naz_ku --filter-field kod_obec --filter-value 554782"
+    "data:bundle": "npm run data:prepare -- --input data/raw/mestskecasti.geojson --metadata data/source-metadata/municipal.json --code-field kod_mc --name-field nazev_mc && npm run data:prepare -- --input data/raw/katastralni-uzemi-praha.geojson --metadata data/source-metadata/cadastral.json --code-field kod_ku --name-field naz_ku --filter-field kod_obec --filter-value 554782",
+    "pid:inspect": "tsx scripts/inspect-pid.ts",
+    "pid:download": "tsx scripts/download-pid.ts"
   },
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "2.20.2",

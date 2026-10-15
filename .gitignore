@@ -6,3 +6,8 @@ dist/
 playwright-report/
 test-results/
 *.tsbuildinfo
+
+# Local source inspections and complete raw PID download batches
+data/reports/
+data/raw/pid/download-*/
+data/raw/pid/.download-*/
