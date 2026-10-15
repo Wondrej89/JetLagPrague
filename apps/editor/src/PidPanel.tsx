@@ -4,7 +4,7 @@ import type { PidComparison, PidFilters, PidSummary, PidView } from './pid-types
 
 export const modeLabels: Record<TransportMode, string> = { train: 'Vlak', metro: 'Metro', tram: 'Tramvaj', bus: 'Autobus', trolleybus: 'Trolejbus', ferry: 'Přívoz', funicular: 'Lanovka' };
 export const modeColors: Record<TransportMode, string> = { train: '#205899', metro: '#b6292b', tram: '#7a0603', bus: '#007d98', trolleybus: '#80166f', ferry: '#00959b', funicular: '#946600' };
-export const defaultPidFilters = (): PidFilters => ({ visible: false, modes: [...transportModes], dominant: '', period: 'all', search: '', routesVisible: false, routeSearch: '', selectedRoute: '', onlySelectedRoute: false });
+export const defaultPidFilters = (): PidFilters => ({ visible: false, modes: [...transportModes], dominant: '', period: 'all', search: '', routesVisible: false, routeSearch: '', selectedRoute: '', onlySelectedRoute: false, territoryOnly: false });
 
 export function PidControls({ view, filters, onChange, onSelect, selected, onSources, busy, error, radius, onRadius, disabled }: {
   view: PidView | null; filters: PidFilters; onChange(value: PidFilters): void; onSelect(stop: GameStop): void; selected: string | null; onSources(): void; busy: boolean; error: string;

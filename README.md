@@ -18,6 +18,16 @@ První otevření v pražském dni zkusí všechny tři [oficiální URL](docs/P
 
 [Podrobný návod, architektura, pravidla a omezení PID](docs/PID_DATA.md) · [audit dodané trojice](data/source-metadata/pid-source-audit.md) · [vložení JSON/ZIP/GZIP](data/raw/pid/README.md)
 
+### Celá Praha a souhrnná úkrytová plocha
+
+Vlevo v **Herní území a pokrytí** stiskněte **Použít celé území Prahy**. Předvolba skutečně sjednotí všech 57 načtených městských částí a odstraní jejich vnitřní hranice. Zachová přesné vnější souřadnice, otvory i případné nesouvislé části; nevytváří obdélník ani konvexní obálku. Existující herní hranice se nahradí po potvrzení, vlastní objekty zůstanou zachované a změnu lze vrátit přes **Zpět**. Uložená hranice obsahuje původ, verzi, kontrolní součet a oficiální kódy podkladů. Aktualizace administrativních dat ji automaticky nezmění; nové hranice lze převzít opětovným použitím předvolby.
+
+Předvolba zapne **Pouze PID v herní oblasti**. Přepínač lze použít také s vlastní nakreslenou oblastí. Zastávky se vybírají podle referenčního bodu uvnitř nebo na hranici, linky podle skutečného dotyku či průniku celé trasy s plochou včetně otvorů a MultiPolygonů. Zachová se celá protínající linka včetně úseků mimo Prahu; samotný překryv bounding boxů nestačí. Chybějící bod se neodhaduje a bez definované oblasti je výsledek neurčitý. U uložené předvolby Prahy se filtr po obnovení stránky znovu zapne.
+
+**Zobrazit všechny úkrytové zóny** zobrazí sjednocení kruhů kolem všech nevyloučených zastávek s bodem uvnitř oblasti, oříznuté herní hranicí. Výchozí poloměr je **400 m**, jeho změna v pravidlech přepočítá plochu. Vrstva je nezávislá na hledání, dopravních filtrech, výřezu mapy i zobrazení jednotlivých zastávek. Překryvy se počítají jednou, mezery zůstávají prázdné. Souhrn ukazuje počty a plochu; zastávky k revizi jsou zahrnuté do výslovně označeného geometrického náhledu, vyloučené a neurčené body se nezahrnují.
+
+V přibaleném referenčním snapshotu vychází **1 431 zastávek a 404 linek** v Praze a přibližně **314,25 km²** spojených 400m zón. Jde o výsledek dodané verze dat, nikoli garantované dnešní pokrytí. Všech 1 431 zastávek této nekonzistentní verze vyžaduje revizi. Kruhy mají 128 geodetických úseků (odchylka obvodu přibližně 0,12 m při 400 m); rozhodnutí o konkrétním úkrytu nadále používá přímo vzdálenost v metrech. Výpočet sjednocení běží v samostatném workeru a změna vstupů zruší starý výpočet.
+
 ## Spuštění
 
 Node.js **22.12+** (ověřeno na 24.19), npm a moderní prohlížeč.
@@ -45,7 +55,7 @@ Dokumentace poskytovatele: [dlaždice a atribuce](https://github.com/mapycom/dev
 
 ## Práce s editorem
 
-1. Vyberte vrstvu **Herní oblast** a nástroj **Polygon**. Klikáním přidávejte vrcholy, uzavřete prvním vrcholem. Hranice je jeden Polygon nebo MultiPolygon; další samostatné části lze importovat jako MultiPolygon nebo vložit přes editor GeoJSON souřadnic.
+1. Použijte **Použít celé území Prahy**, nebo vyberte vrstvu **Herní oblast** a nástroj **Polygon**. Klikáním přidávejte vrcholy, uzavřete prvním vrcholem. Hranice je jeden Polygon nebo MultiPolygon; další samostatné části lze importovat jako MultiPolygon nebo vložit přes editor GeoJSON souřadnic.
 2. Pro bod, linii nebo další polygon vyberte **Vlastní objekty** nebo přidejte vrstvu. Linii dokončíte dalším kliknutím na poslední vrchol. Nástroj lze zrušit tlačítkem pod mapou.
 3. Pro otvor vyberte existující polygon a nástroj **Otvor**. Nakreslete uzavřený prstenec celý uvnitř jedné části. Validace odmítne křížení, dotyk hranic, překrývající se i vnořené otvory.
 4. Kliknutím vyberte objekt. Vpravo upravte jméno, poznámku, zdroj a potvrďte **Uložit vlastnosti**. ID, datum vytvoření/importu a zdrojové atributy jsou dostupné ve vlastnostech.

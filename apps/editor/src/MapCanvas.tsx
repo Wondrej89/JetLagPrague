@@ -3,14 +3,14 @@ import L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import 'leaflet/dist/leaflet.css';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
-import { distanceMeters, isManagedLayer, validateGeometry, type Geometry, type WorldDraft } from '@jetlag/geo-core';
+import { distanceMeters, isManagedLayer, validateGeometry, type AreaGeometry, type Geometry, type WorldDraft } from '@jetlag/geo-core';
 import type { Position, Feature } from 'geojson';
 import type { PidMapState } from './pid-types';
 import { modeColors } from './PidPanel';
 
 export type Tool = 'select' | 'point' | 'line' | 'polygon' | 'hole' | 'circle' | 'measure' | 'edit' | 'inspect';
 export interface Selection { layerId: string; featureId: string }
-export interface MapHandle { prague(): void; fit(): void; saveEdit(): void; focus(point: Position): void }
+export interface MapHandle { prague(): void; fit(): void; fitArea(geometry: AreaGeometry): void; saveEdit(): void; focus(point: Position): void }
 interface Props {
   world: WorldDraft; selected: Selection | null; tool: Tool; apiKey: string;
   pid?: PidMapState;
@@ -34,6 +34,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
   const pidStops = useRef<L.LayerGroup>(L.layerGroup());
   const pidRoutes = useRef<L.LayerGroup>(L.layerGroup());
   const pidDetails = useRef<L.LayerGroup>(L.layerGroup());
+  const coverageLayer = useRef<L.LayerGroup>(L.layerGroup());
   const pidMarker = useRef<L.Marker | null>(null);
   const pidRenderer = useRef<L.Canvas | null>(null);
   const pidHit = useRef<(point: L.LatLng) => string | null>(() => null);
@@ -45,6 +46,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     prague: () => map.current?.setView([50.0755, 14.4378], 12),
     focus: point => map.current?.setView([point[1], point[0]], Math.max(map.current?.getZoom() ?? 12, 15), { animate: false }),
     fit: () => { const bounds = drawn.current.getBounds(); if (bounds.isValid()) map.current?.fitBounds(bounds.pad(0.12)); },
+    fitArea: geometry => { const data: Feature = { type: 'Feature', properties: {}, geometry }; const bounds = L.geoJSON(data).getBounds(); if (bounds.isValid()) map.current?.fitBounds(bounds.pad(0.05), { animate: false }); },
     saveEdit: () => {
       const selection = current.current.selected;
       const layer = selection && featureLayers.current.get(`${selection.layerId}/${selection.featureId}`);
@@ -62,6 +64,8 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     map.current = instance;
     drawn.current.addTo(instance);
     measurement.current.addTo(instance);
+    const coveragePane = instance.createPane('hiding-coverage'); coveragePane.style.zIndex = '350'; coveragePane.style.pointerEvents = 'none';
+    coverageLayer.current.addTo(instance);
     const pane = instance.createPane('pid-data'); pane.style.zIndex = '450'; pane.style.pointerEvents = 'none';
     pidRenderer.current = L.canvas({ padding: 0.2, pane: 'pid-data' });
     pidRoutes.current.addTo(instance); pidStops.current.addTo(instance); pidDetails.current.addTo(instance);
@@ -268,5 +272,15 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     if (props.pid?.moveReference) pidMarker.current.dragging?.enable(); else pidMarker.current.dragging?.disable();
   }, [props.pid?.selected?.point, props.pid?.moveReference]);
 
-  return <div ref={container} className="map-canvas" aria-label="Mapa geografického editoru" data-testid="map" data-pid-zone-type={props.pid?.zone?.type ?? 'none'} data-pid-route-count={props.pid?.routes.length ?? 0} data-pid-stop-count={props.pid?.stops.length ?? 0} />;
+  useEffect(() => {
+    const instance = map.current; if (!instance) return;
+    const layers = coverageLayer.current; layers.clearLayers();
+    if (!props.pid?.coverage) return;
+    const renderer = L.canvas({ pane: 'hiding-coverage', padding: 0.2 });
+    const coverage: Feature = { type: 'Feature', properties: {}, geometry: props.pid.coverage };
+    L.geoJSON(coverage, { pmIgnore: true, interactive: false, pane: 'hiding-coverage', style: { renderer, color: props.pid.coverageReview ? '#a66b20' : '#267a52', weight: 1, fillColor: props.pid.coverageReview ? '#d6a440' : '#42a875', fillOpacity: 0.28 } }).addTo(layers);
+    return () => { layers.clearLayers(); renderer.remove(); };
+  }, [props.pid?.coverage, props.pid?.coverageReview]);
+
+  return <div ref={container} className="map-canvas" aria-label="Mapa geografického editoru" data-testid="map" data-pid-coverage-type={props.pid?.coverage?.type ?? 'none'} data-pid-zone-type={props.pid?.zone?.type ?? 'none'} data-pid-route-count={props.pid?.routes.length ?? 0} data-pid-stop-count={props.pid?.stops.length ?? 0} />;
 });

@@ -11,6 +11,9 @@ import { usePid } from './use-pid';
 import { defaultPidFilters, PidControls, PidSourceDialog } from './PidPanel';
 import { PidStopProperties } from './PidStopProperties';
 import type { RouteDrawing, ViewBounds } from './pid-types';
+import { setGameArea, type TerritoryMembership, type HidingCoverage } from '@jetlag/geo-core';
+import { territoryTask } from './territory-task';
+import { TerritoryControls } from './TerritoryControls';
 
 interface History { past: WorldDraft[]; present: WorldDraft; future: WorldDraft[] }
 const toolNames: Record<Tool, string> = { select: 'Výběr', point: 'Bod', line: 'Linie', polygon: 'Polygon', hole: 'Otvor', circle: 'Kruh', measure: 'Měření', edit: 'Úprava vrcholů', inspect: 'Ověřit polohu' };
@@ -29,6 +32,7 @@ export function App() {
   });
   const [history, setHistory] = useState<History>({ past: [], present: initial.world, future: [] });
   const world = history.present;
+  const latestWorld = useRef(world); latestWorld.current = world;
   const [activeId, setActiveId] = useState(world.layers.find(l => l.kind === 'custom')?.id ?? world.layers[0].id);
   const [selected, setSelected] = useState<Selection | null>(null);
   const [tool, setTool] = useState<Tool>('select');
@@ -71,7 +75,45 @@ export function App() {
   const pidPreviewStop: GameStop | null = useMemo(() => pidStop && (pidPreview || pid.deriving) ? { ...pidStop, point: pidPreview ?? pidStop.point, eligibility: 'review', reasons: [...pidStop.reasons, pid.deriving ? 'Přepočítávám pravidla PID; vyčkejte na ověřený výsledek.' : 'Návrh referenčního bodu ještě nebyl schválen.'] } : pidStop, [pidStop, pidPreview, pid.deriving]);
   const gameGeometry = world.layers.find(layer => layer.kind === 'game_area')?.features[0]?.geometry;
   const pidArea = gameGeometry && isArea(gameGeometry) ? gameGeometry : null;
-  const pidStops = useMemo(() => pidFilters.visible && pid.view ? filterGameStops(pid.view.stops, { modes: pidFilters.modes, dominant: pidFilters.dominant || undefined, period: pidFilters.period, search: pidFilters.search }) : [], [pid.view, pidFilters.visible, pidFilters.modes, pidFilters.dominant, pidFilters.period, pidFilters.search]);
+  const municipal = world.layers.find(layer => layer.dataset?.id === 'praha-municipal');
+  const presetActivated = useRef(false);
+  useEffect(() => {
+    if (!presetActivated.current && world.layers.find(layer => layer.kind === 'game_area')?.features[0]?.attributes.preset === 'praha-municipal-union') {
+      presetActivated.current = true; setPidFilters(filters => ({ ...filters, territoryOnly: true }));
+    }
+  }, [world]);
+  const [pragueBusy, setPragueBusy] = useState(false);
+  const [membershipState, setMembershipState] = useState<{ view: typeof pid.view; area: AreaGeometry; value?: TerritoryMembership; error?: string } | null>(null);
+  const membership = !pid.deriving && membershipState?.view === pid.view && membershipState?.area === pidArea ? membershipState.value : undefined;
+  const membershipError = membershipState?.view === pid.view && membershipState?.area === pidArea ? membershipState.error : '';
+  const [showCoverage, setShowCoverage] = useState(false);
+  const [coverageState, setCoverageState] = useState<{ stops: GameStop[]; area: AreaGeometry; radius: number; value?: HidingCoverage; error?: string } | null>(null);
+  const coverageCurrent = showCoverage && !pid.deriving && coverageState?.stops === pid.view?.stops && coverageState?.area === pidArea && coverageState?.radius === pidConfiguration.radiusMeters;
+  const coverage = coverageCurrent ? coverageState?.value ?? null : null;
+  const coverageError = coverageCurrent ? coverageState?.error : '';
+  const filteredPidView = useMemo(() => {
+    if (!pid.view || !pidFilters.territoryOnly) return pid.view;
+    const stopIds = new Set(membership?.stopIds), routeIds = new Set(membership?.routeIds);
+    return { ...pid.view, stops: pid.view.stops.filter(stop => stopIds.has(stop.id)), routes: pid.view.routes.filter(route => routeIds.has(route.id)) };
+  }, [pid.view, pidFilters.territoryOnly, membership]);
+  const pidStops = useMemo(() => pidFilters.visible && filteredPidView ? filterGameStops(filteredPidView.stops, { modes: pidFilters.modes, dominant: pidFilters.dominant || undefined, period: pidFilters.period, search: pidFilters.search }) : [], [filteredPidView, pidFilters.visible, pidFilters.modes, pidFilters.dominant, pidFilters.period, pidFilters.search]);
+  useEffect(() => {
+    if (!pid.ready || !pid.view || !pidArea || !pidFilters.territoryOnly || pid.deriving) return;
+    let cancelled = false;
+    const view = pid.view, area = pidArea;
+    pidRequest<TerritoryMembership>({ action: 'membership', area, configuration: pidConfiguration }).then(value => { if (!cancelled) setMembershipState({ view, area, value }); }).catch(error => { if (!cancelled) setMembershipState({ view, area, error: errorText(error) }); });
+    return () => { cancelled = true; };
+  }, [pid.ready, pid.view, pidArea, pidFilters.territoryOnly, pidConfiguration, pidRequest, pid.deriving]);
+  useEffect(() => {
+    if (pidFilters.territoryOnly && membership && pidSelected && !membership.stopIds.includes(pidSelected)) setPidSelected(null);
+  }, [pidFilters.territoryOnly, membership, pidSelected]);
+  useEffect(() => {
+    if (!showCoverage || !pid.view || !pidArea || pid.deriving) return;
+    const controller = new AbortController(); const stops = pid.view.stops, area = pidArea, radius = pidConfiguration.radiusMeters;
+    setCoverageState(null);
+    territoryTask<HidingCoverage>({ action: 'coverage', stops, area, radius }, controller.signal).then(value => setCoverageState({ stops, area, radius, value })).catch(error => { if (!controller.signal.aborted) setCoverageState({ stops, area, radius, error: errorText(error) }); });
+    return () => controller.abort();
+  }, [showCoverage, pid.view, pidArea, pid.deriving, pidConfiguration.radiusMeters]);
   useEffect(() => { setPidPreview(null); setPidMoving(false); }, [pidSelected]);
   useEffect(() => { if (tool !== 'select') setPidMoving(false); }, [tool]);
   useEffect(() => {
@@ -90,9 +132,22 @@ export function App() {
   useEffect(() => {
     if (!pid.ready || !pid.view || !pidFilters.routesVisible) { setPidRoutes([]); return; }
     let cancelled = false;
-    pidRequest<RouteDrawing[]>({ action: 'routes', bounds: pidBounds, modes: pidFilters.modes, selected: pidFilters.selectedRoute, onlySelected: pidFilters.onlySelectedRoute }).then(value => { if (!cancelled) setPidRoutes(value); }).catch(error => { if (!cancelled) setError(errorText(error)); });
+    setPidRoutes([]);
+    pidRequest<RouteDrawing[]>({ action: 'routes', bounds: pidBounds, modes: pidFilters.modes, selected: pidFilters.selectedRoute, onlySelected: pidFilters.onlySelectedRoute, allowedIds: pidFilters.territoryOnly ? membership?.routeIds ?? [] : undefined }).then(value => { if (!cancelled) setPidRoutes(value); }).catch(error => { if (!cancelled) setError(errorText(error)); });
     return () => { cancelled = true; };
-  }, [pid.ready, pid.view, pidBounds, pidFilters.modes, pidFilters.routesVisible, pidFilters.selectedRoute, pidFilters.onlySelectedRoute, pidRequest]);
+  }, [pid.ready, pid.view, pidBounds, pidFilters.modes, pidFilters.routesVisible, pidFilters.selectedRoute, pidFilters.onlySelectedRoute, pidFilters.territoryOnly, membership, pidRequest]);
+  async function applyPraguePreset() {
+    if (!municipal || pragueBusy) return;
+    if (pidArea && !confirm('Nahradit současnou herní hranici sjednocením 57 městských částí Prahy? Vlastní objekty zůstanou zachované. Změnu lze vrátit tlačítkem Zpět.')) return;
+    setPragueBusy(true);
+    try {
+      const boundary = await territoryTask<GeoFeature>({ action: 'prague', layer: municipal });
+      const current = latestWorld.current;
+      if (current.layers.find(layer => layer.dataset?.id === 'praha-municipal')?.dataset?.checksum !== municipal.dataset?.checksum) throw new Error('Během výpočtu se změnil zdroj hranic. Použijte předvolbu znovu.');
+      commit(setGameArea(current, boundary)); setTool('select'); setSelected(null); setPidSelected(null);
+      setPidFilters(filters => ({ ...filters, territoryOnly: true })); if (isArea(boundary.geometry)) map.current?.fitArea(boundary.geometry);
+    } catch (error) { setError(errorText(error)); } finally { setPragueBusy(false); }
+  }
   function selectPid(stop: GameStop, focus = false) {
     setPidSelected(stop.id); setSelected(null); setTool(value => value === 'inspect' ? 'inspect' : 'select');
     if (focus && stop.point) map.current?.focus(stop.point);
@@ -184,7 +239,7 @@ export function App() {
   const areaReady = world.layers.find(l => l.kind === 'game_area')!.features.length > 0;
 
   return <div className="app-shell" aria-busy={hydrating}>
-    {hydrating && <div className="modal-backdrop"><div className="import-dialog" role="status">Načítám uložený draft…</div></div>}
+    {(hydrating || pragueBusy) && <div className="modal-backdrop"><div className="import-dialog" role="status">{pragueBusy ? 'Sjednocuji skutečné hranice 57 městských částí…' : 'Načítám uložený draft…'}</div></div>}
     <header className="app-header">
       <div className="brand-mark" aria-hidden="true">J<span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 13 13 3M3 3h10v10" /></svg></span></div>
       <div className="brand-copy"><span className="eyebrow">JET LAG / PRAHA</span><h1>Geografický editor</h1></div>
@@ -218,7 +273,8 @@ export function App() {
           </fieldset></form></details>}
         </article>)}</div>
         <button className="add-layer" disabled={editing} onClick={() => { const layer = newLayer(`Vrstva ${world.layers.length}`); attempt(() => commit({ ...world, layers: [...world.layers, layer] })); setActiveId(layer.id); }}>+ Přidat vrstvu</button>
-        <PidControls disabled={editing} view={pid.view} filters={pidFilters} onChange={setPidFilters} onSelect={stop => selectPid(stop, true)} selected={pidSelected} onSources={() => setPidSources(true)} busy={pid.busy} error={pid.error} radius={pidConfiguration.radiusMeters} onRadius={radiusMeters => attempt(() => commit({ ...world, gameStops: { ...pidConfiguration, radiusMeters } }))} />
+        <TerritoryControls hasArea={!!pidArea} hasMunicipal={!!municipal} busy={pragueBusy} disabled={editing} onPrague={() => void applyPraguePreset()} onFit={() => { if (pidArea) map.current?.fitArea(pidArea); }} territoryOnly={pidFilters.territoryOnly} onFilter={territoryOnly => setPidFilters(filters => ({ ...filters, territoryOnly }))} membershipStatus={!pidArea ? 'Herní oblast není definovaná; polohu nelze určit.' : membershipError || (membership ? `${membership.stopIds.length} zastávek a ${membership.routeIds.length} linek v oblasti · ${membership.unknownStops} neurčených bodů` : 'Ověřuji polohu zastávek a průnik tras…')} showCoverage={showCoverage} onCoverage={setShowCoverage} radius={pidConfiguration.radiusMeters} coverage={coverage} coverageStatus={!pidArea ? 'Chybí herní oblast.' : coverageError || (coverage ? coverage.geometry ? 'Společná úkrytová plocha zobrazena.' : 'Žádná společná úkrytová plocha.' : 'Počítám sjednocení všech úkrytových zón…')} />
+        <PidControls disabled={editing} view={filteredPidView} filters={pidFilters} onChange={setPidFilters} onSelect={stop => selectPid(stop, true)} selected={pidSelected} onSources={() => setPidSources(true)} busy={pid.busy} error={pid.error} radius={pidConfiguration.radiusMeters} onRadius={radiusMeters => attempt(() => commit({ ...world, gameStops: { ...pidConfiguration, radiusMeters } }))} />
         <div className="objects-heading"><h3>Objekty <span>{active.features.length}</span></h3><button onClick={() => map.current?.fit()}>Zobrazit vše</button></div>
         <label className="search-label"><input aria-label="Hledat objekty aktivní vrstvy" placeholder="Vyhledat oblast nebo objekt…" value={filter} onChange={e => setFilter(e.target.value)} /></label>
         <div className="object-list">{active.features.filter(f => f.name.toLocaleLowerCase('cs').includes(filter.toLocaleLowerCase('cs'))).map(f => <button disabled={editing} key={f.id} className={selected?.featureId === f.id && selected.layerId === active.id ? 'chosen' : ''} onClick={() => { setPidSelected(null); setSelected({ layerId: active.id, featureId: f.id }); setTool('select'); }}><span aria-hidden="true">{f.geometry.type === 'Point' ? '●' : f.geometry.type === 'LineString' ? '╱' : '⬡'}</span><span>{f.name}<small>{f.circle ? 'Metrický kruh' : f.geometry.type}</small></span></button>)}
@@ -233,7 +289,7 @@ export function App() {
           <div className="history-buttons"><button aria-label="Zpět" disabled={!history.past.length || editing} onClick={() => undo()}>↶</button><button aria-label="Znovu" disabled={!history.future.length || editing} onClick={() => undo(true)}>↷</button></div>
         </div>
         <div className="map-stage">
-          <MapCanvas ref={map} pid={{ stops: pidStops, routes: pidRoutes, selected: pidPreviewStop, platforms: pidPlatforms, showPlatforms: pidShowPlatforms, zone: pidZone, moveReference: pidMoving, highlightedRoute: pidFilters.selectedRoute, onSelect: id => { const stop = pid.view?.stops.find(value => value.id === id); if (stop) selectPid(stop); }, onReference: setPidPreview, onBounds: setPidBounds }} testPoint={testPoint} onTestPoint={setTestPoint} world={world} selected={selected} tool={tool} apiKey={apiKey} onSelect={selection => { setPidSelected(null); setSelected(selection); setActiveId(selection.layerId); }} onCreate={geometry => attempt(() => addGeometry(geometry))} onCircle={center => attempt(() => addGeometry(makeMetricCircle(center, Number(radius)), { center, radiusMeters: Number(radius) }))} onEdit={geometry => attempt(() => { updateFeature({ geometry }); setTool('select'); })} onMeasure={setMeasurement} onError={setError} onTileStatus={setTileStatus} />
+          <MapCanvas ref={map} pid={{ stops: pidStops, routes: pidRoutes, selected: pidPreviewStop, platforms: pidPlatforms, showPlatforms: pidShowPlatforms, zone: pidZone, coverage: coverage?.geometry ?? null, coverageReview: !!coverage?.reviewStops, moveReference: pidMoving, highlightedRoute: pidFilters.selectedRoute, onSelect: id => { const stop = pid.view?.stops.find(value => value.id === id); if (stop) selectPid(stop); }, onReference: setPidPreview, onBounds: setPidBounds }} testPoint={testPoint} onTestPoint={setTestPoint} world={world} selected={selected} tool={tool} apiKey={apiKey} onSelect={selection => { setPidSelected(null); setSelected(selection); setActiveId(selection.layerId); }} onCreate={geometry => attempt(() => addGeometry(geometry))} onCircle={center => attempt(() => addGeometry(makeMetricCircle(center, Number(radius)), { center, radiusMeters: Number(radius) }))} onEdit={geometry => attempt(() => { updateFeature({ geometry }); setTool('select'); })} onMeasure={setMeasurement} onError={setError} onTileStatus={setTileStatus} />
           {tileStatus !== 'ready' && <div className={`map-notice ${tileStatus === 'error' ? 'warning' : ''}`} role="status"><strong>{tileStatus === 'missing' ? 'Chybí API klíč Mapy.com' : tileStatus === 'error' ? 'Mapový podklad se nepodařilo načíst' : 'Načítám mapový podklad…'}</strong><span>{tileStatus === 'missing' ? 'Přidejte klientský klíč v Nastavení mapy nebo do .env.local. Geometrie lze editovat i bez podkladu.' : tileStatus === 'error' ? 'Ověřte klíč, povolený HTTP referer, službu maptiles, limit a síťové připojení. Vaše geometrie zůstávají zachované.' : 'Mapy.com REST API'}</span></div>}
           <button className="prague-button" onClick={() => map.current?.prague()}>⌖ Zpět na Prahu</button>
           <div className="map-help" aria-live="polite"><strong>{toolNames[tool]}</strong><span>{tool === 'select' ? 'Kliknutím vyberte objekt. Pro kreslení zvolte nástroj.' : tool === 'inspect' ? 'Klikněte na mapu nebo přetáhněte testovací špendlík. Výsledky jsou vpravo.' : tool === 'point' ? 'Klikněte na mapu a vložte bod.' : tool === 'circle' ? 'Kliknutím určete střed kruhu.' : tool === 'measure' ? measurement === null ? 'Klikněte na dva body. Měří se vzdálenost po povrchu Země.' : `${measurement.toLocaleString('cs', { maximumFractionDigits: 1 })} m · ${(measurement / 1000).toLocaleString('cs', { maximumFractionDigits: 3 })} km. Další kliknutí začne nové měření.` : tool === 'edit' ? 'Přetáhněte vrcholy. Klik na hranu přidá vrchol, pravé tlačítko vrchol odstraní. Potom změny uložte.' : tool === 'hole' ? 'Nakreslete otvor uvnitř vybraného polygonu. Kliknutím na první vrchol jej uzavřete.' : 'Klikáním přidávejte vrcholy. Polygon dokončíte prvním, linii posledním vrcholem.'}</span>

@@ -254,3 +254,4 @@ export * from './administrative';
 export * from './pid-snapshot';
 export * from './game-stops';
 export * from './pid-adapter';
+export * from './territory';

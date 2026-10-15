@@ -1,4 +1,4 @@
-import { buildGameStops, comparePidSnapshots, pragueDate, readPidSnapshot, referenceZoneGeometry, type PidSnapshot } from '@jetlag/geo-core';
+import { buildGameStops, comparePidSnapshots, pragueDate, readPidSnapshot, referenceZoneGeometry, territoryMembership, type PidSnapshot } from '@jetlag/geo-core';
 import { indexedPidStorage, readPidAttempt, writePidAttempt } from './pid-store';
 import { decodePidData, loadLivePid, loadPublishedPid } from './pid-fetch';
 import type { PidCommand, PidComparison, PidSummary, PidView, RouteDrawing } from './pid-types';
@@ -54,9 +54,15 @@ async function run(command: PidCommand): Promise<unknown> {
   if (command.action === 'platforms') {
     const groups = new Set(command.groupIds); return snapshot?.platforms.filter(platform => groups.has(platform.groupId)) ?? [];
   }
+  if (command.action === 'membership') {
+    if (!snapshot) throw new Error('Chybí snapshot pro prostorový filtr.');
+    return territoryMembership(buildGameStops(snapshot, command.configuration), snapshot.routes, command.area);
+  }
   if (command.action === 'routes') {
     const output: RouteDrawing[] = []; const [west, south, east, north] = command.bounds;
+    const allowed = command.allowedIds && new Set(command.allowedIds);
     for (const route of snapshot?.routes ?? []) {
+      if (allowed && !allowed.has(route.id)) continue;
       if (!command.modes.includes(route.mode) || (command.onlySelected && route.id !== command.selected)) continue;
       const parts = route.geometry.type === 'LineString' ? [route.geometry.coordinates] : route.geometry.coordinates;
       const visible = parts.filter((_part, index) => { const bounds = route.partBounds?.[index]; return !bounds || bounds[0] <= east && bounds[2] >= west && bounds[1] <= north && bounds[3] >= south; });
@@ -85,6 +91,6 @@ self.onmessage = (event: MessageEvent<PidCommand & { requestId: number }>) => {
     try { const value = await run(command); if (value instanceof ArrayBuffer) self.postMessage({ requestId: command.requestId, value }, { transfer: [value] }); else self.postMessage({ requestId: command.requestId, value }); }
     catch (error) { self.postMessage({ requestId: command.requestId, error: message(error) }); }
   };
-  if (['derive', 'platforms', 'routes', 'zone', 'export'].includes(command.action)) void work();
+  if (['derive', 'platforms', 'routes', 'zone', 'membership', 'export'].includes(command.action)) void work();
   else pending = pending.then(work, work);
 };
