@@ -34,3 +34,21 @@ test('celé skutečné pražské vrstvy se zobrazují nezávisle a poloha se vyh
   await expect(page.getByLabel('Zobrazit Katastrální území Prahy', { exact: true })).toBeChecked();
   expect((await storedWorld(page)).layers.map(l => l.id)).toEqual(saved.layers.map(l => l.id));
 });
+
+test('ověření polohy se samo doplní, i když uživatel spustí režim před načtením hranic', async ({ page }) => {
+  let release: () => void = () => undefined;
+  const gate = new Promise<void>(resolve => { release = resolve; });
+  await page.route('https://api.mapy.com/**', route => route.abort());
+  await page.route('**/administrative/index.json', async route => { await gate; await route.continue(); });
+  await page.goto('/');
+  const inspect = page.getByRole('button', { name: 'Ověřit polohu', exact: true });
+  try {
+    await inspect.click();
+    const box = (await page.getByTestId('map').boundingBox())!;
+    await page.mouse.click(box.x + box.width / 2, box.y + box.height / 2);
+    await expect(page.getByTestId('position-municipal')).toContainText('Nelze určit');
+  } finally { release(); }
+  await expect(page.getByTestId('position-municipal')).toContainText('Praha 2', { timeout: 15000 });
+  await expect(page.getByTestId('position-cadastral')).toContainText('Vinohrady');
+  await expect(inspect).toHaveAttribute('aria-pressed', 'true');
+});

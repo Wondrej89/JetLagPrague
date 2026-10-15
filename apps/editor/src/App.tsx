@@ -81,7 +81,7 @@ export function App() {
   }, []);
 
   useEffect(() => {
-    if (hydrating || tool !== 'select' || !bundled.length || !bundled.some(l => !world.layers.some(w => w.id === l.id))) return;
+    if (hydrating || !['select', 'inspect'].includes(tool) || !bundled.length || !bundled.some(l => !world.layers.some(w => w.id === l.id))) return;
     try {
       let enriched = world;
       for (const layer of bundled) if (!enriched.layers.some(l => l.id === layer.id)) enriched = applyAdministrativeUpdate(enriched, layer);
