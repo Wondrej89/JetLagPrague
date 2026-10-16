@@ -36,9 +36,17 @@ Příčinu původního výpadku dokumentuje [audit aktualizací z 16. 10.](docs/
 
 ### Celá Praha a souhrnná úkrytová plocha
 
-Vlevo v **Herní území a pokrytí** stiskněte **Použít celé území Prahy**. Předvolba skutečně sjednotí všech 57 načtených městských částí a odstraní jejich vnitřní hranice. Zachová přesné vnější souřadnice, otvory i případné nesouvislé části; nevytváří obdélník ani konvexní obálku. Existující herní hranice se nahradí po potvrzení, vlastní objekty zůstanou zachované a změnu lze vrátit přes **Zpět**. Uložená hranice obsahuje původ, verzi, kontrolní součet a oficiální kódy podkladů. Aktualizace administrativních dat ji automaticky nezmění; nové hranice lze převzít opětovným použitím předvolby.
+Každý **nový svět** automaticky obsahuje celou Prahu jako jediný objekt vrstvy **Herní oblast**. Geometrie pochází z předpočítaného [GeoJSON](apps/editor/public/defaults/prague-game-area.geojson), vytvořeného funkcí `municipalGameArea()` z ověřené vrstvy všech 57 městských částí. Vnitřní správní hranice jsou odstraněné skutečným sjednocením; vnější souřadnice, případné otvory a oddělené části zůstávají přesné. Při otevření ani obnově se už sjednocení nepočítá. Výchozí Praha funguje na novém zařízení i po smazání úložiště prohlížeče a nezávisí na úspěšném načtení samostatných administrativních vrstev.
 
-Předvolba při použití zapne **Pouze PID v herní oblasti**. Přepínač lze použít také s vlastní nakreslenou oblastí. Zastávky se vybírají podle referenčního bodu uvnitř nebo na hranici, linky podle skutečného dotyku či průniku celé trasy s plochou včetně otvorů a MultiPolygonů. Zachová se celá protínající linka včetně úseků mimo Prahu; samotný překryv bounding boxů nestačí. Chybějící bod se neodhaduje a bez definované oblasti je výsledek neurčitý. Při dalším otevření se obnoví uložená volba filtru, včetně vypnutí.
+Inicializace nejdřív ověří **IndexedDB**, a jen když v ní svět chybí, použije starší **localStorage**. Existující vlastní i dříve uložená pražská hranice se zachová, bez stahování nové výchozí geometrie. Teprve po dokončení inicializace se povolí automatické ukládání. Při chybě výchozího souboru se nový prázdný svět neuloží; chyba je viditelná a **Obnovit výchozí území Prahy** umožní načtení zopakovat. Poškozené uložené drafty zůstávají chráněné před přepsáním.
+
+**Starší prázdné drafty:** původní formát neuchovává vznik světa ani historii smazání hranice, proto nelze bezpečně odlišit dosud nenastavenou oblast od vědomě odstraněné. Jednorázová migrace přidá stav `legacy-empty` a zachová prázdnou oblast, všechny vlastní objekty i pravidla. Editor vysvětlí situaci a nabídne obnovení. Od této verze se vědomé odstranění eviduje jako `intentionally-empty`; reload, import/export, aktualizace zdrojů ani další nasazení oblast automaticky nevrátí. Volitelné `gameAreaInitialization` rozšiřuje stávající schéma 2, původní `newWorld()` a čtení starších verzí zůstávají kompatibilní.
+
+Tlačítko **Obnovit výchozí území Prahy** načte připravený soubor. Náhrada existující hranice vyžaduje potvrzení a lze ji vrátit přes **Zpět**; ostatní vrstvy a uživatelské úpravy se nemění. Změny oficiálních podkladů samy uloženou hranici nepřepíší. Nový výchozí polygon po úpravě podkladů připravuje správce výslovně příkazem `npm run data:default-area`.
+
+GeoJSON obsahuje celá metadata použitých podkladů (poskytovatel, URL, verze, 57 oficiálních kódů, datum převzetí, evidovaná licence a datum platnosti), SHA-256 podkladové vrstvy, vlastní geometrie i celého souboru a čas přípravy. **Nedoložená licence a datum platnosti městských částí zůstávají výslovně nedoložené**; příprava polygonu tyto údaje nevymýšlí. Herní objekt si zachovává zdrojová metadata a kontrolní součty v atributech, také při JSON/GeoJSON exportu.
+
+Nový svět bez uložených preferencí a ruční obnova zapnou **Pouze PID v herní oblasti**. Přepínač lze použít také s vlastní nakreslenou oblastí. Zastávky se vybírají podle referenčního bodu uvnitř nebo na hranici, linky podle skutečného dotyku či průniku celé trasy s plochou včetně otvorů a MultiPolygonů. Zachová se celá protínající linka včetně úseků mimo Prahu; samotný překryv bounding boxů nestačí. Chybějící bod se neodhaduje a bez definované oblasti je výsledek neurčitý. Při dalším otevření se obnoví uložená volba filtru, včetně vypnutí.
 
 **Zobrazit všechny úkrytové zóny** zobrazí sjednocení kruhů kolem všech nevyloučených zastávek s bodem uvnitř oblasti, oříznuté herní hranicí. Výchozí poloměr je **400 m**, jeho změna v pravidlech přepočítá plochu. Vrstva je nezávislá na hledání, dopravních filtrech, výřezu mapy i zobrazení jednotlivých zastávek. Překryvy se počítají jednou, mezery zůstávají prázdné. Souhrn ukazuje počty a plochu; zastávky k revizi jsou zahrnuté do výslovně označeného geometrického náhledu, vyloučené a neurčené body se nezahrnují.
 
@@ -71,7 +79,7 @@ Dokumentace poskytovatele: [dlaždice a atribuce](https://github.com/mapycom/dev
 
 ## Práce s editorem
 
-1. Použijte **Použít celé území Prahy**, nebo vyberte vrstvu **Herní oblast** a nástroj **Polygon**. Klikáním přidávejte vrcholy, uzavřete prvním vrcholem. Hranice je jeden Polygon nebo MultiPolygon; další samostatné části lze importovat jako MultiPolygon nebo vložit přes editor GeoJSON souřadnic.
+1. Nový svět už má jako **Herní oblast** celou Prahu. Pro vlastní oblast lze hranici upravit, importovat jiný polygon nebo ji smazat a nástrojem **Polygon** nakreslit novou. Klikáním přidávejte vrcholy, uzavřete prvním vrcholem. Původní Prahu vrátí **Obnovit výchozí území Prahy**. Hranice je jeden Polygon nebo MultiPolygon; další samostatné části lze importovat jako MultiPolygon nebo vložit přes editor GeoJSON souřadnic.
 2. Pro bod, linii nebo další polygon vyberte **Vlastní objekty** nebo přidejte vrstvu. Linii dokončíte dalším kliknutím na poslední vrchol. Nástroj lze zrušit tlačítkem pod mapou.
 3. Pro otvor vyberte existující polygon a nástroj **Otvor**. Nakreslete uzavřený prstenec celý uvnitř jedné části. Validace odmítne křížení, dotyk hranic, překrývající se i vnořené otvory.
 4. Kliknutím vyberte objekt. Vpravo upravte jméno, poznámku, zdroj a potvrďte **Uložit vlastnosti**. ID, datum vytvoření/importu a zdrojové atributy jsou dostupné ve vlastnostech.
@@ -107,6 +115,8 @@ GTFS import odděluje čisté jádro `pid-gtfs.ts` od ZIP/CSV a sítě ve `scrip
 GeoJSON používá **[longitude, latitude]**, volitelně třetí výškovou souřadnici. Turf počítá vzdálenost velké kružnice na kouli s poloměrem 6 371 008,8 m (nikoli elipsoidální geodézii). Metrický kruh je aproximován 128 úseky; každý vrchol leží v požadované geodetické vzdálenosti od středu. Vrcholy jsou stabilní bez ohledu na zoom. `pointInArea` používá celý polygon včetně otvorů a všech částí, nikoli obdélník nebo centroid. Vnější hranice a hranice otvoru se započítává do plochy, vnitřek otvoru se nezapočítává. Tato iterace neřeší geometrii přes datovou hranici ±180°; projekt je zaměřený na Prahu.
 
 ## Testy
+
+Testy výchozí oblasti ověřují přesnou shodu se sjednocením všech 57 částí, kontrolní součty, MultiPolygon s otvory, první otevření bez cache, pořadí úložišť, blokaci autosave během načítání/chyby, zachování vlastní i smazané oblasti, obnovu s potvrzením a PID/zóny bez ručního vytvoření hranice.
 
 ```sh
 npm test
@@ -157,6 +167,8 @@ Vstup přípravy je GeoJSON ve WGS84 / RFC 7946 a JSON metadat podle `sourceData
 ```sh
 # Opakovatelná příprava obou dodaných souborů s evidovanými metadaty:
 npm run data:bundle
+# Po změně městských částí výslovně přepočítat a commitnout výchozí GeoJSON:
+npm run data:default-area
 npm run data:check
 # Pro novou vstupní distribuci lze použít samostatnou přípravu:
 npm run data:prepare -- --input /cesta/oficialni.geojson --metadata /cesta/overena-metadata.json --code-field OFICIALNI_KOD --name-field OFICIALNI_NAZEV

@@ -12,10 +12,12 @@ import { PidControls, PidSourceDialog } from './PidPanel';
 import { readPidPreferences, writePidPreferences } from './pid-preferences';
 import { PidStopProperties } from './PidStopProperties';
 import type { RouteDrawing, ViewBounds } from './pid-types';
-import { setGameArea, type TerritoryMembership, type HidingCoverage } from '@jetlag/geo-core';
+import { type TerritoryMembership, type HidingCoverage } from '@jetlag/geo-core';
 import { territoryTask } from './territory-task';
 import { TerritoryControls } from './TerritoryControls';
 import { PidDataNotice } from './PidDataNotice';
+import { loadDefaultGameArea } from './default-game-area';
+import { DefaultAreaLoadError, initializeEditorWorld, recordGameAreaChoice, withDefaultGameArea } from './world-initialization';
 
 interface History { past: WorldDraft[]; present: WorldDraft; future: WorldDraft[] }
 const toolNames: Record<Tool, string> = { select: 'Výběr', point: 'Bod', line: 'Linie', polygon: 'Polygon', hole: 'Otvor', circle: 'Kruh', measure: 'Měření', edit: 'Úprava vrcholů', inspect: 'Ověřit polohu' };
@@ -28,18 +30,16 @@ function download(contents: string, filename: string) {
 }
 
 export function App() {
-  const [initial] = useState(() => {
-    try { return { world: loadDraft(localStorage) ?? newWorld(), error: '' }; }
-    catch { return { world: newWorld(), error: 'Uložený draft nelze načíst. Původní záznam zůstal zachován; můžete importovat zálohu. Automatické ukládání je pozastavené.' }; }
-  });
-  const [history, setHistory] = useState<History>({ past: [], present: initial.world, future: [] });
+  const [initial] = useState(newWorld);
+  const [history, setHistory] = useState<History>({ past: [], present: initial, future: [] });
   const world = history.present;
   const latestWorld = useRef(world); latestWorld.current = world;
   const [activeId, setActiveId] = useState(world.layers.find(l => l.kind === 'custom')?.id ?? world.layers[0].id);
   const [selected, setSelected] = useState<Selection | null>(null);
   const [tool, setTool] = useState<Tool>('select');
-  const [error, setError] = useState(initial.error);
-  const [storageBlocked, setStorageBlocked] = useState(!!initial.error);
+  const [error, setError] = useState('');
+  const [storageBlocked, setStorageBlocked] = useState(false);
+  const [defaultLoadFailed, setDefaultLoadFailed] = useState(false);
   const [saveStatus, setSaveStatus] = useState('');
   const [hydrating, setHydrating] = useState(true);
   const [bundled, setBundled] = useState<GeoLayer[]>([]);
@@ -79,7 +79,6 @@ export function App() {
   const pidPreviewStop: GameStop | null = useMemo(() => pidStop && (pidPreview || pid.deriving) ? { ...pidStop, point: pidPreview ?? pidStop.point, eligibility: 'review', reasons: [...pidStop.reasons, pid.deriving ? 'Přepočítávám pravidla PID; vyčkejte na ověřený výsledek.' : 'Návrh referenčního bodu ještě nebyl schválen.'] } : pidStop, [pidStop, pidPreview, pid.deriving]);
   const gameGeometry = world.layers.find(layer => layer.kind === 'game_area')?.features[0]?.geometry;
   const pidArea = gameGeometry && isArea(gameGeometry) ? gameGeometry : null;
-  const municipal = world.layers.find(layer => layer.dataset?.id === 'praha-municipal');
   const presetActivated = useRef(pidPreferences.saved);
   useEffect(() => {
     if (!presetActivated.current && world.layers.find(layer => layer.kind === 'game_area')?.features[0]?.attributes.preset === 'praha-municipal-union') {
@@ -151,16 +150,15 @@ export function App() {
     pidRequest<RouteDrawing[]>({ action: 'routes', bounds: pidBounds, modes: pidFilters.modes, selected: pidFilters.selectedRoute, onlySelected: pidFilters.onlySelectedRoute, allowedIds: pidFilters.territoryOnly ? membership?.routeIds ?? [] : undefined }).then(value => { if (!cancelled) setPidRoutes(value); }).catch(error => { if (!cancelled) setError(errorText(error)); });
     return () => { cancelled = true; };
   }, [pid.ready, pid.view, pidBounds, pidFilters.modes, pidFilters.routesVisible, pidFilters.selectedRoute, pidFilters.onlySelectedRoute, pidFilters.territoryOnly, membership, pidRequest, membershipPending, membershipFailure]);
-  async function applyPraguePreset() {
-    if (!municipal || pragueBusy) return;
-    if (pidArea && !confirm('Nahradit současnou herní hranici sjednocením 57 městských částí Prahy? Vlastní objekty zůstanou zachované. Změnu lze vrátit tlačítkem Zpět.')) return;
+  async function restorePragueArea() {
+    if (pragueBusy) return;
+    if (pidArea && !confirm('Nahradit současnou herní hranici výchozím územím Prahy? Vlastní objekty zůstanou zachované. Změnu lze vrátit tlačítkem Zpět.')) return;
     setPragueBusy(true);
     try {
-      const boundary = await territoryTask<GeoFeature>({ action: 'prague', layer: municipal });
-      const current = latestWorld.current;
-      if (current.layers.find(layer => layer.dataset?.id === 'praha-municipal')?.dataset?.checksum !== municipal.dataset?.checksum) throw new Error('Během výpočtu se změnil zdroj hranic. Použijte předvolbu znovu.');
-      commit(setGameArea(current, boundary)); setTool('select'); setSelected(null); setPidSelected(null);
-      setPidFilters(filters => ({ ...filters, territoryOnly: true })); if (isArea(boundary.geometry)) map.current?.fitArea(boundary.geometry);
+      const boundary = await loadDefaultGameArea();
+      commit(withDefaultGameArea(latestWorld.current, boundary)); setTool('select'); setSelected(null); setPidSelected(null);
+      if (defaultLoadFailed) { setDefaultLoadFailed(false); setStorageBlocked(false); }
+      setPidFilters(filters => ({ ...filters, territoryOnly: true })); map.current?.fitArea(boundary.geometry);
     } catch (error) { setError(errorText(error)); } finally { setPragueBusy(false); }
   }
   function selectPid(stop: GameStop, focus = false) {
@@ -174,19 +172,20 @@ export function App() {
   }
 
   useEffect(() => {
-    let cancelled = false;
-    readIndexedDraft().then(async saved => {
-      if (cancelled) return;
-      await verifyAdministrativeSources(saved ?? initial.world);
-      if (cancelled || !saved) return;
+    const controller = new AbortController();
+    initializeEditorWorld({ placeholder: initial, readIndexed: readIndexedDraft, readLegacy: () => loadDraft(localStorage), loadDefault: () => loadDefaultGameArea(controller.signal) }).then(saved => {
+      if (controller.signal.aborted) return;
       setHistory({ past: [], present: saved, future: [] });
       setActiveId(saved.layers.find(l => l.kind === 'custom')?.id ?? saved.layers[0].id);
       setStorageBlocked(false); setError('');
-    }).catch(() => {
-      if (cancelled) return;
-      setStorageBlocked(true); setError('Uložený draft nelze bezpečně načíst nebo nesouhlasí kontrolní součet zdroje. Nebyl přepsán; importujte zálohu nebo obnovte původní data.');
-    }).finally(() => { if (!cancelled) setHydrating(false); });
-    return () => { cancelled = true; };
+    }).catch(error => {
+      if (controller.signal.aborted) return;
+      setStorageBlocked(true);
+      if (error instanceof DefaultAreaLoadError) {
+        setHistory({ past: [], present: error.world, future: [] }); setDefaultLoadFailed(true); setError(error.message);
+      } else setError('Uložený draft nelze načíst nebo nesouhlasí kontrolní součet zdroje. Nebyl přepsán; importujte zálohu nebo obnovte původní data. Automatické ukládání je pozastavené.');
+    }).finally(() => { if (!controller.signal.aborted) setHydrating(false); });
+    return () => controller.abort();
   }, [initial]);
 
   useEffect(() => {
@@ -216,7 +215,7 @@ export function App() {
 
   function commit(next: WorldDraft) {
     try {
-      const validated = validateWorld({ ...next, updatedAt: new Date().toISOString() });
+      const validated = validateWorld({ ...recordGameAreaChoice(latestWorld.current, next), updatedAt: new Date().toISOString() });
       setHistory(h => ({ past: [...h.past.slice(-49), h.present], present: validated, future: [] }));
       setError('');
     } catch (error) { setError(errorText(error)); throw error; }
@@ -254,7 +253,7 @@ export function App() {
   const areaReady = world.layers.find(l => l.kind === 'game_area')!.features.length > 0;
 
   return <div className="app-shell" aria-busy={hydrating}>
-    {(hydrating || pragueBusy) && <div className="modal-backdrop"><div className="import-dialog" role="status">{pragueBusy ? 'Sjednocuji skutečné hranice 57 městských částí…' : 'Načítám uložený draft…'}</div></div>}
+    {(hydrating || pragueBusy) && <div className="modal-backdrop"><div className="import-dialog" role="status">{pragueBusy ? 'Načítám ověřenou výchozí hranici Prahy…' : 'Načítám uložený svět nebo výchozí hranici Prahy…'}</div></div>}
     <header className="app-header">
       <div className="brand-mark" aria-hidden="true">J<span><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M3 13 13 3M3 3h10v10" /></svg></span></div>
       <div className="brand-copy"><span className="eyebrow">JET LAG / PRAHA</span><h1>Geografický editor</h1></div>
@@ -289,7 +288,8 @@ export function App() {
           </fieldset></form></details>}
         </article>)}</div>
         <button className="add-layer" disabled={editing} onClick={() => { const layer = newLayer(`Vrstva ${world.layers.length}`); attempt(() => commit({ ...world, layers: [...world.layers, layer] })); setActiveId(layer.id); }}>+ Přidat vrstvu</button>
-        <TerritoryControls hasArea={!!pidArea} hasMunicipal={!!municipal} busy={pragueBusy} disabled={editing} onPrague={() => void applyPraguePreset()} onFit={() => { if (pidArea) map.current?.fitArea(pidArea); }} territoryOnly={pidFilters.territoryOnly} onFilter={territoryOnly => setPidFilters(filters => ({ ...filters, territoryOnly }))} filterError={!!membershipFailure} membershipStatus={!pidArea ? 'Herní oblast není definovaná; polohu nelze určit.' : membershipError || (membership ? `${membership.stopIds.length} zastávek a ${membership.routeIds.length} linek v oblasti · ${membership.unknownStops} neurčených bodů` : 'Ověřuji polohu zastávek a průnik tras…')} showCoverage={showCoverage} onCoverage={setShowCoverage} radius={pidConfiguration.radiusMeters} coverage={coverage} coverageStatus={!pidArea ? 'Chybí herní oblast.' : coverageError || (coverage ? coverage.geometry ? 'Společná úkrytová plocha zobrazena.' : 'Žádná společná úkrytová plocha.' : 'Počítám sjednocení všech úkrytových zón…')} />
+        {world.gameAreaInitialization?.state === 'legacy-empty' && <p className="source-load-error" role="status" data-testid="legacy-empty-area">Uložený svět nemá herní oblast. Nelze zjistit, zda byla dříve smazaná, proto ji automaticky nedoplňujeme. Obnovit ji můžete tlačítkem níže; vlastní data zůstanou zachovaná.</p>}
+        <TerritoryControls hasArea={!!pidArea} busy={pragueBusy} disabled={editing} onPrague={() => void restorePragueArea()} onFit={() => { if (pidArea) map.current?.fitArea(pidArea); }} territoryOnly={pidFilters.territoryOnly} onFilter={territoryOnly => setPidFilters(filters => ({ ...filters, territoryOnly }))} filterError={!!membershipFailure} membershipStatus={!pidArea ? 'Herní oblast není definovaná; polohu nelze určit.' : membershipError || (membership ? `${membership.stopIds.length} zastávek a ${membership.routeIds.length} linek v oblasti · ${membership.unknownStops} neurčených bodů` : 'Ověřuji polohu zastávek a průnik tras…')} showCoverage={showCoverage} onCoverage={setShowCoverage} radius={pidConfiguration.radiusMeters} coverage={coverage} coverageStatus={!pidArea ? 'Chybí herní oblast.' : coverageError || (coverage ? coverage.geometry ? 'Společná úkrytová plocha zobrazena.' : 'Žádná společná úkrytová plocha.' : 'Počítám sjednocení všech úkrytových zón…')} />
         <PidControls disabled={editing} view={filteredPidView} sourceView={pid.view} filterPending={membershipPending} filterError={membershipFailure} loadError={pid.loadError} updateError={pid.updateError} warning={[pid.warning, pidPreferencesWarning].filter(Boolean).join(" ")} filters={pidFilters} onChange={setPidFilters} onSelect={stop => selectPid(stop, true)} selected={pidSelected} onSources={() => setPidSources(true)} onRetry={() => void pid.refresh()} busy={pid.busy} radius={pidConfiguration.radiusMeters} onRadius={radiusMeters => attempt(() => commit({ ...world, gameStops: { ...pidConfiguration, radiusMeters } }))} />
         <div className="objects-heading"><h3>Objekty <span>{active.features.length}</span></h3><button onClick={() => map.current?.fit()}>Zobrazit vše</button></div>
         <label className="search-label"><input aria-label="Hledat objekty aktivní vrstvy" placeholder="Vyhledat oblast nebo objekt…" value={filter} onChange={e => setFilter(e.target.value)} /></label>
@@ -319,7 +319,7 @@ export function App() {
       </main>
       <aside className="right-panel panel">
         <div className="panel-heading"><div><span className="eyebrow">VYBRANÝ OBJEKT</span><h2>Vlastnosti</h2></div><span className="draft-chip">draft</span></div>
-        {tool !== 'inspect' && pidStop ? <PidStopProperties key={pidStop.id + ':' + (pidConfiguration.overrides.find(value => value.stopId === pidStop.id)?.approvedAt ?? '')} stop={pidStop} configuration={pidConfiguration} allStops={pid.view?.stops ?? []} platforms={pidPlatforms} point={pidPreview} moving={pidMoving} showPlatforms={pidShowPlatforms} showZone={pidShowZone} disabled={editing} onPoint={setPidPreview} onMove={value => { setPidMoving(value); setTool('select'); }} onPlatforms={setPidShowPlatforms} onZone={setPidShowZone} onConfiguration={value => attempt(() => commit({ ...world, gameStops: value }))} /> : tool === 'inspect' ? <><PositionInspector point={testPoint} world={world} stop={pidPreviewStop} radius={pidConfiguration.radiusMeters} />{pidStop && <button className="wide" aria-pressed={pidShowZone} onClick={() => setPidShowZone(value => !value)}>{pidShowZone ? "Skrýt úkrytovou zónu" : "Zobrazit úkrytovou zónu"}</button>}</> : selectedFeature && selectedLayer?.dataset ? <div className="managed-properties"><h3>{selectedFeature.name}</h3><p>Oficiální kód: <code>{String(selectedFeature.attributes.code)}</code><br />{selectedFeature.geometry.type}</p><SourceMetadata layer={selectedLayer} /><details><summary>Zdrojové atributy</summary><pre>{JSON.stringify(selectedFeature.attributes, null, 2)}</pre></details><p>Oficiální geometrii lze nahradit ověřenou aktualizací zdroje.</p><button onClick={() => setSourcesOpen(true)}>Porovnat / aktualizovat zdroj</button></div> : selectedFeature ? <FeatureProperties key={`${selectedLayer!.id}/${selectedFeature.id}/${world.updatedAt}`} feature={selectedFeature} editing={editing} onChange={change => attempt(() => updateFeature(change))} onEdit={() => { if (!selectedLayer?.visible) { setError('Vybraná vrstva je skrytá. Před úpravou vrcholů ji zobrazte.'); return; } setTool('edit'); }} onSaveEdit={() => map.current?.saveEdit()} onDelete={() => { attempt(() => updateLayer(selectedLayer!.id, { features: selectedLayer!.features.filter(f => f.id !== selectedFeature.id) })); setSelected(null); setTool('select'); }} /> : <div className="selection-empty"><div aria-hidden="true"><CursorIcon /></div><h3>Prostor pro vaše data</h3><p>Vyberte objekt v mapě nebo v seznamu. Zde uvidíte jeho geometrii, původ a vlastnosti.</p><hr /><span className="eyebrow">JAK ZAČÍT</span><ol><li>Vyberte vrstvu Herní oblast.</li><li>Nakreslete její polygon.</li><li>Do vlastní vrstvy přidejte další objekty.</li><li>Exportujte zálohu svého světa.</li></ol></div>}
+        {tool !== 'inspect' && pidStop ? <PidStopProperties key={pidStop.id + ':' + (pidConfiguration.overrides.find(value => value.stopId === pidStop.id)?.approvedAt ?? '')} stop={pidStop} configuration={pidConfiguration} allStops={pid.view?.stops ?? []} platforms={pidPlatforms} point={pidPreview} moving={pidMoving} showPlatforms={pidShowPlatforms} showZone={pidShowZone} disabled={editing} onPoint={setPidPreview} onMove={value => { setPidMoving(value); setTool('select'); }} onPlatforms={setPidShowPlatforms} onZone={setPidShowZone} onConfiguration={value => attempt(() => commit({ ...world, gameStops: value }))} /> : tool === 'inspect' ? <><PositionInspector point={testPoint} world={world} stop={pidPreviewStop} radius={pidConfiguration.radiusMeters} />{pidStop && <button className="wide" aria-pressed={pidShowZone} onClick={() => setPidShowZone(value => !value)}>{pidShowZone ? "Skrýt úkrytovou zónu" : "Zobrazit úkrytovou zónu"}</button>}</> : selectedFeature && selectedLayer?.dataset ? <div className="managed-properties"><h3>{selectedFeature.name}</h3><p>Oficiální kód: <code>{String(selectedFeature.attributes.code)}</code><br />{selectedFeature.geometry.type}</p><SourceMetadata layer={selectedLayer} /><details><summary>Zdrojové atributy</summary><pre>{JSON.stringify(selectedFeature.attributes, null, 2)}</pre></details><p>Oficiální geometrii lze nahradit ověřenou aktualizací zdroje.</p><button onClick={() => setSourcesOpen(true)}>Porovnat / aktualizovat zdroj</button></div> : selectedFeature ? <FeatureProperties key={`${selectedLayer!.id}/${selectedFeature.id}/${world.updatedAt}`} feature={selectedFeature} editing={editing} onChange={change => attempt(() => updateFeature(change))} onEdit={() => { if (!selectedLayer?.visible) { setError('Vybraná vrstva je skrytá. Před úpravou vrcholů ji zobrazte.'); return; } setTool('edit'); }} onSaveEdit={() => map.current?.saveEdit()} onDelete={() => { attempt(() => updateLayer(selectedLayer!.id, { features: selectedLayer!.features.filter(f => f.id !== selectedFeature.id) })); setSelected(null); setTool('select'); }} /> : <div className="selection-empty"><div aria-hidden="true"><CursorIcon /></div><h3>Prostor pro vaše data</h3><p>Vyberte objekt v mapě nebo v seznamu. Zde uvidíte jeho geometrii, původ a vlastnosti.</p><hr /><span className="eyebrow">JAK ZAČÍT</span><ol><li>Vyberte vrstvu Herní oblast.</li><li>Praha je přednastavená; hranici můžete upravit nebo obnovit.</li><li>Do vlastní vrstvy přidejte další objekty.</li><li>Exportujte zálohu svého světa.</li></ol></div>}
         <div className="export-section"><h3>Přenosná data</h3><p>JSON obsahuje celý draft. GeoJSON navíc otevřete v běžných GIS nástrojích; metadata editoru jsou v rozšířených polích.</p><button disabled={editing} onClick={() => attempt(() => download(exportWorld(world, 'geojson'), 'jetlag-praha-draft.geojson'))}>Exportovat GeoJSON</button></div>
       </aside>
     </div>
@@ -330,11 +330,12 @@ export function App() {
         const imported = importWorld(contents);
         await verifyAdministrativeSources(imported);
         if (!confirm('Nahradit současný draft importovaným světem? Změnu lze vrátit tlačítkem Zpět.')) return;
-        commit(imported); setActiveId(imported.layers[0].id);
+        commit(imported); setActiveId(imported.layers[0].id); setStorageBlocked(false); setDefaultLoadFailed(false);
       } else {
         const layer = importGeoJson(contents, { title, source, kind: mode === 'game_area' ? 'game_area' : 'custom' });
         if (mode === 'game_area' && areaReady && !confirm('Nahradit současnou herní hranici importovanou geometrií?')) return;
         commit({ ...world, layers: mode === 'game_area' ? world.layers.map(l => l.kind === 'game_area' ? layer : l) : [...world.layers, layer] });
+        if (mode === 'game_area' && defaultLoadFailed) { setStorageBlocked(false); setDefaultLoadFailed(false); }
         setActiveId(layer.id);
       }
       setSelected(null); setTool('select'); setImporting(false);

@@ -1,5 +1,5 @@
 import { readFile } from 'node:fs/promises';
-import { readAdministrativeSnapshot, applyAdministrativeUpdate, newWorld, inspectPosition } from '../packages/geo-core/src/index';
+import { readAdministrativeSnapshot, applyAdministrativeUpdate, newWorld, inspectPosition, readDefaultGameArea } from '../packages/geo-core/src/index';
 
 // Reálné referenční body; očekávání ověřuje skutečné hranice, nikoli syntetické fixture.
 const places = [
@@ -24,4 +24,7 @@ try {
     console.log(`${p.place}: ${p.municipal} / ${p.cadastral} · ověřeno`);
   }
   console.log(`Validováno ${layers[0].features.length} městských částí a ${layers[1].features.length} katastrálních území. Oba kontrolní součty souhlasí.`);
+  const boundary = await readDefaultGameArea(await readFile('apps/editor/public/defaults/prague-game-area.geojson', 'utf8'));
+  if (boundary.properties.dataset.checksum !== layers[0].dataset!.checksum) throw new Error('Výchozí herní oblast byla připravena z jiné verze městských částí; spusťte data:default-area.');
+  console.log(`Statická výchozí Praha a její kontrolní součty souhlasí; podklad všech 57 částí ${boundary.properties.dataset.version}.`);
 } catch (error) { console.error(error instanceof Error ? error.message : error); process.exitCode = 1; }

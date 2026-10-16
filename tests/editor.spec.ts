@@ -24,6 +24,10 @@ test('nakreslí herní polygon s otvorem, bod a linii, upraví vrcholy, uloží 
   await page.goto('/');
   await expect(page.getByText('Chybí API klíč Mapy.com')).toBeVisible();
   await page.getByRole('button', { name: 'Herní oblast', exact: true }).click();
+  await page.getByRole('button', { name: 'Praha · všech 57 městských částí Polygon', exact: true }).click();
+  page.once('dialog', dialog => dialog.accept());
+  await page.getByRole('button', { name: 'Smazat objekt', exact: true }).click();
+  await expect.poll(async () => (await world(page)).layers[0].features.length).toBe(0);
   await page.getByRole('button', { name: /Polygon/, exact: true }).click();
   await drawPolygon(page, [[130, 200], [400, 200], [400, 450], [130, 450]]);
   await expect.poll(async () => (await world(page)).layers[0].features.length).toBe(1);

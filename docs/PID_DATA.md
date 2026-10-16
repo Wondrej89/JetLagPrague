@@ -53,7 +53,7 @@ Původní bootstrap má aktivní geodata ze **2026-08-20**, trasy do **2026-08-2
 
 ## Geometrie a zachování editoru
 
-Pražská předvolba je skutečné sjednocení 57 městských částí včetně otvorů a oddělených částí. Aktualizace PID ani administrativních vrstev definici herní oblasti nemění. Prostorový filtr používá referenční bod a skutečný průnik celé linky; obálky pouze zrychlují vyhledávání. Celá protínající trasa zůstává zachovaná.
+Nové světy dostávají Prahu automaticky z ověřeného statického `defaults/prague-game-area.geojson`: jde o skutečné sjednocení všech 57 městských částí včetně otvorů a oddělených částí. Filtr PID, diagnostika polohy i úkrytové zóny používají uloženou herní geometrii bez ručního generování. **Obnovit výchozí území Prahy** nabízí výslovnou obnovu s potvrzením náhrady existující oblasti; vědomé smazání a nejednoznačné starší prázdné drafty se automaticky nepřepisují. Aktualizace PID ani administrativních vrstev definici herní oblasti nemění. Prostorový filtr používá referenční bod a skutečný průnik celé linky; obálky pouze zrychlují vyhledávání. Celá protínající trasa zůstává zachovaná.
 
 Úkrytová zóna vychází z **jediného referenčního bodu**, výchozích **400 m** a skutečného průniku kruhu s herním Polygonem/MultiPolygonem. Souhrnné pokrytí sjednotí kruhy, překryvy počítá jednou a ořízne výsledek herní hranicí. Zastávky k revizi mají označený geometrický náhled; vyloučené a neurčené body se nezahrnou. Geografickou povolenost rozhoduje Turf vzdálenost velké kružnice a celý polygon, nikoli nakreslený obvod nebo bounding box. Přesně 400 m a hranice oblasti se započítávají; vnitřek otvoru je vně. Kruh má 128 úseků a model vzdálenosti je kulový, nikoli elipsoidální.
 

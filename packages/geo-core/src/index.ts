@@ -99,6 +99,7 @@ const worldSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION), id, title: text.min(1), updatedAt: z.iso.datetime(),
   layers: z.array(geoLayerSchema).min(1).max(200),
   gameStops: gameStopConfigurationSchema.optional(),
+  gameAreaInitialization: z.object({ version: z.literal(1), state: z.enum(['initialized', 'intentionally-empty', 'legacy-empty']) }).optional(),
 });
 export type GeoFeature = z.infer<typeof geoFeatureSchema>;
 export type GeoLayer = z.infer<typeof geoLayerSchema>;
@@ -255,6 +256,7 @@ export * from './pid-snapshot';
 export * from './game-stops';
 export * from './pid-adapter';
 export * from './territory';
+export * from './default-game-area';
 export * from './pid-gtfs';
 export * from './pid-catalog';
 export * from './pid-shared';

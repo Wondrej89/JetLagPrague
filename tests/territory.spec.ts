@@ -11,7 +11,7 @@ test('skutečná Praha: předvolba, filtrace, všechny 400m zóny, historie a ob
   const draft = newWorld(); draft.layers[1].features = [newFeature({ type: 'Point', coordinates: [14.42, 50.08] }, 'Zachovaný vlastní bod')];
   await page.addInitScript(serialized => { if (!localStorage.getItem('jetlag-praha:world:v1')) localStorage.setItem('jetlag-praha:world:v1', serialized); }, JSON.stringify(draft));
   await page.goto('/'); await expect(page.getByTestId('pid-count')).toContainText('8066', { timeout: 30000 });
-  const preset = page.getByRole('button', { name: 'Použít celé území Prahy', exact: true }); await expect(preset).toBeEnabled({ timeout: 20000 });
+  const preset = page.getByRole('button', { name: 'Obnovit výchozí území Prahy', exact: true }); await expect(preset).toBeEnabled({ timeout: 20000 });
   await preset.click();
   await expect(page.getByTestId('territory-status')).toContainText('1431 zastávek a 404 linek', { timeout: 30000 });
   await expect(page.getByLabel('Pouze PID v herní oblasti', { exact: true })).toBeChecked();

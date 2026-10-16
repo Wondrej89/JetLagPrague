@@ -18,6 +18,7 @@
     "lint": "eslint . --max-warnings 0",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "data:default-area": "tsx scripts/prepare-default-game-area.ts",
     "data:prepare": "tsx scripts/prepare-administrative.ts",
     "data:check": "tsx scripts/check-administrative.ts",
     "data:bundle": "npm run data:prepare -- --input data/raw/mestskecasti.geojson --metadata data/source-metadata/municipal.json --code-field kod_mc --name-field nazev_mc && npm run data:prepare -- --input data/raw/katastralni-uzemi-praha.geojson --metadata data/source-metadata/cadastral.json --code-field kod_ku --name-field naz_ku --filter-field kod_obec --filter-value 554782",
