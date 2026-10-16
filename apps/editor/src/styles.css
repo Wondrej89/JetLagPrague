@@ -224,3 +224,7 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .poi-status { font-weight: 600; color: #88621e; }
 .poi-status.approved { color: #267a52; }
 .poi-status.excluded { color: #737373; }
+.park-import-dialog { width: min(100%, 680px); }
+.park-issues { max-height: 340px; overflow-y: auto; border: 1px solid #ddd6c9; padding: 10px; margin: 12px 0; }
+.park-issues article { padding: 10px 0; border-bottom: 1px solid #e3dfd6; font-size: 12px; overflow-wrap: anywhere; }
+.park-import-map-preview { position: fixed; z-index: 2000; left: 24px; bottom: 50px; width: min(390px, calc(100vw - 48px)); padding: 18px; border-radius: 8px; background: #fcfcf8; box-shadow: 0 4px 28px #0003; }

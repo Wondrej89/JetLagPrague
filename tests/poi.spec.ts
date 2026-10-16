@@ -10,7 +10,7 @@ async function ready(page: Page) { await expect(page.locator('.app-shell')).toHa
 async function importParks(page: Page, name?: string) {
   await page.getByRole('button', { name: 'Načíst / aktualizovat parky', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Import a aktualizace parků' });
-  await dialog.getByLabel('GeoJSON parků', { exact: true }).setInputFiles({ name: 'synthetic-parks.geojson', mimeType: 'application/geo+json', buffer: Buffer.from(JSON.stringify(fixture(name))) });
+  await dialog.getByLabel('GeoJSON parků / Shapefile ZIP', { exact: true }).setInputFiles({ name: 'synthetic-parks.geojson', mimeType: 'application/geo+json', buffer: Buffer.from(JSON.stringify(fixture(name))) });
   await dialog.getByLabel('Stálé ID zdroje').fill('synthetic-e2e');
   await dialog.getByLabel('Poskytovatel', { exact: true }).fill('Syntetická testovací data, nikoliv IPR');
   await dialog.getByLabel('URL zdroje / metadat').fill('https://example.test/parks');

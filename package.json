@@ -35,10 +35,14 @@
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "2.20.2",
     "@turf/turf": "^7.3.0",
+    "@zip.js/zip.js": "2.24.0",
     "csv-parse": "6.1.0",
+    "jsts": "2.12.1",
     "leaflet": "1.9.4",
+    "proj4": "2.22.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
+    "shpjs": "6.2.0",
     "zod": "^4.1.0"
   },
   "devDependencies": {
@@ -49,6 +53,7 @@
     "@types/node": "^24.0.0",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "@types/shpjs": "3.4.7",
     "@vitejs/plugin-react": "^5.1.0",
     "eslint": "^9.39.0",
     "eslint-plugin-react-hooks": "^7.0.0",

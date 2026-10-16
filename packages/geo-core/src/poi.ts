@@ -28,12 +28,13 @@ export const poiSchema = z.object({
   id, category: id, name: text, point: pointSchema, geometry: geometrySchema,
   sourceId: id, source: poiSourceSchema, status: poiStatusSchema,
   reviewedAt: z.iso.datetime().nullable(), note: text,
+  sourceIdentity: z.object({ key: id, fingerprint: z.string(), method: z.enum(['attribute-derived', 'manual']), reviewRequired: z.boolean() }).optional(),
   attributes: z.record(z.string(), z.json()), memberIds: z.array(id).optional(),
 });
 export type Poi = z.infer<typeof poiSchema>;
 export type PoiSource = z.infer<typeof poiSourceSchema>;
 export const parkDatasetSchema = z.object({
-  source: poiSourceSchema, records: z.array(poiSchema).max(10000), checksum: z.string().regex(/^[a-f0-9]{64}$/),
+  source: poiSourceSchema, records: z.array(poiSchema).max(10000), importRecord: z.json().optional(), checksum: z.string().regex(/^[a-f0-9]{64}$/),
 });
 export type ParkDataset = z.infer<typeof parkDatasetSchema>;
 const decisionSchema = z.object({ id, name: text.optional(), point: pointSchema.optional(), status: poiStatusSchema.optional(), reviewedAt: z.iso.datetime().nullable(), note: text.optional() });
@@ -53,7 +54,7 @@ export function validatePoiConfiguration(input: PoiConfiguration): void {
   const records = [...input.sources.flatMap(s => s.records), ...input.manual];
   unique(records.map(p => p.id)); unique(input.decisions.map(d => d.id));
   for (const dataset of input.sources) for (const record of dataset.records) {
-    if (record.source.id !== dataset.source.id || record.id !== parkId(dataset.source.id, record.sourceId)) throw new Error('Nesouhlasí identita zdrojového parku.');
+    if (record.source.id !== dataset.source.id || record.id !== parkId(dataset.source.id, record.sourceIdentity?.key ?? record.sourceId)) throw new Error('Nesouhlasí identita zdrojového parku.');
     if (record.status !== 'review' || record.reviewedAt !== null) throw new Error('Zdrojoví kandidáti se schvalují odděleným rozhodnutím.');
   }
   for (const record of records) {
@@ -115,7 +116,7 @@ export async function importParkGeoJson(contents: string, options: {
 export async function verifyParkDataset(input: unknown): Promise<ParkDataset> {
   const data = parkDatasetSchema.parse(input);
   validatePoiConfiguration({ ...defaultPoiConfiguration(), sources: [data] });
-  if (await sha256(canonicalJson({ source: data.source, records: data.records })) !== data.checksum) throw new Error('Kontrolní součet parkového zdroje nesouhlasí.');
+  if (await sha256(canonicalJson({ source: data.source, records: data.records, ...(data.importRecord === undefined ? {} : { importRecord: data.importRecord }) })) !== data.checksum) throw new Error('Kontrolní součet parkového zdroje nesouhlasí.');
   return data;
 }
 export async function verifyPoiSources(configuration?: PoiConfiguration): Promise<void> {
@@ -142,7 +143,7 @@ export function resolvePois(airports: Poi[], configuration: PoiConfiguration): P
   return [...airports, ...sources, ...configuration.manual.filter(p => !sourceIds.has(p.id))].map(record => {
     const decision = record.category === 'airport' ? undefined : decisions.get(record.id);
     const result = { ...record, ...decision, id: record.id };
-    if ((record.category === 'park' && !result.name.trim()) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
+    if (record.sourceIdentity?.reviewRequired || (record.category === 'park' && !result.name.trim()) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
       return { ...result, status: result.status === 'excluded' ? 'excluded' as const : 'review' as const, note: `${result.note} Referenční bod nebo dostupnost zdroje vyžaduje revizi.` };
     }
     return result;

@@ -12,9 +12,13 @@ Vlevo v **Body zájmu** jsou samostatné přepínače letišť a parků, počty 
 
 Parky lze bezpečně importovat z GeoJSON, nakreslit, přejmenovat, skutečně sjednotit jejich části, schválit nebo vyloučit a přesunout referenční bod uvnitř polygonu. Zdrojová data jsou oddělená od ručních rozhodnutí; jejich aktualizace zachová jména, body, schválení i vyloučení. Vše se uchovává v draftu a kompletních JSON/GeoJSON zálohách.
 
-**Omezení zdrojů:** dokumentaci IPR `URK_Parky_p` i letecké podklady AIM blokovala síť cloudového prostředí (HTTPS CONNECT 403). Endpoint parkových geometrií, atributy, stabilní ID a licence proto nejsou ověřené; publikováno je **0 oficiálních parků**. Nevkládají se náhradní zelené plochy. Letiště používají schválené ARP souřadnice ze zadání s výslovným záznamem, že aktuální oficiální letecký dokument nebylo možné nezávisle ověřit.
+**Původní omezení zdrojů URK a letišť:** dokumentaci IPR `URK_Parky_p` i letecké podklady AIM blokovala síť cloudového prostředí (HTTPS CONNECT 403). Endpoint parkových geometrií, atributy, stabilní ID a licence proto nejsou ověřené; publikováno je **0 oficiálních parků**. Nevkládají se náhradní zelené plochy. Letiště používají schválené ARP souřadnice ze zadání s výslovným záznamem, že aktuální oficiální letecký dokument nebylo možné nezávisle ověřit.
 
 Pro parky dodejte export **přesně URK_Parky_p** jako WGS84 GeoJSON FeatureCollection s Polygon/MultiPolygon, původním stabilním ID a názvem, skutečným URL zdroje/metadat, licencí a datem, pokud je doložené. Použijte **Načíst / aktualizovat parky**; všichni noví kandidáti začínají k revizi. Publikování schválených parků do statického katalogu má samostatný příkaz `npm run poi:publish -- --world cesta/k/exportu.json`.
+
+**Přímý GIS ZIP:** formulář **Načíst / aktualizovat parky** přijímá také původní `MPP_CUR_MPP_100_PARKY_P.zip` ze skutečné vrstvy **MPP_100_Parky_p**. Externí převod není potřeba: Web Worker načte SHP/SHX/DBF/PRJ/CPG, dekóduje české atributy a přes `proj4` převede souřadnice do WGS84. Náhled ukáže CRS, počty objektů, chyby, duplicity a rozdíly; problémové geometrie lze zobrazit v mapě. Originální souřadnice, atributy, metadata a kontrolní součty zůstanou v záznamu importu. Import je transakční a nemění ruční rozhodnutí bez jednoznačného stabilního klíče.
+
+Metadata Geoportálu nyní potvrzují vrstvu MPP, CRS 5514 a skutečný odkaz ZIP. **Originální archiv v cloudu stále blokuje proxy (CONNECT 403); audit všech 953 skutečných objektů proto čeká na zpřístupnění souboru.** [Audit konkrétního zdroje](data/source-metadata/parks-mpp-source-audit.md).
 
 [Úplný návod POI, přesný požadovaný soubor, pravidla geometrie a publikace](docs/POI_DATA.md).
 

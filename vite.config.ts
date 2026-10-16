@@ -6,6 +6,9 @@ export default defineConfig({
   root: 'apps/editor',
   envDir: '../..',
   base: './',
+  // Worker-only dependencies must be ready before the first file selection;
+  // a late optimizer reload would otherwise discard an open import dialog.
+  optimizeDeps: { include: ['@zip.js/zip.js', 'shpjs', 'proj4'] },
   plugins: [react()],
   resolve: { alias: { '@jetlag/geo-core': fileURLToPath(new URL('./packages/geo-core/src/index.ts', import.meta.url)) } },
   build: { outDir: '../../dist', emptyOutDir: true, rollupOptions: { output: { manualChunks: {

@@ -1,5 +1,8 @@
 import { z } from 'zod';
-import { booleanPointInPolygon, booleanValid, circle, distance, feature, intersect, area, kinks, polygon } from '@turf/turf';
+import GeoJSONReader from 'jsts/org/locationtech/jts/io/GeoJSONReader.js';
+import GeometryFactory from 'jsts/org/locationtech/jts/geom/GeometryFactory.js';
+import IsValidOp from 'jsts/org/locationtech/jts/operation/valid/IsValidOp.js';
+import { booleanPointInPolygon, booleanValid, circle, distance, feature, area, polygon } from '@turf/turf';
 import type { Point, LineString, Polygon, MultiPolygon, Position } from 'geojson';
 import { poiConfigurationSchema, validatePoiConfiguration } from './poi';
 import { gameStopConfigurationSchema, validateGameStopConfiguration } from './game-stop-configuration';
@@ -28,23 +31,18 @@ function freezeCoordinates(value: unknown): void {
 
 function topologyError(geometry: Geometry): string | null {
   if (geometry.type === 'LineString' && geometry.coordinates.some((p, i, points) => i > 0 && p[0] === points[i - 1][0] && p[1] === points[i - 1][1])) return 'Linie obsahuje úsek s nulovou délkou. Odstraňte opakovaný vrchol.';
-  if (!booleanValid(feature(geometry))) return 'Geometrie není platná (opakované vrcholy, nulová délka nebo chybný polygon).';
-  if (geometry.type === 'Point' || geometry.type === 'LineString') return null;
+  if (geometry.type === 'Point' || geometry.type === 'LineString') return booleanValid(feature(geometry)) ? null : 'Geometrie není platná.';
+  // OGC validity distinguishes isolated point contacts from crossings and shared
+  // edges. Turf.kinks reports intersections without this polygon topology context.
+  const operation = new IsValidOp(new GeoJSONReader(new GeometryFactory()).read(geometry));
+  const error = operation.getValidationError();
+  if (error) {
+    const prefix = [2, 3].includes(error.getErrorType()) ? 'Otvor polygonu není platný' : 'Neplatná topologie polygonu';
+    const coordinate = error.getCoordinate();
+    return `${prefix}: ${error.getMessage()}${coordinate ? ` [${coordinate.x}, ${coordinate.y}]` : ''}.`;
+  }
   const parts = geometry.type === 'Polygon' ? [geometry.coordinates] : geometry.coordinates;
-  for (const rings of parts) {
-    if (kinks(polygon(rings)).features.length) return 'Hrany polygonu se kříží nebo dotýkají. Upravte vrcholy.';
-    if (area(polygon([rings[0]])) < 0.01) return 'Polygon má nulovou nebo příliš malou plochu.';
-    for (let i = 1; i < rings.length; i++) {
-      if (!rings[i].slice(0, -1).every(p => booleanPointInPolygon(p, polygon([rings[0]]), { ignoreBoundary: true }))) return 'Otvor musí ležet celý uvnitř polygonu a nesmí se dotýkat hranice.';
-      for (let j = 1; j < i; j++) {
-        if (rings[i].some(p => booleanPointInPolygon(p, polygon([rings[j]]))) || rings[j].some(p => booleanPointInPolygon(p, polygon([rings[i]])))) return 'Otvory se nesmějí překrývat ani být vnořené.';
-      }
-    }
-  }
-  for (let i = 0; i < parts.length; i++) for (let j = 0; j < i; j++) {
-    const overlap = intersect({ type: 'FeatureCollection', features: [polygon(parts[i]), polygon(parts[j])] });
-    if (overlap && area(overlap) > 0.01) return 'Části MultiPolygonu se nesmějí plošně překrývat.';
-  }
+  if (parts.some(rings => area(polygon([rings[0]])) <= 0)) return 'Polygon má nulovou plochu.';
   return null;
 }
 

@@ -118,11 +118,11 @@
     }
   },
   "parkSourceStatus": {
-    "layer": "URK_Parky_p",
-    "documentationUrl": "https://uap.iprpraha.cz/texty/100/2.1.3",
-    "status": "blocked",
+    "layer": "MPP_100_Parky_p",
+    "documentationUrl": "https://geoportalpraha.cz/data-a-sluzby/35e82d77fbd44d96b470bf5731fbb0d4",
+    "status": "metadata_verified_archive_blocked",
     "checkedAt": "2026-10-16",
-    "reason": "HTTPS CONNECT 403 v síťové politice cloudového prostředí. Geometrie, atributy, stabilní ID ani licence neověřeny. Žádné plochy zeleně nebyly nahrazeny za parky."
+    "reason": "Metadata Geoportálu potvrzují vrstvu MPP, EPSG:5514, ID a NAZEV a skutečný ZIP. Původní archiv blokuje cloudová proxy pro mp.iprpraha.cz (CONNECT 403); obsah 953 objektů a licence dosud nejsou ověřené."
   },
   "airportArpInput": [
     [

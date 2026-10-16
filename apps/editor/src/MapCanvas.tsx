@@ -14,7 +14,7 @@ export interface MapHandle { prague(): void; fit(): void; fitArea(geometry: Area
 interface Props {
   world: WorldDraft; selected: Selection | null; tool: Tool; apiKey: string;
   pid?: PidMapState;
-  poi?: { records: Poi[]; visibility: PoiConfiguration['visibility']; selected: string | null; moving: boolean; onSelect(id: string): void; onReference(point: [number, number]): boolean };
+  poi?: { preview?: AreaGeometry | null; records: Poi[]; visibility: PoiConfiguration['visibility']; selected: string | null; moving: boolean; onSelect(id: string): void; onReference(point: [number, number]): boolean };
   testPoint: Position | null;
   onTestPoint(point: Position): void;
   onSelect(selection: Selection): void;
@@ -216,8 +216,9 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
         marker.addTo(group);
       }
     }
+    if (props.poi?.preview) L.geoJSON({ type: 'Feature', properties: {}, geometry: props.poi.preview } as Feature, { pmIgnore: true, snapIgnore: true, interactive: false, pane: 'poi-polygons', style: { color: '#b93535', weight: 4, fillOpacity: 0.24 } }).addTo(group);
     return () => { group.clearLayers(); };
-  }, [props.poi?.records, props.poi?.visibility, props.poi?.selected, props.poi?.moving]);
+  }, [props.poi?.preview, props.poi?.records, props.poi?.visibility, props.poi?.selected, props.poi?.moving]);
 
   useEffect(() => {
     const instance = map.current;
@@ -318,5 +319,5 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     return () => { layers.clearLayers(); renderer.remove(); };
   }, [props.pid?.coverage, props.pid?.coverageReview]);
 
-  return <div ref={container} className="map-canvas" aria-label="Mapa geografického editoru" data-testid="map" data-poi-airport-count={props.poi?.records.filter(p => p.category === 'airport' && props.poi?.visibility.airports).length ?? 0} data-poi-park-count={props.poi?.records.filter(p => p.category === 'park' && props.poi?.visibility.parks).length ?? 0} data-pid-coverage-type={props.pid?.coverage?.type ?? 'none'} data-pid-zone-type={props.pid?.zone?.type ?? 'none'} data-pid-route-count={props.pid?.routes.length ?? 0} data-pid-stop-count={props.pid?.stops.length ?? 0} />;
+  return <div ref={container} className="map-canvas" aria-label="Mapa geografického editoru" data-testid="map" data-park-import-preview={props.poi?.preview ? 'shown' : 'none'} data-poi-airport-count={props.poi?.records.filter(p => p.category === 'airport' && props.poi?.visibility.airports).length ?? 0} data-poi-park-count={props.poi?.records.filter(p => p.category === 'park' && props.poi?.visibility.parks).length ?? 0} data-pid-coverage-type={props.pid?.coverage?.type ?? 'none'} data-pid-zone-type={props.pid?.zone?.type ?? 'none'} data-pid-route-count={props.pid?.routes.length ?? 0} data-pid-stop-count={props.pid?.stops.length ?? 0} />;
 });
