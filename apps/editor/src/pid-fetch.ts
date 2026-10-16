@@ -20,12 +20,16 @@ export async function loadPublishedPid(base: string, known?: PidSnapshot | null)
 }
 export async function loadLivePid(): Promise<PidSnapshot> {
   const downloadedAt = new Date().toISOString();
-  const results = await Promise.all(Object.entries(PID_URLS).map(async ([key, url]) => {
-    const response = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(25000) });
+  const results = await Promise.allSettled(Object.entries(PID_URLS).map(async ([key, url]) => {
+    let response: Response;
+    try { response = await fetch(url, { cache: 'no-store', signal: AbortSignal.timeout(25000) }); }
+    catch (error) { throw new Error(`${url}: ${error instanceof Error ? error.message : String(error)} (síť, CORS nebo časový limit).`); }
     if (!response.ok) throw new Error(`PID ${key}: HTTP ${response.status}.`);
     const bytes = await response.arrayBuffer();
     if (bytes.byteLength > 100 * 1024 * 1024) throw new Error('Zdroj PID překračuje limit 100 MiB.');
     return [key, { text: new TextDecoder('utf-8', { fatal: true }).decode(bytes), sha256: await sha256(new Uint8Array(bytes)), version: response.headers.get('etag') ?? response.headers.get('last-modified') }] as const;
   }));
-  return adaptPidSources({ ...Object.fromEntries(results), downloadedAt } as Parameters<typeof adaptPidSources>[0]);
+  const failures = results.filter(result => result.status === 'rejected');
+  if (failures.length) throw new Error(failures.map(result => String(result.reason)).join(' '));
+  return adaptPidSources({ ...Object.fromEntries(results.flatMap(result => result.status === 'fulfilled' ? [result.value] : [])), downloadedAt } as Parameters<typeof adaptPidSources>[0]);
 }

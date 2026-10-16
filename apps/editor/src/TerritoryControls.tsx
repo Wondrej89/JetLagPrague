@@ -1,9 +1,10 @@
 import type { HidingCoverage } from '@jetlag/geo-core';
 
-export function TerritoryControls({ hasArea, hasMunicipal, busy, disabled, onPrague, onFit, territoryOnly, onFilter, membershipStatus, showCoverage, onCoverage, radius, coverage, coverageStatus }: {
+export function TerritoryControls({ hasArea, hasMunicipal, busy, disabled, onPrague, onFit, territoryOnly, onFilter, filterError, membershipStatus, showCoverage, onCoverage, radius, coverage, coverageStatus }: {
   hasArea: boolean; hasMunicipal: boolean; busy: boolean; disabled: boolean; onPrague(): void;
   onFit(): void;
   territoryOnly: boolean; onFilter(value: boolean): void; membershipStatus: string;
+  filterError: boolean;
   showCoverage: boolean; onCoverage(value: boolean): void; radius: number; coverage: HidingCoverage | null; coverageStatus: string;
 }) {
   return <section className="pid-controls territory-controls" aria-label="Herní území a pokrytí"><fieldset disabled={disabled || busy}>
@@ -14,6 +15,7 @@ export function TerritoryControls({ hasArea, hasMunicipal, busy, disabled, onPra
     <label className="pid-check"><input type="checkbox" checked={territoryOnly} onChange={event => onFilter(event.target.checked)} />Pouze PID v herní oblasti</label>
     <small>Zastávky podle referenčního bodu, linky při jakémkoliv dotyku nebo průniku s oblastí. Započítává se i hranice; linky se neořezávají.</small>
     {territoryOnly && <p role="status" data-testid="territory-status">{membershipStatus}</p>}
+    {territoryOnly && filterError && <button onClick={() => onFilter(false)}>Vypnout filtr a zobrazit dostupná PID data</button>}
     <label className="pid-check"><input type="checkbox" disabled={!hasArea} checked={showCoverage} onChange={event => onCoverage(event.target.checked)} />Zobrazit všechny úkrytové zóny</label>
     <small>Sjednocení kruhů {radius} m kolem všech nevyloučených zastávek s bodem uvnitř herní oblasti, oříznuté její hranicí. Hledání a přepínače dopravy tuto plochu neomezují.</small>
     {!hasArea && <p>Nejprve použijte předvolbu Prahy nebo nakreslete herní oblast.</p>}

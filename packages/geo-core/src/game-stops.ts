@@ -2,7 +2,7 @@ import { booleanPointInPolygon, featureCollection, intersect, feature } from '@t
 import type { Position } from 'geojson';
 import { distanceMeters, makeMetricCircle, validateGeometry, isArea, type AreaGeometry } from './index';
 import { canonicalJson, type SourceDiff } from './administrative';
-import { wgs84PointSchema, type PidSnapshot, type TransportMode, type PidPlatform } from './pid-snapshot';
+import { pragueDate, wgs84PointSchema, type PidSnapshot, type TransportMode, type PidPlatform } from './pid-snapshot';
 
 export * from './game-stop-configuration';
 import { validateGameStopConfiguration, defaultGameStopConfiguration, type GameStopConfiguration, type GameStopOverride } from './game-stop-configuration';
@@ -59,6 +59,7 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
     const sourceSignature = signature(node.groupIds, platforms);
     const override = overrides.get(node.id);
     const reasons: string[] = [];
+    if (snapshot.serviceDate !== pragueDate()) reasons.push(`Historická referenční data – neověřeno. Datum obsluhy ${snapshot.serviceDate} neodpovídá dnešnímu pražskému datu.`);
     if (snapshot.quality?.status === 'review') reasons.push('Zdrojový snapshot není časově nebo vazebně konzistentní; aktuální povolenost nelze určit.');
     const signatureChanged = !!override && override.sourceSignature !== sourceSignature;
     const missingGroups = node.groupIds.filter(id => !groups.has(id));
@@ -104,7 +105,7 @@ export function filterGameStops(stops: GameStop[], filter: StopFilter): GameStop
 }
 /** Polygon approximation is display/export geometry only; it is never the distance test. */
 export function hidingZoneGeometry(stop: GameStop, area: AreaGeometry | null, radiusMeters = 400): AreaGeometry | null {
-  if (!stop.point || stop.eligibility !== 'allowed' || !area) return null;
+  if (!stop.point || stop.eligibility !== 'allowed' || stop.snapshotDate !== pragueDate() || !area) return null;
   return referenceZoneGeometry(stop.point, area, radiusMeters);
 }
 export function referenceZoneGeometry(point: Position, area: AreaGeometry | null, radiusMeters = 400): AreaGeometry | null {
@@ -131,6 +132,7 @@ export function inspectHidingPosition(point: Position, stop: GameStop | null, ar
     const checked = validateGeometry(area);
     if (!isArea(checked)) return unknown('Herní oblast nemá polygonovou geometrii.', measured, withinRadius);
     const insideGameArea = booleanPointInPolygon(point, checked);
+    if (stop.snapshotDate !== pragueDate()) return { status: 'unknown', distanceMeters: measured, withinRadius, insideGameArea, reason: 'Historická referenční data – neověřeno. Geografický výsledek nelze použít jako povolení pro ostrou hru.' };
     if (stop.eligibility === 'review') return { status: 'unknown', distanceMeters: measured, withinRadius, insideGameArea, reason: stop.reasons.join(' ') || 'Zastávka vyžaduje ruční revizi.' };
     const allowed = stop.eligibility === 'allowed' && withinRadius && insideGameArea;
     return { status: allowed ? 'allowed' : 'forbidden', distanceMeters: measured, withinRadius, insideGameArea,

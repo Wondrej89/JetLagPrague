@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { destination } from '@turf/turf';
 import { buildGameStops, compareGameStops, defaultGameStopConfiguration, filterGameStops, hidingZoneGeometry, inspectHidingPosition, orphanedOverrides, validateGameStopConfiguration, type GameStop, type GameStopConfiguration } from './game-stops';
 import { testPlatform, testSnapshot } from './pid-test-fixtures';
@@ -10,6 +10,22 @@ function manual(stop: GameStop, patch: Partial<GameStopConfiguration['overrides'
 }
 
 describe('Game stop rules (synthetic fixtures, not assertions about real PID nodes)', () => {
+  beforeEach(() => { vi.useFakeTimers({ toFake: ['Date'] }); vi.setSystemTime(new Date('2026-10-15T08:00:00Z')); });
+  afterEach(() => vi.useRealTimers());
+  it('retains geographic diagnostics for a valid older snapshot but never grants live-game eligibility', async () => {
+    const snapshot = await testSnapshot(undefined, { date: '2026-08-20' });
+    const [stop] = buildGameStops(snapshot);
+    expect(stop.point).toEqual([14.4, 50.07]); expect(stop.eligibility).toBe('review');
+    expect(stop.reasons.join(' ')).toContain('Historická referenční data – neověřeno');
+    const result = inspectHidingPosition(stop.point!, stop, area);
+    expect(result).toMatchObject({ status: 'unknown', distanceMeters: 0, withinRadius: true, insideGameArea: true });
+    // An in-memory stop built on its service day must also become historical
+    // across midnight without trusting its formerly allowed eligibility.
+    const [formerlyAllowed] = buildGameStops(await testSnapshot());
+    vi.setSystemTime(new Date('2026-10-16T08:00:00Z'));
+    expect(inspectHidingPosition(formerlyAllowed.point!, formerlyAllowed, area).status).toBe('unknown');
+    expect(hidingZoneGeometry(formerlyAllowed, area)).toBeNull();
+  });
   it('applies the Anděl scenario: metro beats tram and bus, only metro platforms define the arithmetic mean', async () => {
     const snapshot = await testSnapshot([
       testPlatform('metro1', 'g', 'metro', [14.40, 50.07]), testPlatform('metro2', 'g', 'metro', [14.402, 50.072]),

@@ -9,7 +9,7 @@ const message = (error: unknown) => error instanceof Error ? error.message : 'Op
 const summary = (source: PidSnapshot): PidSummary => ({ id: source.id, checksum: source.checksum, serviceDate: source.serviceDate, downloadedAt: source.downloadedAt, preparedAt: source.preparedAt, adapterVersion: source.adapterVersion, sources: source.sources, quality: source.quality, groupCount: source.groups.length, platformCount: source.platforms.length, routeCount: source.routes.length });
 function view(configuration: Parameters<typeof buildGameStops>[1]): PidView {
   if (!snapshot) throw new Error('Chybí ověřený snapshot PID.');
-  return { summary: summary(snapshot), stops: buildGameStops(snapshot, configuration), routes: snapshot.routes.map(({ id, number, mode, color, validity }) => ({ id, number, mode, color, validity })), configurationKey: JSON.stringify(configuration) };
+  return { summary: summary(snapshot), stops: buildGameStops(snapshot, configuration), routes: snapshot.routes.map(({ id, number, mode, color, validity }) => ({ id, number, mode, color, validity })), configurationKey: JSON.stringify(configuration), referenceDate: pragueDate() };
 }
 function current(next: PidSnapshot): void {
   if (next.serviceDate !== pragueDate()) throw new Error(`Zdroj nabízí ${next.serviceDate}, dnešní pražské datum je ${pragueDate()}.`);
@@ -20,9 +20,11 @@ async function run(command: PidCommand): Promise<unknown> {
     let cached: PidSnapshot | null = null; const warnings: string[] = [];
     try { const saved = await indexedPidStorage.read(); if (saved) cached = await readPidSnapshot(saved); } catch (error) { warnings.push(`Cache PID: ${message(error)}`); }
     let bundled: PidSnapshot | null = null;
-    try { bundled = await loadPublishedPid(command.base, cached); } catch (error) { warnings.push(message(error)); }
-    snapshot = cached;
-    if (bundled && (!cached || (bundled.quality?.status !== 'review' && bundled.serviceDate > cached.serviceDate))) snapshot = bundled;
+    // A validated cache is immediately usable, regardless of age. Network work
+    // belongs to refresh and must never delay opening that local snapshot.
+    if (!cached) try { bundled = await loadPublishedPid(command.base); } catch (error) { warnings.push(message(error)); }
+    snapshot = cached ?? snapshot;
+    if (bundled && (!snapshot || (bundled.quality?.status !== 'review' && bundled.serviceDate > snapshot.serviceDate))) snapshot = bundled;
     if (!snapshot) throw new Error(warnings.join(' ') || 'Chybí data PID.');
     if (snapshot !== cached) try { await indexedPidStorage.write(snapshot); } catch (error) { warnings.push(`Snapshot je jen v paměti: ${message(error)}`); }
     let attempt = null;
@@ -31,7 +33,8 @@ async function run(command: PidCommand): Promise<unknown> {
   }
   if (command.action === 'derive') return view(command.configuration);
   if (command.action === 'refresh') {
-    const attempt = await readPidAttempt();
+    let attempt = null;
+    try { attempt = await readPidAttempt(); } catch { /* Attempt metadata cannot block usable source data. */ }
     if (!command.force && attempt?.date === pragueDate()) return { ...view(command.configuration), error: attempt.error, skipped: true };
     let next: PidSnapshot | null = null; const errors: string[] = [];
     try { const live = await loadLivePid(); current(live); next = live; } catch (error) { errors.push(`Přímé URL PID: ${message(error)}`); }
@@ -42,14 +45,15 @@ async function run(command: PidCommand): Promise<unknown> {
     } catch (error) { errors.push(`Publikovaný snapshot: ${message(error)}`); }
     if (!next) {
       const error = errors.join(' ');
-      await writePidAttempt({ date: pragueDate(), error });
-      throw new Error(`${error} Poslední dostupný snapshot zůstal zachovaný.`);
+      try { await writePidAttempt({ date: pragueDate(), error }); } catch (failure) { errors.push(`Uložení pokusu: ${message(failure)}`); }
+      throw new Error(`${errors.join(' ')} Poslední dostupný snapshot zůstal zachovaný.`);
     }
     const diff = comparePidSnapshots(snapshot, next);
     // Transaction and expensive integrity validation run in this worker.
     await indexedPidStorage.write(next); snapshot = next;
-    await writePidAttempt({ date: pragueDate(), error: null });
-    return { ...view(command.configuration), diff, error: null };
+    let warning = '';
+    try { await writePidAttempt({ date: pragueDate(), error: null }); } catch (error) { warning = `Data jsou načtená; nelze uložit datum pokusu: ${message(error)}`; }
+    return { ...view(command.configuration), diff, error: null, warning };
   }
   if (command.action === 'platforms') {
     const groups = new Set(command.groupIds); return snapshot?.platforms.filter(platform => groups.has(platform.groupId)) ?? [];

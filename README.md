@@ -18,11 +18,25 @@ První otevření v pražském dni zkusí všechny tři [oficiální URL](docs/P
 
 [Podrobný návod, architektura, pravidla a omezení PID](docs/PID_DATA.md) · [audit dodané trojice](data/source-metadata/pid-source-audit.md) · [vložení JSON/ZIP/GZIP](data/raw/pid/README.md)
 
+### Obnova PID při výpadku aktualizace
+
+Ověřený snapshot z IndexedDB se načte **před síťovou aktualizací**, i když je starší. Selhání přímých URL, CORS, timeout nebo nedostupná publikace jej nesmaže ani nevypne zobrazení. Aktualizace má vlastní chybu oddělenou od prvotního načtení; editor u dostupných dat stále ukazuje datum a počty. Pokud chybí i lokální kopie, oznámí chybu načtení a nabídne nový pokus. Kontrola SHA-256, schématu, vazeb a verzí zůstává povinná; poškozený snapshot se nepoužije.
+
+Starší nebo nekonzistentní zdroj má výrazné označení **Historická referenční data – neověřeno**. Zůstává použitelný pro prohlížení zastávek, tras, jednotlivých i společných úkrytových zón a geografickou diagnostiku. Měření vzdálenosti a poloha v oblasti fungují, ale ostrá povolenost úkrytu vrací **„nelze určit“**. Ani dříve konzistentní snapshot se po změně pražského dne automaticky nepovažuje za dnešní ověřená data.
+
+Viditelnost zastávek a tras, všechny dopravní a prostorové filtry, hledání, vybraná linka a přepínače zón se ukládají odděleně pod `jetlag-praha:pid-preferences:v1`. Při prvním otevření bez uloženého nastavení jsou zastávky zapnuté; další otevření respektuje také výslovné vypnutí. Předvolba Prahy nepřepisuje již uloženou volbu prostorového filtru. Poškozené nebo nedostupné nastavení má vlastní upozornění a nemaže snapshot ani herní draft.
+
+Filtr **Pouze PID v herní oblasti** během výpočtu ukazuje načítání a počty dostupného zdroje. Nepředstírá výsledek `0 / 0`. Existující výsledek pro stejnou oblast se při přepočtu zachová; mapa označí čekání na nový výsledek. Při chybě či chybějící oblasti lze filtr vypnout jedním tlačítkem a prohlížet dostupná PID data.
+
+**Ověření 16. 10. 2026:** přímé zdroje odpovídají HTTP 200, ale geodata zastávek a linek mají stále srpnovou platnost a neposkytují CORS hlavičku pro prohlížeč. `stops.json` je říjnový. GitHub Actions API při kontrole neevidovalo žádný plánovaný běh; poslední úspěšné nasazení bylo vyvolané pushem. Striktní opakování denního refresh odmítlo smíšenou trojici, zachovalo původní publikaci a vytvořilo diagnostiku. Další běhy ukládají přehled jednotlivých URL, HTTP stavů, platností a chyb do souhrnu Actions a artefaktu `pid-refresh-diagnostics`, včetně neúspěšného denního běhu.
+
+[Podrobný audit aktualizací z 16. 10.](docs/PID_REFRESH_AUDIT_2026-10-16.md) · [samostatný návrh přechodu aktivní obsluhy na GTFS](docs/PID_GTFS_PROPOSAL.md). Stávající datový adaptér se v této opravě nemění.
+
 ### Celá Praha a souhrnná úkrytová plocha
 
 Vlevo v **Herní území a pokrytí** stiskněte **Použít celé území Prahy**. Předvolba skutečně sjednotí všech 57 načtených městských částí a odstraní jejich vnitřní hranice. Zachová přesné vnější souřadnice, otvory i případné nesouvislé části; nevytváří obdélník ani konvexní obálku. Existující herní hranice se nahradí po potvrzení, vlastní objekty zůstanou zachované a změnu lze vrátit přes **Zpět**. Uložená hranice obsahuje původ, verzi, kontrolní součet a oficiální kódy podkladů. Aktualizace administrativních dat ji automaticky nezmění; nové hranice lze převzít opětovným použitím předvolby.
 
-Předvolba zapne **Pouze PID v herní oblasti**. Přepínač lze použít také s vlastní nakreslenou oblastí. Zastávky se vybírají podle referenčního bodu uvnitř nebo na hranici, linky podle skutečného dotyku či průniku celé trasy s plochou včetně otvorů a MultiPolygonů. Zachová se celá protínající linka včetně úseků mimo Prahu; samotný překryv bounding boxů nestačí. Chybějící bod se neodhaduje a bez definované oblasti je výsledek neurčitý. U uložené předvolby Prahy se filtr po obnovení stránky znovu zapne.
+Předvolba při použití zapne **Pouze PID v herní oblasti**. Přepínač lze použít také s vlastní nakreslenou oblastí. Zastávky se vybírají podle referenčního bodu uvnitř nebo na hranici, linky podle skutečného dotyku či průniku celé trasy s plochou včetně otvorů a MultiPolygonů. Zachová se celá protínající linka včetně úseků mimo Prahu; samotný překryv bounding boxů nestačí. Chybějící bod se neodhaduje a bez definované oblasti je výsledek neurčitý. Při dalším otevření se obnoví uložená volba filtru, včetně vypnutí.
 
 **Zobrazit všechny úkrytové zóny** zobrazí sjednocení kruhů kolem všech nevyloučených zastávek s bodem uvnitř oblasti, oříznuté herní hranicí. Výchozí poloměr je **400 m**, jeho změna v pravidlech přepočítá plochu. Vrstva je nezávislá na hledání, dopravních filtrech, výřezu mapy i zobrazení jednotlivých zastávek. Překryvy se počítají jednou, mezery zůstávají prázdné. Souhrn ukazuje počty a plochu; zastávky k revizi jsou zahrnuté do výslovně označeného geometrického náhledu, vyloučené a neurčené body se nezahrnují.
 

@@ -1,4 +1,4 @@
-import { beforeAll, describe, expect, it } from 'vitest';
+import { beforeAll, describe, expect, it, vi } from 'vitest';
 import { destination } from '@turf/turf';
 import { adaptPidSources, type PidRawBundle } from './pid-adapter';
 import { buildGameStops, defaultGameStopConfiguration, inspectHidingPosition } from './game-stops';
@@ -80,7 +80,14 @@ describe('Audited adapter over the actual supplied PID files', () => {
   it('can validate a synchronized test date without fabricating any stop-group membership', async () => {
     const input = smallSource(); input.groups.generatedAt = '2026-08-20T03:52:54';
     const synchronized = await adaptPidSources(bundle(input));
-    expect(synchronized.quality?.status).toBe('verified'); expect(buildGameStops(synchronized)[0].eligibility).toBe('allowed');
+    expect(synchronized.quality?.status).toBe('verified');
+    vi.useFakeTimers({ toFake: ['Date'] });
+    try {
+      vi.setSystemTime(new Date('2026-08-20T08:00:00Z'));
+      expect(buildGameStops(synchronized)[0].eligibility).toBe('allowed');
+      vi.setSystemTime(new Date('2026-08-21T08:00:00Z'));
+      expect(buildGameStops(synchronized)[0].eligibility).toBe('review');
+    } finally { vi.useRealTimers(); }
   }, 15000);
   it('rejects missing route references, unknown modes, duplicate platform IDs and unsupported group formats', async () => {
     const input = smallSource();

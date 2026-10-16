@@ -3,7 +3,7 @@ import type { PidSnapshot, GameStop, PidPlatform, SourceDiff, AreaGeometry, Game
 export type PidSummary = Pick<PidSnapshot, 'id' | 'checksum' | 'serviceDate' | 'downloadedAt' | 'preparedAt' | 'adapterVersion' | 'sources' | 'quality'> & { groupCount: number; platformCount: number; routeCount: number };
 export type RouteSummary = Pick<PidSnapshot['routes'][number], 'id' | 'number' | 'mode' | 'color' | 'validity'>;
 export type RouteDrawing = RouteSummary & { geometry: PidSnapshot['routes'][number]['geometry'] };
-export interface PidView { summary: PidSummary; stops: GameStop[]; routes: RouteSummary[]; configurationKey: string }
+export interface PidView { summary: PidSummary; stops: GameStop[]; routes: RouteSummary[]; configurationKey: string; referenceDate: string }
 export interface PidComparison { summary: PidSummary; diff: SourceDiff; names: Record<string, string> }
 export interface PidFilters { visible: boolean; modes: TransportMode[]; dominant: TransportMode | ''; period: 'all' | 'day' | 'night'; search: string; routesVisible: boolean; routeSearch: string; selectedRoute: string; onlySelectedRoute: boolean; territoryOnly: boolean }
 export type ViewBounds = [number, number, number, number];

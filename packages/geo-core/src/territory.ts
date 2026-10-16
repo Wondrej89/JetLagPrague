@@ -3,6 +3,7 @@ import type { LineString, MultiLineString, Position } from 'geojson';
 import { isArea, makeMetricCircle, newFeature, validateGeometry, type AreaGeometry, type GeoFeature, type GeoLayer, type WorldDraft } from './index';
 import type { GameStop } from './game-stops';
 import { wgs84PointSchema } from './pid-model';
+import { pragueDate } from './pid-snapshot';
 
 export function unionAreas(geometries: AreaGeometry[]): AreaGeometry {
   if (!geometries.length) throw new Error('Chybí polygonové podklady pro sjednocení.');
@@ -99,7 +100,7 @@ export function hidingCoverage(stops: GameStop[], areaGeometry: AreaGeometry, ra
     if (!territory.contains(stop.point)) { result.outsideStops++; continue; }
     if (stop.eligibility === 'excluded') { result.excludedStops++; continue; }
     result.usedStops++;
-    if (stop.eligibility === 'allowed') result.allowedStops++; else result.reviewStops++;
+    if (stop.eligibility === 'allowed' && stop.snapshotDate === pragueDate()) result.allowedStops++; else result.reviewStops++;
     points.set(JSON.stringify(stop.point), stop.point);
   }
   if (points.size) {

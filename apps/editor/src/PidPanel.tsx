@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { PID_URLS, orphanedOverrides, pragueDate, transportModes, type GameStop, type GameStopConfiguration, type TransportMode } from '@jetlag/geo-core';
 import type { PidComparison, PidFilters, PidSummary, PidView } from './pid-types';
+import { PidDataNotice } from './PidDataNotice';
 
 export const modeLabels: Record<TransportMode, string> = { train: 'Vlak', metro: 'Metro', tram: 'Tramvaj', bus: 'Autobus', trolleybus: 'Trolejbus', ferry: 'Přívoz', funicular: 'Lanovka' };
 export const modeColors: Record<TransportMode, string> = { train: '#205899', metro: '#b6292b', tram: '#7a0603', bus: '#007d98', trolleybus: '#80166f', ferry: '#00959b', funicular: '#946600' };
-export const defaultPidFilters = (): PidFilters => ({ visible: false, modes: [...transportModes], dominant: '', period: 'all', search: '', routesVisible: false, routeSearch: '', selectedRoute: '', onlySelectedRoute: false, territoryOnly: false });
 
-export function PidControls({ view, filters, onChange, onSelect, selected, onSources, busy, error, radius, onRadius, disabled }: {
-  view: PidView | null; filters: PidFilters; onChange(value: PidFilters): void; onSelect(stop: GameStop): void; selected: string | null; onSources(): void; busy: boolean; error: string;
+export function PidControls({ view, sourceView, filterPending, filterError, loadError, updateError, warning, filters, onChange, onSelect, selected, onSources, onRetry, busy, radius, onRadius, disabled }: {
+  view: PidView | null; sourceView: PidView | null; filterPending: boolean; filterError: string; loadError: string; updateError: string; warning: string;
+  filters: PidFilters; onChange(value: PidFilters): void; onSelect(stop: GameStop): void; selected: string | null; onSources(): void; onRetry(): void; busy: boolean;
   radius: number; onRadius(radius: number): void;
   disabled: boolean;
 }) {
@@ -17,8 +18,9 @@ export function PidControls({ view, filters, onChange, onSelect, selected, onSou
   const toggle = (mode: TransportMode) => onChange({ ...filters, modes: filters.modes.includes(mode) ? filters.modes.filter(value => value !== mode) : [...filters.modes, mode] });
   return <section className="pid-controls" aria-label="Veřejná doprava PID"><fieldset disabled={disabled}><h3>Veřejná doprava PID</h3>
     <label className="pid-check"><input type="checkbox" checked={filters.visible} onChange={event => onChange({ ...filters, visible: event.target.checked })} />Zobrazit zastávky PID</label>
-    {!view ? <p>{error || 'Načítám a ověřuji PID na pozadí…'}</p> : <>
-      <p className="pid-count" data-testid="pid-count">{stops.length} / {view.stops.filter(stop => stop.platformIds.length).length} doložených herních zastávek</p>
+    {!view ? <><p role={loadError ? 'alert' : 'status'}>{loadError ? `Načtení dat PID selhalo: ${loadError}` : 'Načítám a ověřuji PID na pozadí…'}</p>{loadError && <button disabled={busy} onClick={onRetry}>Zkusit znovu načíst data PID</button>}</> : <>
+      <p className="pid-count" data-testid="pid-count">{filterPending ? 'Ověřuji polohu zastávek…' : filterError ? 'Prostorový výběr nelze určit.' : `${stops.length} / ${view.stops.filter(stop => stop.platformIds.length).length} doložených herních zastávek`}</p>
+      {sourceView && <small data-testid="pid-snapshot-summary">Dostupný snapshot {sourceView.summary.serviceDate}: {sourceView.stops.filter(stop => stop.platformIds.length).length} herních zastávek · {sourceView.summary.routeCount} linek</small>}
       <small>Snapshot {view.summary.serviceDate}{view.summary.serviceDate !== pragueDate() ? ' · datum neodpovídá dnešku' : ''}{view.summary.quality?.status === 'review' ? ' · vyžaduje revizi' : ''}</small>
       <label>Hledat zastávku<input aria-label="Hledat zastávku PID" value={filters.search} onChange={event => onChange({ ...filters, search: event.target.value })} placeholder="Anděl, Karlín…" /></label>
       <details><summary>Druhy dopravy a provoz</summary><div className="pid-mode-grid">{transportModes.map(mode => <label className="pid-check" key={mode}><input type="checkbox" checked={filters.modes.includes(mode)} onChange={() => toggle(mode)} /><i style={{ background: modeColors[mode] }} />{modeLabels[mode]}</label>)}</div>
@@ -26,25 +28,25 @@ export function PidControls({ view, filters, onChange, onSelect, selected, onSou
         <label>Provoz<select aria-label="Provoz PID" value={filters.period} onChange={event => onChange({ ...filters, period: event.target.value as PidFilters['period'] })}><option value="all">Denní i noční</option><option value="day">Denní</option><option value="night">Noční</option></select></label>
         <label>Dominantní doprava<select aria-label="Dominantní doprava PID" value={filters.dominant} onChange={event => onChange({ ...filters, dominant: event.target.value as TransportMode | '' })}><option value="">Všechny priority</option>{transportModes.map(mode => <option key={mode} value={mode}>{modeLabels[mode]}</option>)}</select></label>
       </details>
-      {(filters.visible || filters.search) && <div className="pid-stop-list">{stops.slice(0, 60).map(stop => <button className={selected === stop.id ? 'chosen' : ''} key={stop.id} onClick={() => onSelect(stop)}><span>{stop.name}</span><small>{stop.dominantMode ? modeLabels[stop.dominantMode] : 'Revize'}{stop.eligibility !== 'allowed' ? ' · ' + (stop.eligibility === 'excluded' ? 'vyloučeno' : 'revize') : ''}</small></button>)}{stops.length > 60 && <p>Zobrazeno prvních 60; upřesněte hledání. Mapa používá všechny odpovídající body.</p>}</div>}
+      {!filterPending && !filterError && (filters.visible || filters.search) && <div className="pid-stop-list">{stops.slice(0, 60).map(stop => <button className={selected === stop.id ? 'chosen' : ''} key={stop.id} onClick={() => onSelect(stop)}><span>{stop.name}</span><small>{stop.dominantMode ? modeLabels[stop.dominantMode] : 'Revize'}{stop.eligibility !== 'allowed' ? ' · ' + (stop.eligibility === 'excluded' ? 'vyloučeno' : 'revize') : ''}</small></button>)}{stops.length > 60 && <p>Zobrazeno prvních 60; upřesněte hledání. Mapa používá všechny odpovídající body.</p>}</div>}
       <details><summary>Trasy linek · sedmidenní podoba</summary><label className="pid-check"><input type="checkbox" checked={filters.routesVisible} onChange={event => onChange({ ...filters, routesVisible: event.target.checked })} />Zobrazit trasy PID</label><p>Stejné přepínače dopravy filtrují i trasy. Trasy mohou patřit různým dnům uvedeného sedmidenního období.</p>
         <label>Číslo linky<input aria-label="Hledat linku PID" value={filters.routeSearch} onChange={event => onChange({ ...filters, routeSearch: event.target.value })} /></label>
-        <label>Zvýrazněná linka<select aria-label="Vybrat linku PID" value={filters.selectedRoute} onChange={event => onChange({ ...filters, routesVisible: true, selectedRoute: event.target.value })}><option value="">Bez zvýraznění</option>{routes.map(route => <option value={route.id} key={route.id}>{route.number} · {modeLabels[route.mode]} · {route.id}</option>)}</select></label>
+        <label>Zvýrazněná linka<select aria-label="Vybrat linku PID" disabled={filterPending || !!filterError} value={filters.selectedRoute} onChange={event => onChange({ ...filters, routesVisible: true, selectedRoute: event.target.value })}><option value="">Bez zvýraznění</option>{routes.map(route => <option value={route.id} key={route.id}>{route.number} · {modeLabels[route.mode]} · {route.id}</option>)}</select></label>
         <label className="pid-check"><input type="checkbox" checked={filters.onlySelectedRoute} onChange={event => onChange({ ...filters, onlySelectedRoute: event.target.checked })} />Skrýt ostatní linky</label>
       </details>
     </>}
     <details><summary>Pravidla úkrytu</summary><form onSubmit={event => { event.preventDefault(); onRadius(Number(new FormData(event.currentTarget).get('radius'))); }}><label>Poloměr úkrytové zóny (m)<input name="radius" aria-label="Poloměr úkrytové zóny (m)" type="number" min="0.01" max="100000" step="any" defaultValue={radius} key={radius} required /></label><button>Uložit poloměr</button></form></details>
-    <button className="wide" onClick={onSources}>Zdroje a aktualizace PID{busy ? ' · aktualizuji…' : ''}</button>{error && view && <small className="pid-warning">Aktualizace selhala; poslední snapshot je zachován. Podrobnosti ve správě PID.</small>}
+    <button className="wide" onClick={onSources}>Zdroje a aktualizace PID{busy ? ' · aktualizuji…' : ''}</button>{updateError && view && <small role="status" data-testid="pid-update-error" className="pid-warning">Aktualizace dat selhala. Dostupný snapshot {view.summary.serviceDate} zůstává použitelný. Podrobnosti ve správě PID.</small>}{warning && <small className="pid-warning">{warning}</small>}
   </fieldset></section>;
 }
 function Metadata({ summary }: { summary: PidSummary }) {
-  return <><dl className="feature-facts"><dt>Den obsluhy snapshotu</dt><dd>{summary.serviceDate}{summary.serviceDate !== pragueDate() ? ' · datum neodpovídá dnešku' : ''}</dd><dt>Stažení ze zdroje</dt><dd>{summary.downloadedAt ? new Date(summary.downloadedAt).toLocaleString('cs', { timeZone: 'Europe/Prague' }) : 'Čas stažení dodaných souborů není doložen'}</dd><dt>Příprava snapshotu</dt><dd>{summary.preparedAt ? new Date(summary.preparedAt).toLocaleString('cs', { timeZone: 'Europe/Prague' }) : 'neuvedeno'}</dd><dt>Obsah</dt><dd>{summary.groupCount} skupin · {summary.platformCount} stanovišť · {summary.routeCount} linek</dd><dt>Adaptér</dt><dd>{summary.adapterVersion}</dd><dt>SHA-256 / neměnná verze</dt><dd><code>{summary.checksum}</code></dd></dl>
+  return <><PidDataNotice summary={summary} /><dl className="feature-facts"><dt>Den obsluhy snapshotu</dt><dd>{summary.serviceDate}{summary.serviceDate !== pragueDate() ? ' · datum neodpovídá dnešku' : ''}</dd><dt>Stažení ze zdroje</dt><dd>{summary.downloadedAt ? new Date(summary.downloadedAt).toLocaleString('cs', { timeZone: 'Europe/Prague' }) : 'Čas stažení dodaných souborů není doložen'}</dd><dt>Příprava snapshotu</dt><dd>{summary.preparedAt ? new Date(summary.preparedAt).toLocaleString('cs', { timeZone: 'Europe/Prague' }) : 'neuvedeno'}</dd><dt>Obsah</dt><dd>{summary.groupCount} skupin · {summary.platformCount} stanovišť · {summary.routeCount} linek</dd><dt>Adaptér</dt><dd>{summary.adapterVersion}</dd><dt>SHA-256 / neměnná verze</dt><dd><code>{summary.checksum}</code></dd></dl>
     {summary.quality?.issues.map(issue => <p className="pid-warning" key={issue}>{issue}</p>)}
     <details><summary>Zdroje, licence a deklarovaná platnost</summary>{summary.sources.map(source => <div key={source.id}><h3>{source.id}</h3><a href={source.url} target="_blank" rel="noreferrer">{source.url}</a><p>Platnost zdroje: {source.declaredValidity ?? 'neuvedená'}<br />Verze: {source.version ?? 'neuvedená'}<br />Licence: {source.license?.name ?? 'nedoložená ve vstupních souborech'}</p><code>{source.sha256}</code></div>)}</details>
   </>;
 }
-export function PidSourceDialog({ view, busy, error, configuration, onClose, onRefresh, onCompare, onApply, onExport, onReview }: {
-  view: PidView | null; busy: boolean; error: string; configuration: GameStopConfiguration; onClose(): void; onRefresh(): Promise<void>; onCompare(data: ArrayBuffer): Promise<PidComparison>; onApply(): Promise<void>; onExport(): Promise<void>;
+export function PidSourceDialog({ view, busy, loadError, updateError, warning, configuration, onClose, onRefresh, onCompare, onApply, onExport, onReview }: {
+  view: PidView | null; busy: boolean; loadError: string; updateError: string; warning: string; configuration: GameStopConfiguration; onClose(): void; onRefresh(): Promise<void>; onCompare(data: ArrayBuffer): Promise<PidComparison>; onApply(): Promise<void>; onExport(): Promise<void>;
   onReview(stop: GameStop): void;
 }) {
   const [comparison, setComparison] = useState<PidComparison | null>(null); const [localError, setLocalError] = useState(''); const [working, setWorking] = useState(false);
@@ -54,7 +56,8 @@ export function PidSourceDialog({ view, busy, error, configuration, onClose, onR
   return <div className="modal-backdrop"><section className="import-dialog source-dialog" role="dialog" aria-modal="true" aria-labelledby="pid-source-title"><span className="eyebrow">SPRAVOVANÝ ZDROJ</span><h2 id="pid-source-title">Zdroje a aktualizace PID</h2><p>Aktualizace pracuje pouze s PID snapshotem. Herní hranice, vlastní objekty, administrativní vrstvy a uložené ruční výjimky zůstávají zachované.</p>
     <button disabled={busy || working} onClick={() => void onRefresh()}>{busy ? 'Stahuji a ověřuji…' : 'Aktualizovat z URL'}</button>
     <p>Nejprve se zkusí všechny tři oficiální URL; při síťové chybě nebo CORS se použije denní snapshot ze stejného hostingu. Starší či nekonzistentní data se automaticky nevydávají za aktuální.</p>
-    {(error || localError) && <div role="alert" className="inline-error">{localError || error}</div>}
+    {(loadError || updateError || localError) && <div role="alert" className="inline-error">{localError || (loadError ? `Načtení dat PID selhalo. ${loadError}` : `Aktualizace dat selhala; dostupný snapshot zůstává zachovaný. ${updateError}`)}</div>}
+    {warning && <p role="status" className="pid-warning">{warning}</p>}
     {view && <Metadata summary={view.summary} />}
     <details><summary>Oficiální URL</summary>{Object.values(PID_URLS).map(url => <p key={url}><a href={url} target="_blank" rel="noreferrer">{url}</a></p>)}</details>
     {orphans.length > 0 && <div className="pid-warning"><strong>Osiřelé výjimky k revizi ({orphans.length})</strong>{orphans.map(override => <p key={override.stopId}>{override.stopId}: {override.justification}</p>)}</div>}

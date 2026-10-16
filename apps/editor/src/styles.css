@@ -196,3 +196,8 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .pid-properties code, .source-dialog code, .source-dialog a { overflow-wrap: anywhere; }
 .pid-reference-pin { border: 0; background: transparent; }
 .pid-reference-pin span { display: grid; place-items: center; width: 26px; height: 26px; border: 3px solid #fff; border-radius: 50%; color: #fff; font-size: 23px; line-height: 1; background: #214f40; box-shadow: 0 1px 6px #0006; }
+
+.pid-history-notice { display: flex; flex-wrap: wrap; gap: 6px 18px; padding: 11px 24px; background: #fff1ce; color: #684914; border-bottom: 2px solid #bd862b; font-size: 12px; line-height: 1.5; }
+.pid-history-notice strong { font-size: 13px; }
+.pid-map-status { position: absolute; z-index: 700; top: 92px; left: 62px; right: 16px; padding: 12px; background: #fff8e6; border: 1px solid #c99741; border-radius: 6px; color: #684914; font-size: 12px; }
+.pid-map-status button { display: block; margin-top: 8px; }

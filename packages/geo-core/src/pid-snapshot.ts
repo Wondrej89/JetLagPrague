@@ -75,6 +75,9 @@ export function pragueDate(instant: Date = new Date()): string {
   const value = (type: string) => parts.find(part => part.type === type)!.value;
   return `${value('year')}-${value('month')}-${value('day')}`;
 }
+export function isHistoricalPid(source: Pick<PidSnapshot, 'serviceDate' | 'quality'>, referenceDate = pragueDate()): boolean {
+  return source.serviceDate !== referenceDate || source.quality?.status === 'review';
+}
 export function snapshotReference(snapshot: PidSnapshot): SnapshotReference {
   return { id: snapshot.id, checksum: snapshot.checksum, serviceDate: snapshot.serviceDate, adapterVersion: snapshot.adapterVersion };
 }
