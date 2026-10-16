@@ -255,3 +255,7 @@ export * from './pid-snapshot';
 export * from './game-stops';
 export * from './pid-adapter';
 export * from './territory';
+export * from './pid-gtfs';
+export * from './pid-catalog';
+export * from './pid-shared';
+export * from './hide-selection';

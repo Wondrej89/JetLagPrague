@@ -19,7 +19,7 @@ const groupSchema = z.object({
     lines: z.array(z.object({ id: scalar, name: z.string(), type: z.string(), isNight: z.boolean().optional(), exitOnly: z.boolean().optional() })),
   })).min(1),
 });
-const groupsSchema = z.object({ generatedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T/), dataFormatVersion: z.literal('3'), stopGroups: z.array(groupSchema).min(1) });
+export const pidStopGroupsSchema = z.object({ generatedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}T/), dataFormatVersion: z.literal('3'), stopGroups: z.array(groupSchema).min(1) });
 const activeSchema = z.object({ type: z.literal('FeatureCollection'), features: z.array(z.object({
   type: z.literal('Feature'), geometry: z.object({ type: z.literal('Point'), coordinates: point }),
   properties: z.object({ stop_id: z.string().min(1), stop_name: z.string(), asw_node_id: scalar, asw_stop_id: scalar,
@@ -52,7 +52,7 @@ export async function adaptPidSources(input: PidRawBundle): Promise<PidSnapshot>
   const rawActive = parse(input.active.text); const routeData = parse(input.routes.text);
   for (const data of [rawActive, routeData]) if (data && typeof data === 'object' && 'crs' in data) throw new Error('PID GeoJSON musí být WGS84 / RFC 7946 bez neověřené deklarace CRS.');
   const active = activeSchema.parse(rawActive);
-  const grouping = groupsSchema.parse(parse(input.groups.text));
+  const grouping = pidStopGroupsSchema.parse(parse(input.groups.text));
   const rawRoutes = routesSchema.parse(routeData);
   const activeDates = [...new Set(active.features.flatMap(feature => dates(feature.properties.validity)))];
   if (activeDates.length !== 1) throw new Error('Aktivní zastávky nemají společný jediný den platnosti.');

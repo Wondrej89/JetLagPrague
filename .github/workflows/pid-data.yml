@@ -1,0 +1,94 @@
+name: Update PID data from GTFS
+on:
+  workflow_dispatch:
+    inputs:
+      service_date:
+        description: 'Provozní den YYYY-MM-DD (prázdné = dnešek v Europe/Prague)'
+        required: false
+        type: string
+      force:
+        description: 'Zpracovat znovu i při existenci ověřeného snapshotu tohoto dne'
+        required: false
+        default: false
+        type: boolean
+permissions:
+  contents: write
+  actions: write
+concurrency:
+  group: pid-data-update
+  cancel-in-progress: false
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: app
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: app/package-lock.json
+      - run: npm ci
+        working-directory: app
+      - run: npm run typecheck
+        working-directory: app
+      - run: npx vitest run packages/geo-core/src/pid-gtfs.test.ts scripts/gtfs-publication.test.ts
+        working-directory: app
+      - name: Locate data branch
+        id: data-branch
+        working-directory: app
+        shell: bash
+        run: |
+          if git ls-remote --exit-code --heads origin pid-data > "$RUNNER_TEMP/pid-data-ref"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            pid_ref_status=$?
+            if [ "$pid_ref_status" -ne 2 ]; then exit "$pid_ref_status"; fi
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Check out data publication
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ steps.data-branch.outputs.exists == 'true' && 'pid-data' || 'main' }}
+          path: publication
+      - name: Initialize isolated data branch
+        if: steps.data-branch.outputs.exists != 'true'
+        shell: bash
+        run: |
+          git -C publication checkout --orphan pid-data
+          git -C publication rm -rf .
+          mkdir -p publication/pid
+          cp -a app/apps/editor/public/pid/. publication/pid/
+      - name: Build or reuse verified GTFS snapshot
+        working-directory: app
+        run: npm run pid:gtfs -- --output "$GITHUB_WORKSPACE/publication/pid"
+        env:
+          PID_SERVICE_DATE: ${{ inputs.service_date }}
+          PID_FORCE_REFRESH: ${{ inputs.force }}
+          NODE_OPTIONS: --max-old-space-size=4096
+      - name: Preserve GTFS diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pid-gtfs-diagnostics
+          path: app/data/reports/pid-gtfs-refresh.json
+          if-no-files-found: ignore
+      - name: Commit immutable snapshot and catalog
+        working-directory: publication
+        shell: bash
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add pid
+          if ! git diff --cached --quiet; then
+            git commit -m 'Publish verified PID GTFS snapshot'
+            git push origin HEAD:refs/heads/pid-data
+          fi
+      - name: Deploy web with published data
+        working-directory: app
+        run: gh workflow run pages.yml --ref main
+        env:
+          GH_TOKEN: ${{ github.token }}

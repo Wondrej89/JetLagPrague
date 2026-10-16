@@ -50,7 +50,7 @@ Projekt **není** univerzální generátor her pro všechny lokality. Nemá vytv
 ### A3. Doprava a zastávky
 
 - Importovat a zobrazit **stanice, zastávky i trasy** PID; filtrování metro, tramvaj, trolejbus, autobus, vlak, přívoz, lanovka. Dále filtry denní/noční, pravidelné/dočasné, relevantní datum, aktivní/neaktivní a konkrétní linka.
-- Preferovat otevřené geodatové sady PID GeoJSON (zastávky dle druhu dopravy a linky) pro snadný první import. Oficiální GTFS a soupis označníků poslouží tam, kde jsou nutné linky, stanoviště, kalendář platnosti či vztahy mezi zastávkami.
+- Od iterace 03B je primárním zdrojem plánované obsluhy a tras oficiální GTFS PID; soupis označníků doplňuje bezpečně ověřené fyzické identity a body. Původní geodata zůstávají datovanou referencí.
 - Explicitně rozlišovat **zastávkový uzel / stanici / nástupiště / označník**. Stejný název nebo stejné souřadnice neznamenají automaticky totožný objekt. Pro herní zóny definovat referenční bod či sadu bodů každého schváleného uzlu.
 - Deduplikace při importu dle stabilních zdrojových identifikátorů a geometrie, nikoli pouze názvu. Nezařazovat pomocné průjezdní body jako stanice ani zastávky, kde ve vybraném období žádný relevantní spoj nezastavuje.
 - Zobrazení kružnic okolo jedné, skupiny nebo všech filtrovaných zastávek, s editovatelným poloměrem (např. 250 m). Umět hromadné sjednocení a clipping na herní hranice, výpočet plošného pokrytí.
@@ -277,3 +277,14 @@ Interně používat WGS84 (GeoJSON `[longitude, latitude]`), jasně oddělit zem
 ## 12. Co se v této fázi NEMÁ implementovat
 
 Nezačínat autentizací, multiplayerem, sledováním GPS, chatem, nahráváním fotografií, integrací plateb ani kompletním balíčkem karet. První milník musí být spolehlivý geografický editor s datovým modelem, perzistencí, importem/exportem a testovatelnou geometrií.
+
+
+## Kontrakty PID připravené v iteraci 03B
+
+Snapshot pro zvolený provozní den `Europe/Prague` obsahuje aktivní veřejnou obsluhu podle kalendářů, výjimek a nástupu NEBO výstupu. Časy přes 24:00 zůstávají v příslušném provozním dni GTFS. Neaktivní a neurčitelné uzly nejsou automatické úkryty. Historický snapshot slouží diagnostice, nikoli automaticky nové ostré hře.
+
+Budoucí backend použije `createSharedPidCache`: nejprve ověřený centrální snapshot dne, při chybění jedno sestavení pod distribuovaným zámkem/lease, opětovná kontrola po získání zámku a atomické publikování. Současní hráči sdílejí výsledek. `SharedPidStorage.withExclusiveDay` musí skutečně chránit všechny instance backendu; lokální Promise není náhradou distribuovaného zámku. Chyba sestavení nepřepíše předchozí verzi. Herna uzamkne celý `SnapshotReference` (ID, SHA-256, provozní den a verzi adaptéru); novější publikace jej nesmí nahradit.
+
+`hideCandidates` vrací aktivní povolené uzly se stabilním ID, jedním referenčním bodem a filtrem skutečné herní oblasti či vzdálenosti od polohy. `confirmHideSelection` znovu ověří vybrané ID proti přesně uzamčenému snapshotu, pravidlům a hranici z důvěryhodného stavu serveru. Požadavek klienta obsahuje pouze `stopId`; ID hráče, roli ani povolenost klient neurčuje. Soukromý výsledek `PrivateHideSelection` obsahuje `visibility: hider-only`. `hideSelectionForViewer` jej vrací pouze odpovídajícímu schovávači, pro hledače vrací `null`. Server nesmí tento soukromý objekt ani jeho `stopId` přimíchat do veřejného DTO, logů dostupných hráčům nebo odpovědí pro hledače. Role a identita musí pocházet ze serverové autentizace. Povolený okruh vychází z jediného referenčního bodu a schváleného poloměru.
+
+Aktuální Pages editor má bezpečný odkaz na ruční `workflow_dispatch`, čte statické snapshoty a nevkládá serverový GitHub token do JavaScriptu. Připravené kontrakty nezavádějí přihlášení, místnosti, mobilní rozhraní ani sdílení GPS. Zprovoznění skutečného backendu je samostatná další fáze.

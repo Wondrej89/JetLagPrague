@@ -11,3 +11,6 @@ test-results/
 data/reports/
 data/raw/pid/download-*/
 data/raw/pid/.download-*/
+
+# Separate checkout of the authoritative snapshot data branch
+.pid-publication/

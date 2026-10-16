@@ -58,7 +58,9 @@ test('skutečná data PID: priority Anděla, původní stanoviště, ruční bod
   await expect(page.getByTestId('position-hiding')).not.toHaveText(distance);
   await page.getByRole('button', { name: 'Doprava PID', exact: true }).click();
   const dialog = page.getByRole('dialog', { name: 'Zdroje a aktualizace PID' });
-  await dialog.getByRole('button', { name: 'Aktualizovat z URL', exact: true }).click();
+  await context.route('**/pid/index.json', route => route.abort());
+  await expect(dialog.getByRole('link', { name: 'Aktualizovat data PID ↗' })).toHaveAttribute('href', /actions\/workflows\/pid-data.yml$/);
+  await dialog.getByRole('button', { name: 'Načíst publikovaný výsledek', exact: true }).click();
   await expect(dialog.getByRole('alert')).toContainText('zachovaný', { timeout: 30000 });
   const downloadPromise = page.waitForEvent('download'); await dialog.getByRole('button', { name: 'Export snapshotu PID', exact: true }).click();
   const downloaded = await downloadPromise; const contents = await readFile((await downloaded.path())!);
@@ -72,7 +74,7 @@ test('skutečná data PID: priority Anděla, původní stanoviště, ruční bod
   const attempts = liveRequests; await page.reload();
   await expect(page.getByTestId('pid-count')).toBeVisible({ timeout: 30000 });
   await expect(page.getByRole('button', { name: 'Zdroje a aktualizace PID', exact: true })).toBeVisible({ timeout: 30000 });
-  expect(liveRequests).toBe(attempts);
+  expect(liveRequests).toBe(attempts); expect(liveRequests).toBe(0);
   const restored = await storedWorld(page); expect(restored.layers).toEqual(before.layers); expect(restored.gameStops!.overrides[0]).toEqual(override); expect(errors).toEqual([]);
 });
 

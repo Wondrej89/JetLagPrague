@@ -33,10 +33,10 @@ export function usePid(configuration: GameStopConfiguration) {
       promises.delete(result.requestId); if (result.error) promise.reject(new Error(result.error)); else promise.resolve(result.value);
     };
     instance.onerror = () => { for (const promise of promises.values()) promise.reject(new Error('Zpracování PID ve workeru selhalo.')); promises.clear(); };
-    request<PidView & { warning: string; attempt: { error: string | null } | null }>({ action: 'hydrate', base: publicationBase(), configuration: currentConfiguration.current }).then(value => {
-      if (cancelled) return; acceptView(value); setReady(true); setLoadError(''); setWarning(value.warning); setUpdateError(value.attempt?.error || '');
+    request<PidView & { warning: string }>({ action: 'hydrate', base: publicationBase(), configuration: currentConfiguration.current }).then(value => {
+      if (cancelled) return; acceptView(value); setReady(true); setLoadError(''); setWarning(value.warning); setUpdateError('');
       setBusy(true);
-      return request<PidView & { error?: string | null; warning?: string }>({ action: 'refresh', base: publicationBase(), configuration: currentConfiguration.current, force: false }).then(result => {
+      return request<PidView & { error?: string | null; warning?: string }>({ action: 'refresh', base: publicationBase(), configuration: currentConfiguration.current }).then(result => {
         if (!cancelled) { acceptView(result); setUpdateError(result.error ?? ''); if (result.warning) setWarning(result.warning); }
       }).catch(error => { if (!cancelled) setUpdateError(error instanceof Error ? error.message : 'Aktualizace PID selhala.'); }).finally(() => { if (!cancelled) setBusy(false); });
     }).catch(error => { if (!cancelled) { setLoadError(error instanceof Error ? error.message : 'PID nelze načíst.'); setReady(true); } });
@@ -60,12 +60,13 @@ export function usePid(configuration: GameStopConfiguration) {
         const restored = await request<PidView & { warning: string }>({ action: 'hydrate', base: publicationBase(), configuration: currentConfiguration.current });
         acceptView(restored); setWarning(restored.warning); usable = true;
       }
-      const result = await request<PidView & { warning?: string }>({ action: 'refresh', base: publicationBase(), configuration: currentConfiguration.current, force: true }); acceptView(result); setLoadError(''); setWarning(result.warning ?? '');
+      const result = await request<PidView & { warning?: string }>({ action: 'refresh', base: publicationBase(), configuration: currentConfiguration.current }); acceptView(result); setLoadError(''); setWarning(result.warning ?? '');
     }
     catch (error) { (usable ? setUpdateError : setLoadError)(error instanceof Error ? error.message : String(error)); }
     finally { setBusy(false); }
   }
+  async function comparePublished(): Promise<PidComparison> { return request({ action: 'compare-published', base: publicationBase() }); }
   async function compare(data: ArrayBuffer): Promise<PidComparison> { return request({ action: 'compare', data }); }
   async function apply() { const next = await request<PidView>({ action: 'apply', configuration: currentConfiguration.current }); acceptView(next); setLoadError(''); setUpdateError(''); setWarning(''); }
-  return { view, loadError, updateError, warning, busy, ready, request, refresh, compare, apply, deriving: !!view && (view.configurationKey !== key || view.referenceDate !== referenceDate) };
+  return { view, loadError, updateError, warning, busy, ready, request, refresh, compare, comparePublished, apply, deriving: !!view && (view.configurationKey !== key || view.referenceDate !== referenceDate) };
 }

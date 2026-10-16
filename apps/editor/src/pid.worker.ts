@@ -1,19 +1,15 @@
-import { buildGameStops, comparePidSnapshots, pragueDate, readPidSnapshot, referenceZoneGeometry, territoryMembership, type PidSnapshot } from '@jetlag/geo-core';
-import { indexedPidStorage, readPidAttempt, writePidAttempt } from './pid-store';
-import { decodePidData, loadLivePid, loadPublishedPid } from './pid-fetch';
+import { buildGameStops, comparePidSnapshots, comparePidRoutes, pragueDate, readPidSnapshot, referenceZoneGeometry, territoryMembership, type PidSnapshot } from '@jetlag/geo-core';
+import { indexedPidStorage } from './pid-store';
+import { decodePidData, loadPublishedPid } from './pid-fetch';
 import type { PidCommand, PidComparison, PidSummary, PidView, RouteDrawing } from './pid-types';
 
 let snapshot: PidSnapshot | null = null;
 let candidate: PidSnapshot | null = null;
 const message = (error: unknown) => error instanceof Error ? error.message : 'Operace PID selhala.';
-const summary = (source: PidSnapshot): PidSummary => ({ id: source.id, checksum: source.checksum, serviceDate: source.serviceDate, downloadedAt: source.downloadedAt, preparedAt: source.preparedAt, adapterVersion: source.adapterVersion, sources: source.sources, quality: source.quality, groupCount: source.groups.length, platformCount: source.platforms.length, routeCount: source.routes.length });
+const summary = (source: PidSnapshot): PidSummary => ({ id: source.id, checksum: source.checksum, serviceDate: source.serviceDate, downloadedAt: source.downloadedAt, preparedAt: source.preparedAt, adapterVersion: source.adapterVersion, sources: source.sources, quality: source.quality, schemaVersion: source.schemaVersion, routePeriod: source.routePeriod, gtfs: source.gtfs, activePlatformCount: source.platforms.filter(platform => platform.services.length).length, inactivePlatformCount: source.platforms.filter(platform => platform.serviceStatus === 'inactive').length, unknownPlatformCount: source.platforms.filter(platform => platform.serviceStatus === 'unknown').length, groupCount: source.groups.length, platformCount: source.platforms.length, routeCount: source.routes.length });
 function view(configuration: Parameters<typeof buildGameStops>[1]): PidView {
   if (!snapshot) throw new Error('Chybí ověřený snapshot PID.');
   return { summary: summary(snapshot), stops: buildGameStops(snapshot, configuration), routes: snapshot.routes.map(({ id, number, mode, color, validity }) => ({ id, number, mode, color, validity })), configurationKey: JSON.stringify(configuration), referenceDate: pragueDate() };
-}
-function current(next: PidSnapshot): void {
-  if (next.serviceDate !== pragueDate()) throw new Error(`Zdroj nabízí ${next.serviceDate}, dnešní pražské datum je ${pragueDate()}.`);
-  if (next.quality?.status === 'review') throw new Error(next.quality.issues.join(' '));
 }
 async function run(command: PidCommand): Promise<unknown> {
   if (command.action === 'hydrate') {
@@ -27,33 +23,21 @@ async function run(command: PidCommand): Promise<unknown> {
     if (bundled && (!snapshot || (bundled.quality?.status !== 'review' && bundled.serviceDate > snapshot.serviceDate))) snapshot = bundled;
     if (!snapshot) throw new Error(warnings.join(' ') || 'Chybí data PID.');
     if (snapshot !== cached) try { await indexedPidStorage.write(snapshot); } catch (error) { warnings.push(`Snapshot je jen v paměti: ${message(error)}`); }
-    let attempt = null;
-    try { attempt = await readPidAttempt(); } catch (error) { warnings.push(message(error)); }
-    return { ...view(command.configuration), attempt, warning: warnings.join(' ') };
+    return { ...view(command.configuration), warning: warnings.join(' ') };
   }
   if (command.action === 'derive') return view(command.configuration);
   if (command.action === 'refresh') {
-    let attempt = null;
-    try { attempt = await readPidAttempt(); } catch { /* Attempt metadata cannot block usable source data. */ }
-    if (!command.force && attempt?.date === pragueDate()) return { ...view(command.configuration), error: attempt.error, skipped: true };
-    let next: PidSnapshot | null = null; const errors: string[] = [];
-    try { const live = await loadLivePid(); current(live); next = live; } catch (error) { errors.push(`Přímé URL PID: ${message(error)}`); }
-    if (!next) try {
-      const published = await loadPublishedPid(command.base, snapshot); current(published);
-      if (snapshot && snapshot.quality?.status !== 'review' && snapshot.serviceDate === published.serviceDate && snapshot.checksum !== published.checksum && (published.preparedAt ?? published.downloadedAt ?? '') <= (snapshot.preparedAt ?? snapshot.downloadedAt ?? '')) throw new Error('Publikovaný snapshot je starší nebo nemá doložené novější pořadí verzí; přijatá verze nebyla přepsaná.');
-      next = published;
-    } catch (error) { errors.push(`Publikovaný snapshot: ${message(error)}`); }
-    if (!next) {
-      const error = errors.join(' ');
-      try { await writePidAttempt({ date: pragueDate(), error }); } catch (failure) { errors.push(`Uložení pokusu: ${message(failure)}`); }
-      throw new Error(`${errors.join(' ')} Poslední dostupný snapshot zůstal zachovaný.`);
-    }
+    const next = await loadPublishedPid(command.base, snapshot);
+    if (snapshot?.checksum === next.checksum) return { ...view(command.configuration), diff: comparePidSnapshots(snapshot, next), warning: '' };
+    if (snapshot && ((snapshot.quality?.status !== 'review' && next.quality?.status === 'review') || next.serviceDate < snapshot.serviceDate || (next.serviceDate === snapshot.serviceDate && (next.preparedAt ?? next.downloadedAt ?? '') <= (snapshot.preparedAt ?? snapshot.downloadedAt ?? '')))) return { ...view(command.configuration), warning: 'Publikace není novější než přijatá verze; lokální snapshot zůstal zachovaný.' };
     const diff = comparePidSnapshots(snapshot, next);
-    // Transaction and expensive integrity validation run in this worker.
     await indexedPidStorage.write(next); snapshot = next;
-    let warning = '';
-    try { await writePidAttempt({ date: pragueDate(), error: null }); } catch (error) { warning = `Data jsou načtená; nelze uložit datum pokusu: ${message(error)}`; }
-    return { ...view(command.configuration), diff, error: null, warning };
+    return { ...view(command.configuration), diff, warning: '' };
+  }
+  if (command.action === 'compare-published') {
+    candidate = null;
+    candidate = await loadPublishedPid(command.base, snapshot);
+    return { summary: summary(candidate), diff: comparePidSnapshots(snapshot, candidate), routeDiff: comparePidRoutes(snapshot, candidate), names: Object.fromEntries([...(snapshot?.groups ?? []), ...candidate.groups].map(group => [group.id, group.name])) } satisfies PidComparison;
   }
   if (command.action === 'platforms') {
     const groups = new Set(command.groupIds); return snapshot?.platforms.filter(platform => groups.has(platform.groupId)) ?? [];
@@ -76,8 +60,9 @@ async function run(command: PidCommand): Promise<unknown> {
   }
   if (command.action === 'zone') return referenceZoneGeometry(command.point, command.area, command.radius);
   if (command.action === 'compare') {
+    candidate = null;
     candidate = await readPidSnapshot(await decodePidData(command.data));
-    return { summary: summary(candidate), diff: comparePidSnapshots(snapshot, candidate), names: Object.fromEntries([...(snapshot?.groups ?? []), ...candidate.groups].map(group => [group.id, group.name])) } satisfies PidComparison;
+    return { summary: summary(candidate), diff: comparePidSnapshots(snapshot, candidate), routeDiff: comparePidRoutes(snapshot, candidate), names: Object.fromEntries([...(snapshot?.groups ?? []), ...candidate.groups].map(group => [group.id, group.name])) } satisfies PidComparison;
   }
   if (command.action === 'apply') {
     if (!candidate) throw new Error('Nejprve načtěte a porovnejte snapshot.');

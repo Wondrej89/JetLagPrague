@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { gzipSync } from 'node:zlib';
-import { newFeature, newWorld, pragueDate, PID_URLS } from '../packages/geo-core/src/index';
+import { newFeature, newWorld, pragueDate, PID_GTFS_URL, PID_GROUPS_URL } from '../packages/geo-core/src/index';
 import { testPlatform, testSnapshot } from '../packages/geo-core/src/pid-test-fixtures';
 import { defaultPidFilters, PID_PREFERENCES_KEY } from '../apps/editor/src/pid-preferences';
 import { storedWorld } from './draft-helper';
@@ -10,13 +10,12 @@ function draft() {
   world.layers[1].features = [newFeature({ type: 'Point', coordinates: [14.45, 50.1] }, 'Zachovaný vlastní bod')]; return world;
 }
 
-test('platný starší snapshot přežije selhání všech URL, další den, reload i nedostupnou publikaci; filtry a geometrie zůstávají použitelné', async ({ page, context }) => {
+test('platný starší snapshot přežije nedostupnou publikaci a reload bez živých požadavků; filtry a geometrie zůstávají použitelné', async ({ page, context }) => {
   test.setTimeout(90000);
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await context.route('https://api.mapy.com/**', route => route.abort()); await context.route('**/administrative/**', route => route.abort());
-  let held = false, attempts = 0, release = () => {};
-  const gate = new Promise<void>(resolve => { release = resolve; });
-  await context.route('https://data.pid.cz/**', async route => { attempts++; if (held) await gate; await route.abort(); });
+  let attempts = 0;
+  await context.route('https://data.pid.cz/**', route => { attempts++; return route.abort(); });
   const snapshot = await testSnapshot([
     testPlatform('metro', 'metro', 'metro', [14.4, 50.07], 'both'), testPlatform('night', 'bus', 'bus', [14.41, 50.08], 'night'), testPlatform('outside', 'outside', 'tram', [15, 51]),
   ], { date: '2026-08-20', groups: [{ id: 'metro', name: 'Historická testovací zastávka metro' }, { id: 'bus', name: 'Historická testovací zastávka bus' }, { id: 'outside', name: 'Historická testovací zastávka mimo' }] });
@@ -25,10 +24,10 @@ test('platný starší snapshot přežije selhání všech URL, další den, rel
   await context.route('**/pid/index.json', route => publicationOffline ? route.abort() : route.fulfill({ contentType: 'application/json', body: JSON.stringify({ format: 'jetlag-praha-pid-catalog', schemaVersion: 1, file, checksum: snapshot.checksum }) }));
   await context.route(`**/pid/${file}`, route => publicationOffline ? route.abort() : route.fulfill({ contentType: 'application/gzip', body: gzipSync(JSON.stringify(snapshot)) }));
   await page.addInitScript(serialized => { if (!localStorage.getItem('jetlag-praha:world:v1')) localStorage.setItem('jetlag-praha:world:v1', serialized); }, JSON.stringify(draft()));
-  try {
+  {
     await page.goto('/'); await expect(page.getByTestId('pid-count')).toContainText('3 / 3');
     await expect(page.getByTestId('pid-history-notice')).toContainText('Historická referenční data – neověřeno');
-    await expect(page.getByTestId('pid-update-error')).toBeVisible();
+    await expect(page.getByTestId('pid-update-error')).not.toBeVisible();
     await page.getByLabel('Pouze PID v herní oblasti', { exact: true }).check(); await expect(page.getByTestId('pid-count')).toContainText('2 / 2');
     await page.getByLabel('Hledat zastávku PID').fill('Historická'); await page.getByText('Druhy dopravy a provoz', { exact: true }).click();
     await page.getByLabel('Provoz PID', { exact: true }).selectOption('night'); await page.getByLabel('Dominantní doprava PID', { exact: true }).selectOption('metro');
@@ -41,22 +40,20 @@ test('platný starší snapshot přežije selhání všech URL, další den, rel
     await page.getByRole('button', { name: 'Zobrazit úkrytovou zónu 400 m', exact: true }).click();
     await expect(page.getByTestId('map')).toHaveAttribute('data-pid-zone-type', 'Polygon');
     const before = await storedWorld(page);
-    await page.evaluate(() => new Promise<void>((resolve, reject) => {
-      const open = indexedDB.open('jetlag-praha-pid', 1); open.onerror = () => reject(open.error);
-      open.onsuccess = () => { const db = open.result, tx = db.transaction('state', 'readwrite'); tx.objectStore('state').put({ date: '2026-10-15', error: null }, 'last-attempt'); tx.oncomplete = () => { db.close(); resolve(); }; };
-    }));
-    const previousAttempts = attempts; publicationOffline = true; held = true;
+    publicationOffline = true;
     await page.reload();
-    // Cached display must become ready while every live request is still pending.
+    // Cached display survives missing publication; no upstream download is attempted.
     await expect(page.getByTestId('pid-count')).toContainText('1 / 2'); await expect(page.getByTestId('map')).toHaveAttribute('data-pid-stop-count', '1');
     await expect(page.getByLabel('Provoz PID')).toHaveValue('night'); await expect(page.getByLabel('Dominantní doprava PID')).toHaveValue('metro'); await expect(page.getByLabel('Hledat zastávku PID')).toHaveValue('Historická');
-    await expect.poll(() => attempts).toBe(previousAttempts + 3); release();
+    expect(attempts).toBe(0);
     await expect(page.getByTestId('pid-update-error')).toBeVisible();
     await expect(page.getByTestId('pid-snapshot-summary')).toContainText('2026-08-20: 3 herních zastávek · 1 linek');
     await expect(page.getByTestId('map')).toHaveAttribute('data-pid-route-count', '1'); await expect(page.getByTestId('map')).not.toHaveAttribute('data-pid-coverage-type', 'none');
     await page.getByRole('button', { name: 'Doprava PID', exact: true }).click();
     const dialog = page.getByRole('dialog', { name: 'Zdroje a aktualizace PID' });
-    for (const url of Object.values(PID_URLS)) await expect(dialog.getByRole('alert')).toContainText(url);
+    await expect(dialog.getByRole('alert')).toContainText('zachovaný');
+    await dialog.getByText('Oficiální URL', { exact: true }).click();
+    for (const url of [PID_GTFS_URL, PID_GROUPS_URL]) await expect(dialog.getByRole('link', { name: url, exact: true })).toHaveAttribute('href', url);
     await dialog.getByRole('button', { name: 'Zavřít správu PID', exact: true }).click();
     const failedAttempts = attempts; await page.reload();
     await expect(page.getByTestId('map')).toHaveAttribute('data-pid-stop-count', '1'); expect(attempts).toBe(failedAttempts);
@@ -67,7 +64,7 @@ test('platný starší snapshot přežije selhání všech URL, další den, rel
     await page.reload(); await expect(page.getByTestId('pid-count')).toContainText('1 / 3');
     await expect(page.getByLabel('Zobrazit zastávky PID', { exact: true })).not.toBeChecked(); await expect(page.getByLabel('Pouze PID v herní oblasti', { exact: true })).not.toBeChecked();
     await expect(page.getByTestId('map')).toHaveAttribute('data-pid-stop-count', '0'); expect(errors).toEqual([]);
-  } finally { release(); }
+  }
 });
 
 test('výpočet prostorového filtru má stav načítání; chyba nabídne vypnutí a zachová datum a počty zdroje', async ({ page, context }) => {

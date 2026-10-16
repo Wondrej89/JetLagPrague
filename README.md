@@ -1,6 +1,6 @@
 # Jet Lag Praha · geografický editor
 
-Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny.
+Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny. [Iterace 03B](CODEX_UKOL_03B_GTFS.md) používá aktuální obsluhu z GTFS a ruční serverovou publikaci.
 
 Iterace 02 používá dodané soubory `data/raw/mestskecasti.geojson` (**57 městských částí**) a `data/raw/katastralni-uzemi-praha.geojson` (**112 katastrálních území Prahy**). Zachovává všechny souřadnice a atributy, podporuje samostatné zobrazení vrstev, zvýraznění území, přesouvatelný testovací bod a kontrolovanou aktualizaci zdrojů. Mapy.com poskytuje pouze mapový podklad.
 
@@ -14,13 +14,17 @@ Dodaná trojice obsahuje **8 526 skupin, 17 229 fyzických stanovišť a 853 lin
 
 **Omezení dodaných dat:** aktivní zastávky mají platnost **2026-08-20**, trasy **2026-08-20 až 2026-08-26**, ale skupiny byly vygenerované **2026-10-15**. Přibalený referenční snapshot proto vyžaduje revizi a povolenost úkrytu vrací **„nelze určit“**. Body, trasy, měřená vzdálenost a skutečná geometrie průniku zůstávají dostupné. Čas původního stažení a licence dodaných souborů nejsou doložené; čas přípravy snapshotu se eviduje samostatně.
 
-První otevření v pražském dni zkusí všechny tři [oficiální URL](docs/PID_DATA.md). Pokud přímý přístup selže například kvůli CORS, použije denní publikaci na stejném hostingu. Ověřené snapshoty i denní pokusy se ukládají do samostatné IndexedDB; ruční aktualizace je dostupná ve správě PID. GitHub Actions má naplánovanou denní aktualizaci ve **04:30 UTC**. Chyba zdroje zachová poslední dostupnou verzi a zobrazí její datum; nekonzistentní data se automaticky neoznačí za dnešní.
+**Iterace 03B:** aktuální obsluhu určuje [oficiální GTFS PID](https://data.pid.cz/PID_GTFS.zip), `stops.json` doplňuje ověřené fyzické identity a body. Pro provozní den se vyhodnotí kalendáře, výjimky a povolený nástup **nebo** výstup. Aktivní geometrie pochází výhradně z přiřazených GTFS shapes; srpnové geodatové soubory nejsou podmínkou aktualizace. Neaktivní a neurčitelné uzly jsou dostupné ve správě zdroje a nejsou automaticky povolené úkryty.
+
+**Aktualizace:** otevřete **Doprava PID → Aktualizovat data PID ↗**, na GitHubu spusťte **Run workflow** a počkejte na dokončení aktualizace i navazujícího nasazení Pages. Poté v editoru zvolte **Načíst publikovaný výsledek**, zkontrolujte rozdíly skupin i tras a potvrďte přijetí. Workflow vyžaduje oprávnění správce repozitáře; aplikace neobsahuje GitHub token. Denní plán je odstraněný. Prohlížeč čte pouze statické publikace, nestahuje živý GTFS ani původní geodata.
+
+Datový workflow ukládá neměnné GZIP snapshoty a katalog verzí do samostatné větve `pid-data`. Běžný push kódu je pouze převezme a ověří, nestahuje zdroje PID a nevrací publikaci na starší bootstrap. Pro stejný den se ověřená verze použije opakovaně bez stažení; nové sestavení lze výslovně vynutit. Selhání zachová poslední publikaci a vlastní drafty. Ověřený aktuální GTFS z 16. 10. obsahuje **52 663 plánovaných spojů, 870 aktivních linek, 8 265 herních uzlů s obsluhou** v celé síti PID; nejde o počty omezené pouze na Prahu. [Audit skutečného feedu a konkrétních míst](data/source-metadata/pid-gtfs-source-audit.md).
 
 [Podrobný návod, architektura, pravidla a omezení PID](docs/PID_DATA.md) · [audit dodané trojice](data/source-metadata/pid-source-audit.md) · [vložení JSON/ZIP/GZIP](data/raw/pid/README.md)
 
 ### Obnova PID při výpadku aktualizace
 
-Ověřený snapshot z IndexedDB se načte **před síťovou aktualizací**, i když je starší. Selhání přímých URL, CORS, timeout nebo nedostupná publikace jej nesmaže ani nevypne zobrazení. Aktualizace má vlastní chybu oddělenou od prvotního načtení; editor u dostupných dat stále ukazuje datum a počty. Pokud chybí i lokální kopie, oznámí chybu načtení a nabídne nový pokus. Kontrola SHA-256, schématu, vazeb a verzí zůstává povinná; poškozený snapshot se nepoužije.
+Ověřený snapshot z IndexedDB se načte **před síťovou aktualizací**, i když je starší. Selhání serverové aktualizace, timeout nebo nedostupná publikace jej nesmaže ani nevypne zobrazení. Aktualizace má vlastní chybu oddělenou od prvotního načtení; editor u dostupných dat stále ukazuje datum a počty. Pokud chybí i lokální kopie, oznámí chybu načtení a nabídne nový pokus. Kontrola SHA-256, schématu, vazeb a verzí zůstává povinná; poškozený snapshot se nepoužije.
 
 Starší nebo nekonzistentní zdroj má výrazné označení **Historická referenční data – neověřeno**. Zůstává použitelný pro prohlížení zastávek, tras, jednotlivých i společných úkrytových zón a geografickou diagnostiku. Měření vzdálenosti a poloha v oblasti fungují, ale ostrá povolenost úkrytu vrací **„nelze určit“**. Ani dříve konzistentní snapshot se po změně pražského dne automaticky nepovažuje za dnešní ověřená data.
 
@@ -28,9 +32,7 @@ Viditelnost zastávek a tras, všechny dopravní a prostorové filtry, hledání
 
 Filtr **Pouze PID v herní oblasti** během výpočtu ukazuje načítání a počty dostupného zdroje. Nepředstírá výsledek `0 / 0`. Existující výsledek pro stejnou oblast se při přepočtu zachová; mapa označí čekání na nový výsledek. Při chybě či chybějící oblasti lze filtr vypnout jedním tlačítkem a prohlížet dostupná PID data.
 
-**Ověření 16. 10. 2026:** přímé zdroje odpovídají HTTP 200, ale geodata zastávek a linek mají stále srpnovou platnost a neposkytují CORS hlavičku pro prohlížeč. `stops.json` je říjnový. GitHub Actions API při kontrole neevidovalo žádný plánovaný běh; poslední úspěšné nasazení bylo vyvolané pushem. Striktní opakování denního refresh odmítlo smíšenou trojici, zachovalo původní publikaci a vytvořilo diagnostiku. Další běhy ukládají přehled jednotlivých URL, HTTP stavů, platností a chyb do souhrnu Actions a artefaktu `pid-refresh-diagnostics`, včetně neúspěšného denního běhu.
-
-[Podrobný audit aktualizací z 16. 10.](docs/PID_REFRESH_AUDIT_2026-10-16.md) · [samostatný návrh přechodu aktivní obsluhy na GTFS](docs/PID_GTFS_PROPOSAL.md). Stávající datový adaptér se v této opravě nemění.
+Příčinu původního výpadku dokumentuje [audit aktualizací z 16. 10.](docs/PID_REFRESH_AUDIT_2026-10-16.md). Tehdejší návrh přechodu na GTFS je nyní realizovaný v iteraci 03B. Nové stahování eviduje jednotlivé URL, HTTP chyby, datum a výsledek v souhrnu Actions a artefaktu `pid-gtfs-diagnostics`. Zdroj nedostupný dnes se nevydává za dnešní obsluhu.
 
 ### Celá Praha a souhrnná úkrytová plocha
 
@@ -93,6 +95,8 @@ Nástroje **Zobrazit vše** a **Zpět na Prahu** upravují pouze pohled. Mapové
 
 ## Architektura a výpočty
 
+GTFS import odděluje čisté jádro `pid-gtfs.ts` od ZIP/CSV a sítě ve `scripts/gtfs-input.ts` a `gtfs-publication.ts`. `pid-catalog.ts` popisuje neměnné publikované verze. `pid-shared.ts` poskytuje znovupoužitelnou denní cache s požadovaným sdíleným zámkem; `hide-selection.ts` validuje kandidáty a soukromé potvrzení proti uzamčenému snapshotu. Autentizovaný backend, distribuované úložiště a hráčské UI zůstávají další fází. [Kontrakty a pravidla nasazení](docs/PID_DATA.md).
+
 - `apps/editor/src/App.tsx`: vrstvy, vlastnosti, import/export, historie a lokální ukládání.
 - `apps/editor/src/MapCanvas.tsx`: adaptér Leaflet + Geoman Free, Mapy.com podklad a kreslicí nástroje. Poskytovatel podkladu neovlivňuje datový kontrakt.
 - `packages/geo-core/src/index.ts`: sdílené typy `WorldDraft`, `GeoLayer`, `GeoFeature`, Zod validace a služby `importGeoJson`, `exportWorld`, `distanceMeters`, `makeMetricCircle`, `pointInArea`, `addHole`, `saveDraft`, `loadDraft`. Jádro nepoužívá DOM ani mapový klíč; lze je později využít na serveru. Verze 2 přidává zdrojová metadata vrstvy; volitelné `gameStops` zachovává oddělená pravidla, propojení a ruční výjimky iterace 03. POI zůstávají rezervované.
@@ -124,7 +128,7 @@ Playwright použije `/usr/bin/chromium`, pokud existuje; jinak svůj nainstalova
 1. V repozitáři nastavte **Settings → Pages → Source: GitHub Actions**.
 2. Do **Settings → Secrets and variables → Actions** přidejte secret `VITE_MAPY_API_KEY` s veřejným klientským klíčem, omezeným na svůj web Pages (a příslušnou cestu, pokud omezení poskytovatele cesty podporuje).
 3. Workflow **Deploy editor to GitHub Pages** se spustí po každém pushi do `main`; lze jej spustit také ručně v záložce Actions přes **Run workflow**.
-4. Workflow ověří lint, jednotkové testy, administrativní data (`data:check`), aktualizuje a ověří publikaci PID (`pid:publish`, `pid:check`), provede build a nasadí `dist`. Stejný workflow běží denně ve 04:30 UTC; neúspěšná denní aktualizace předchozí nasazení nepřepíše. Chybějící nebo chybné hranice nasazení zastaví. Relativní Vite `base: './'` podporuje cestu `/JetLagPrague/` bez změny aplikace. Pro vlastní doménu upravte povolené referery klíče.
+4. Workflow ověří lint, jednotkové testy, administrativní data (`data:check`), převezme publikaci z `pid-data` (`pid:stage`), ověří ji (`pid:check`), provede build a nasadí `dist`. Nestahuje GTFS ani jiné živé zdroje PID. Pokud větev ještě neexistuje, použije označený historický bootstrap. Chybu přístupu k existující větvi neobchází návratem ke starým datům. Chybějící nebo chybné hranice nasazení zastaví. Relativní Vite `base: './'` podporuje cestu `/JetLagPrague/` bez změny aplikace. Pro vlastní doménu upravte povolené referery klíče.
 
 Bez secretu se build úmyslně nezastaví: editor zobrazí stav chybějícího klíče. Pro funkční podklad musí být klíč doplněn při buildu nebo v Nastavení mapy.
 

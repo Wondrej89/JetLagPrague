@@ -321,7 +321,7 @@ export function App() {
         <div className="export-section"><h3>Přenosná data</h3><p>JSON obsahuje celý draft. GeoJSON navíc otevřete v běžných GIS nástrojích; metadata editoru jsou v rozšířených polích.</p><button disabled={editing} onClick={() => attempt(() => download(exportWorld(world, 'geojson'), 'jetlag-praha-draft.geojson'))}>Exportovat GeoJSON</button></div>
       </aside>
     </div>
-    {pidSources && <PidSourceDialog view={pid.view} busy={pid.busy} loadError={pid.loadError} updateError={pid.updateError} warning={pid.warning} configuration={pidConfiguration} onClose={() => setPidSources(false)} onRefresh={pid.refresh} onCompare={pid.compare} onApply={pid.apply} onExport={exportPid} onReview={stop => { selectPid(stop, true); setPidSources(false); }} />}
+    {pidSources && <PidSourceDialog view={pid.view} busy={pid.busy} loadError={pid.loadError} updateError={pid.updateError} warning={pid.warning} configuration={pidConfiguration} onClose={() => setPidSources(false)} onRefresh={pid.refresh} onPublished={pid.comparePublished} onCompare={pid.compare} onApply={pid.apply} onExport={exportPid} onReview={stop => { selectPid(stop, true); setPidSources(false); }} />}
     {sourcesOpen && <AdministrativeDialog world={world} bundled={bundled} loadError={sourceError} onClose={() => setSourcesOpen(false)} onApply={layer => { commit(applyAdministrativeUpdate(world, layer)); setSelected(null); setTool('select'); }} />}
     {importing && <ImportDialog onClose={() => setImporting(false)} onImport={async (contents, mode, title, source) => {
       if (mode === 'world') {

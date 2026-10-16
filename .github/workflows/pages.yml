@@ -3,8 +3,6 @@ on:
   push:
     branches: [main]
   workflow_dispatch:
-  schedule:
-    - cron: '30 4 * * *'
 permissions:
   contents: read
 concurrency:
@@ -26,17 +24,26 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run data:check
-      - name: Refresh and verify PID publication
-        run: npm run pid:publish
-        env:
-          PID_PUBLISHED_BASE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
-      - name: Preserve PID refresh diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Locate published PID data branch
+        id: pid-data
+        shell: bash
+        run: |
+          if git ls-remote --exit-code --heads origin pid-data > "$RUNNER_TEMP/pid-data-ref"; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+          else
+            pid_ref_status=$?
+            if [ "$pid_ref_status" -ne 2 ]; then exit "$pid_ref_status"; fi
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Check out immutable PID publication
+        if: steps.pid-data.outputs.exists == 'true'
+        uses: actions/checkout@v4
         with:
-          name: pid-refresh-diagnostics
-          path: data/reports/pid-refresh.json
-          if-no-files-found: ignore
+          ref: pid-data
+          path: .pid-publication
+      - name: Stage published PID without upstream downloads
+        if: steps.pid-data.outputs.exists == 'true'
+        run: npm run pid:stage -- --from .pid-publication/pid
       - run: npm run pid:check
       - run: npm run build
         env:

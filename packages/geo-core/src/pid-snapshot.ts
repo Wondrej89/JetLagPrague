@@ -7,11 +7,11 @@ export type { TransportMode } from './pid-model';
 import { transportModeSchema, wgs84PointSchema } from './pid-model';
 const identifier = z.string().min(1).max(300);
 const digest = z.string().regex(/^[a-f0-9]{64}$/);
-const rawReferenceSchema = z.object({ source: z.enum(['active-stops', 'stop-groups', 'routes']), pointer: z.string().startsWith('/') });
+const rawReferenceSchema = z.object({ source: z.enum(['active-stops', 'stop-groups', 'routes', 'gtfs']), pointer: z.string().startsWith('/') });
 const uniqueStrings = z.array(identifier).refine(values => new Set(values).size === values.length, 'Duplicitní identifikátory.');
 const serviceSchema = z.enum(['day', 'night', 'both', 'unknown']);
 const sourceSchema = z.object({
-  id: z.enum(['active-stops', 'stop-groups', 'routes']),
+  id: z.enum(['active-stops', 'stop-groups', 'routes', 'gtfs']),
   url: z.url().refine(value => new URL(value).protocol === 'https:'),
   sha256: digest,
   version: z.string().min(1).nullable(),
@@ -36,6 +36,8 @@ const platformSchema = z.object({
   gtfsIds: z.array(z.string()).optional(),
   routeIds: z.array(z.string()).optional(),
   joinMethod: z.enum(['gtfs-id', 'asw-ids']).optional(),
+  serviceStatus: z.enum(['active', 'inactive', 'unknown']).optional(),
+  reviewReasons: z.array(z.string()).optional(),
 });
 const routeSchema = z.object({
   id: identifier, number: z.string().min(1), mode: transportModeSchema,
@@ -47,24 +49,29 @@ const routeSchema = z.object({
   color: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional(),
   validity: z.array(z.iso.date()).optional(),
   partBounds: z.array(z.tuple([z.number(), z.number(), z.number(), z.number()])).optional(),
+  shapeIds: uniqueStrings.optional(),
 });
 const stationReferenceSchema = z.object({
   groupIds: uniqueStrings.nonempty(), mode: transportModeSchema, point: wgs84PointSchema,
   evidence: rawReferenceSchema,
 });
 const snapshotSchema = z.object({
-  format: z.literal('jetlag-praha-pid'), schemaVersion: z.literal(1),
+  format: z.literal('jetlag-praha-pid'), schemaVersion: z.union([z.literal(1), z.literal(2)]),
   id: identifier, serviceDate: z.iso.date(), downloadedAt: z.iso.datetime().nullable(),
   preparedAt: z.iso.datetime().optional(),
   checksum: digest,
   adapterVersion: identifier,
-  sources: z.array(sourceSchema).length(3),
+  sources: z.array(sourceSchema).min(1).max(3),
   groups: z.array(groupSchema).min(1).max(100000),
   platforms: z.array(platformSchema).min(1).max(200000),
   stationReferences: z.array(stationReferenceSchema).max(100000),
-  routes: z.array(routeSchema).min(1).max(100000),
-  routePeriod: z.literal('seven-days'),
-  quality: z.object({ status: z.enum(['verified', 'review']), issues: z.array(z.string()), unmappedActiveIds: z.array(z.string()), groupsGeneratedAt: z.string() }).optional(),
+  routes: z.array(routeSchema).max(100000),
+  routePeriod: z.enum(['seven-days', 'service-day']),
+  quality: z.object({ status: z.enum(['verified', 'review']), issues: z.array(z.string()), unmappedActiveIds: z.array(z.string()), groupsGeneratedAt: z.string(), reviewGroupIds: uniqueStrings.optional() }).optional(),
+  gtfs: z.object({ feedStart: z.iso.date(), feedEnd: z.iso.date(), timezone: z.literal('Europe/Prague'), dateSemantics: z.literal('gtfs-service-day'),
+    publisher: z.string().min(1), tableChecksums: z.record(z.string(), digest), serviceIds: uniqueStrings,
+    counts: z.record(z.string(), z.number().int().nonnegative()), minServiceSeconds: z.number().int().nonnegative().nullable(), maxServiceSeconds: z.number().int().nonnegative().nullable(),
+  }).optional(),
 });
 export type PidSnapshot = z.infer<typeof snapshotSchema>;
 export type PidPlatform = PidSnapshot['platforms'][number];
@@ -94,16 +101,31 @@ function uniqueIds(values: { id: string }[], label: string): void {
 export function validatePidSnapshot(input: unknown): PidSnapshot {
   const snapshot = snapshotSchema.parse(input);
   uniqueIds(snapshot.groups, 'skupiny'); uniqueIds(snapshot.platforms, 'stanoviště'); uniqueIds(snapshot.routes, 'trasy');
-  if (new Set(snapshot.sources.map(source => source.id)).size !== 3) throw new Error('Snapshot musí obsahovat všechny tři různé povinné zdroje.');
+  const sourceIds = new Set(snapshot.sources.map(source => source.id));
+  if (sourceIds.size !== snapshot.sources.length) throw new Error('Duplicitní zdroje; snapshot v1 musí obsahovat všechny tři různé povinné zdroje.');
+  if (snapshot.schemaVersion === 1 && (sourceIds.size !== 3 || !['active-stops', 'stop-groups', 'routes'].every(id => sourceIds.has(id as PidSnapshot['sources'][number]['id'])) || !snapshot.routes.length || snapshot.routePeriod !== 'seven-days' || snapshot.gtfs)) throw new Error('Snapshot v1 musí obsahovat všechny tři různé povinné zdroje a sedmidenní trasy.');
+  if (snapshot.schemaVersion === 2 && (!sourceIds.has('gtfs') || [...sourceIds].some(id => id !== 'gtfs' && id !== 'stop-groups') || snapshot.routePeriod !== 'service-day' || !snapshot.gtfs || !snapshot.quality || snapshot.serviceDate < snapshot.gtfs.feedStart || snapshot.serviceDate > snapshot.gtfs.feedEnd)) throw new Error('Snapshot GTFS v2 nemá doložené zdroje nebo platnost požadovaného dne.');
+  if (snapshot.gtfs) {
+    const required = ['agency.txt', 'feed_info.txt', 'stops.txt', 'routes.txt', 'trips.txt', 'stop_times.txt', 'shapes.txt'];
+    if (required.some(name => !snapshot.gtfs!.tableChecksums[name]) || !snapshot.gtfs.tableChecksums['calendar.txt'] && !snapshot.gtfs.tableChecksums['calendar_dates.txt']) throw new Error('GTFS postrádá kontrolní součty povinných tabulek.');
+    if (['stops', 'routes', 'trips', 'stopTimes', 'shapePoints'].some(key => !snapshot.gtfs!.counts[key]) || snapshot.gtfs.counts.activeTrips === undefined || snapshot.gtfs.counts.activeTrips > snapshot.gtfs.counts.trips) throw new Error('Neúplná evidence zpracování GTFS.');
+  }
   const groups = new Set(snapshot.groups.map(group => group.id));
   for (const platform of snapshot.platforms) {
     if (!platform.services.length && platform.active !== false) throw new Error('Aktivní stanoviště musí mít doloženou obsluhu.');
     if (platform.active === false && platform.services.length) throw new Error('Neaktivní stanoviště nesmí předstírat aktivní obsluhu.');
     if (!groups.has(platform.groupId)) throw new Error(`Stanoviště ${platform.id} odkazuje na neexistující skupinu.`);
-    if (platform.evidence.source !== 'stop-groups' || platform.services.some(service => service.evidence.source !== 'active-stops')) throw new Error('Stanoviště a aktivní obsluha musí mít odpovídající zdrojové doklady.');
+    if (!sourceIds.has(platform.evidence.source) || platform.services.some(service => service.evidence.source !== (snapshot.schemaVersion === 1 ? 'active-stops' : 'gtfs'))) throw new Error('Stanoviště a aktivní obsluha musí mít odpovídající zdrojové doklady.');
+    if (snapshot.schemaVersion === 2 && (!platform.serviceStatus || (platform.services.length > 0) !== (platform.serviceStatus === 'active'))) throw new Error('Stav obsluhy GTFS neodpovídá dokladům služby.');
   }
-  for (const group of snapshot.groups) if (group.evidence.source !== 'stop-groups') throw new Error('Skupina musí odkazovat na zdroj skupin.');
-  for (const route of snapshot.routes) if (route.evidence.source !== 'routes') throw new Error('Trasa musí odkazovat na zdroj tras.');
+  for (const group of snapshot.groups) if (!sourceIds.has(group.evidence.source) || !['gtfs', 'stop-groups'].includes(group.evidence.source)) throw new Error('Skupina musí odkazovat na doložený zdroj skupin.');
+  for (const route of snapshot.routes) {
+    if (route.evidence.source !== (snapshot.schemaVersion === 1 ? 'routes' : 'gtfs')) throw new Error('Trasa musí odkazovat na zdroj tras.');
+    const parts = route.geometry.type === 'LineString' ? [route.geometry.coordinates] : route.geometry.coordinates;
+    if (route.partBounds && route.partBounds.length !== parts.length || route.shapeIds && route.shapeIds.length !== parts.length) throw new Error('Metadata částí trasy nesouhlasí s geometrií.');
+    if (snapshot.schemaVersion === 2 && (!route.shapeIds?.length || route.validity?.length !== 1 || route.validity[0] !== snapshot.serviceDate)) throw new Error('Trasa GTFS nemá doložené tvary a platnost dne.');
+  }
+  if (snapshot.quality?.reviewGroupIds?.some(id => !groups.has(id))) throw new Error('Revize odkazuje na neexistující skupinu.');
   const references = new Set<string>();
   for (const reference of snapshot.stationReferences) {
     if (reference.groupIds.some(id => !groups.has(id))) throw new Error('Referenční bod odkazuje na neexistující skupinu.');
@@ -119,8 +141,8 @@ export async function sha256(input: string | Uint8Array): Promise<string> {
   return [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map(value => value.toString(16).padStart(2, '0')).join('');
 }
 export async function pidChecksum(snapshot: Omit<PidSnapshot, 'checksum' | 'id'>): Promise<string> {
-  const { format, schemaVersion, serviceDate, downloadedAt, preparedAt, adapterVersion, sources, groups, platforms, stationReferences, routes, routePeriod, quality } = snapshot;
-  return sha256(canonicalJson({ format, schemaVersion, serviceDate, downloadedAt, preparedAt, adapterVersion, sources, groups, platforms, stationReferences, routes, routePeriod, quality }));
+  const { format, schemaVersion, serviceDate, downloadedAt, preparedAt, adapterVersion, sources, groups, platforms, stationReferences, routes, routePeriod, quality, gtfs } = snapshot;
+  return sha256(canonicalJson({ format, schemaVersion, serviceDate, downloadedAt, preparedAt, adapterVersion, sources, groups, platforms, stationReferences, routes, routePeriod, quality, gtfs }));
 }
 export async function createPidSnapshot(input: Omit<PidSnapshot, 'checksum' | 'id'>): Promise<PidSnapshot> {
   // Normalize first (for example whitespace in names), then hash exactly the
@@ -157,6 +179,12 @@ export function comparePidSnapshots(previous: PidSnapshot | null, next: PidSnaps
   }
   diff.removed = [...old.keys()];
   return diff;
+}
+export function comparePidRoutes(previous: PidSnapshot | null, next: PidSnapshot): SourceDiff {
+  const old = new Map((previous?.routes ?? []).map(route => [route.id, canonicalJson({ ...route, validity: undefined })]));
+  const diff: SourceDiff = { added: [], changed: [], removed: [], unchanged: [] };
+  for (const route of next.routes) { const value = canonicalJson({ ...route, validity: undefined }); (old.has(route.id) ? old.get(route.id) === value ? diff.unchanged : diff.changed : diff.added).push(route.id); old.delete(route.id); }
+  diff.removed = [...old.keys()]; return diff;
 }
 
 export interface PidSnapshotStorage { read(): Promise<unknown | null>; write(snapshot: PidSnapshot): Promise<void> }

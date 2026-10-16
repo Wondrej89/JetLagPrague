@@ -27,6 +27,7 @@ export interface GameStop {
   service: 'day' | 'night' | 'both' | 'unknown';
   serviceHasUnknown: boolean;
   snapshotId: string; snapshotDate: string;
+  activity: 'active' | 'inactive' | 'unknown';
 }
 function signature(groupIds: string[], platforms: PidPlatform[]): string {
   // Coordinate corrections do not delete a manual point. Identity or mode changes
@@ -44,6 +45,8 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
   const configuration = validateGameStopConfiguration(input);
   const groups = new Map(snapshot.groups.map(group => [group.id, group]));
   const byGroup = new Map<string, PidPlatform[]>();
+  const allByGroup = new Map<string, PidPlatform[]>();
+  for (const platform of snapshot.platforms) { const list = allByGroup.get(platform.groupId) ?? []; list.push(platform); allByGroup.set(platform.groupId, list); }
   for (const platform of snapshot.platforms) if (platform.publicStop && platform.services.length) {
     const list = byGroup.get(platform.groupId) ?? []; list.push(platform); byGroup.set(platform.groupId, list);
   }
@@ -55,6 +58,8 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
   const overrides = new Map(configuration.overrides.map(override => [override.stopId, override]));
   return nodes.map(node => {
     const platforms = node.groupIds.flatMap(id => byGroup.get(id) ?? []);
+    const allPlatforms = node.groupIds.flatMap(id => allByGroup.get(id) ?? []);
+    const activity: GameStop['activity'] = platforms.length ? 'active' : allPlatforms.some(platform => platform.serviceStatus === 'unknown') ? 'unknown' : 'inactive';
     const modes = [...new Set(platforms.flatMap(platform => platform.services.map(service => service.mode)))].sort();
     const sourceSignature = signature(node.groupIds, platforms);
     const override = overrides.get(node.id);
@@ -66,6 +71,8 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
     if (missingGroups.length) reasons.push(`Chybí původní skupiny: ${missingGroups.join(', ')}.`);
     if (signatureChanged) reasons.push('Změnila se skladba zdrojových skupin nebo stanovišť; ruční rozhodnutí vyžaduje revizi.');
     const trustedOverride = signatureChanged || missingGroups.length ? undefined : override;
+    const localReview = node.groupIds.some(id => snapshot.quality?.reviewGroupIds?.includes(id));
+    if (localReview && !(trustedOverride?.decision === 'allowed' && trustedOverride.point)) reasons.push('Místní nejednoznačnost vazby GTFS nebo fyzických stanovišť; nutná revize referenčního bodu.');
     let referenceModes = dominantModes(modes);
     if (modes.some(mode => mode === 'ferry' || mode === 'funicular')) {
       if (trustedOverride?.mode && modes.includes(trustedOverride.mode)) referenceModes = [trustedOverride.mode];
@@ -90,7 +97,7 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
     const eligibility = override?.decision === 'excluded' ? 'excluded' : reasons.length || requiresSpecialApproval ? 'review' : 'allowed';
     return { id: node.id, name: node.name, groupIds: [...node.groupIds], modes, dominantMode: referenceModes[0] ?? null, referenceModes,
       platformIds: platforms.map(platform => platform.id), relevantPlatformIds: relevant.map(platform => platform.id), point, automaticPoint, pointMethod,
-      eligibility, reasons, sourceSignature, service: period(platforms), serviceHasUnknown: platforms.some(platform => platform.services.some(service => service.period === 'unknown')), snapshotId: snapshot.id, snapshotDate: snapshot.serviceDate };
+      eligibility, reasons, sourceSignature, service: period(platforms), serviceHasUnknown: platforms.some(platform => platform.services.some(service => service.period === 'unknown')), snapshotId: snapshot.id, snapshotDate: snapshot.serviceDate, activity };
   });
 }
 

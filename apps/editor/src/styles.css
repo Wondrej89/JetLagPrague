@@ -8,6 +8,8 @@ button:disabled { opacity: .4; cursor: not-allowed; }
 button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible, summary:focus-visible { outline: 3px solid #d29945; outline-offset: 2px; }
 .primary { background: #204e41; color: white; border-color: #204e41; }
 .primary:hover:not(:disabled) { background: #123c30; color: white; }
+.pid-workflow-link { display: inline-block; margin: 8px 0; padding: 10px 14px; border-radius: 6px; background: #204e41; color: white; text-decoration: none; font-weight: 600; }
+.pid-workflow-link:hover { background: #123c30; }
 input, textarea, select { width: 100%; border: 1px solid #d7dfd6; border-radius: 5px; padding: 9px; color: #203b33; background: #fff; }
 textarea { resize: vertical; }
 label { display: block; font-size: 12px; font-weight: 600; line-height: 1.5; }

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { comparePidSnapshots, pragueDate, readPidSnapshot, refreshPidSnapshot, snapshotReference, validatePidSnapshot, type PidSnapshot } from './pid-snapshot';
 import { testPlatform, testSnapshot } from './pid-test-fixtures';
 
-describe('PID snapshot contract (synthetic fixtures, upstream adapter not yet verified)', () => {
+describe('PID snapshot contract (synthetic fixtures and legacy compatibility)', () => {
   it('uses Prague calendar dates across midnight and both DST transitions', () => {
     expect(pragueDate(new Date('2026-10-14T22:30:00Z'))).toBe('2026-10-15');
     expect(pragueDate(new Date('2026-12-14T23:30:00Z'))).toBe('2026-12-15');

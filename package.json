@@ -24,12 +24,16 @@
     "pid:inspect": "tsx scripts/inspect-pid.ts",
     "pid:download": "tsx scripts/download-pid.ts",
     "pid:bundle": "tsx scripts/prepare-pid.ts",
-    "pid:publish": "tsx scripts/refresh-pid-publication.ts",
-    "pid:check": "tsx scripts/check-pid.ts"
+    "pid:publish": "tsx scripts/refresh-pid-gtfs.ts",
+    "pid:legacy:publish": "tsx scripts/refresh-pid-publication.ts",
+    "pid:check": "tsx scripts/check-pid.ts",
+    "pid:gtfs": "tsx scripts/refresh-pid-gtfs.ts",
+    "pid:stage": "tsx scripts/stage-pid-publication.ts"
   },
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "2.20.2",
     "@turf/turf": "^7.3.0",
+    "csv-parse": "6.1.0",
     "leaflet": "1.9.4",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",

@@ -1,10 +1,10 @@
 import type { PidSnapshot, GameStop, PidPlatform, SourceDiff, AreaGeometry, GameStopConfiguration, TransportMode } from '@jetlag/geo-core';
 
-export type PidSummary = Pick<PidSnapshot, 'id' | 'checksum' | 'serviceDate' | 'downloadedAt' | 'preparedAt' | 'adapterVersion' | 'sources' | 'quality'> & { groupCount: number; platformCount: number; routeCount: number };
+export type PidSummary = Pick<PidSnapshot, 'id' | 'checksum' | 'serviceDate' | 'downloadedAt' | 'preparedAt' | 'adapterVersion' | 'sources' | 'quality' | 'schemaVersion' | 'routePeriod' | 'gtfs'> & { groupCount: number; platformCount: number; routeCount: number; activePlatformCount: number; inactivePlatformCount: number; unknownPlatformCount: number };
 export type RouteSummary = Pick<PidSnapshot['routes'][number], 'id' | 'number' | 'mode' | 'color' | 'validity'>;
 export type RouteDrawing = RouteSummary & { geometry: PidSnapshot['routes'][number]['geometry'] };
 export interface PidView { summary: PidSummary; stops: GameStop[]; routes: RouteSummary[]; configurationKey: string; referenceDate: string }
-export interface PidComparison { summary: PidSummary; diff: SourceDiff; names: Record<string, string> }
+export interface PidComparison { summary: PidSummary; diff: SourceDiff; routeDiff: SourceDiff; names: Record<string, string> }
 export interface PidFilters { visible: boolean; modes: TransportMode[]; dominant: TransportMode | ''; period: 'all' | 'day' | 'night'; search: string; routesVisible: boolean; routeSearch: string; selectedRoute: string; onlySelectedRoute: boolean; territoryOnly: boolean }
 export type ViewBounds = [number, number, number, number];
 export interface PidMapState {
@@ -16,7 +16,8 @@ export interface PidMapState {
 export type PidCommand =
   | { action: 'hydrate'; base: string; configuration: GameStopConfiguration }
   | { action: 'derive'; configuration: GameStopConfiguration }
-  | { action: 'refresh'; base: string; configuration: GameStopConfiguration; force: boolean }
+  | { action: 'refresh'; base: string; configuration: GameStopConfiguration }
+  | { action: 'compare-published'; base: string }
   | { action: 'platforms'; groupIds: string[] }
   | { action: 'membership'; area: AreaGeometry; configuration: GameStopConfiguration }
   | { action: 'routes'; bounds: ViewBounds; modes: TransportMode[]; selected: string; onlySelected: boolean; allowedIds?: string[] }
