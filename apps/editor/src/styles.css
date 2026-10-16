@@ -89,7 +89,7 @@ path.leaflet-interactive:focus-visible { stroke-width: 4; }
 .map-notice strong { display: block; font-size: 12px; }
 .map-notice span { display: block; font-size: 11px; color: #6f786a; line-height: 1.5; margin-top: 3px; }
 .prague-button { position: absolute; top: 110px; right: 16px; z-index: 500; font-size: 11px; box-shadow: 0 2px 8px #0001; }
-.map-help { position: absolute; bottom: 77px; left: 16px; right: 16px; z-index: 500; background: #fcfcf6f5; border: 1px solid #dce2d1; border-radius: 7px; padding: 13px 16px; box-shadow: 0 2px 12px #0001; display: flex; align-items: center; flex-wrap: wrap; gap: 9px 14px; pointer-events: none; }
+.map-help { position: absolute; bottom: 77px; left: 16px; right: 16px; max-width: 640px; z-index: 500; background: #fcfcf6f5; border: 1px solid #dce2d1; border-radius: 7px; padding: 13px 16px; box-shadow: 0 2px 12px #0001; display: flex; align-items: center; flex-wrap: wrap; gap: 9px 14px; pointer-events: none; }
 .map-help strong { font-size: 11px; }
 .map-help span { flex: 1; font-size: 11px; color: #74806b; min-width: 150px; line-height: 1.5; }
 .map-help button, .map-help label { pointer-events: auto; }
