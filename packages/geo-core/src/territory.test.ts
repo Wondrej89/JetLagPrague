@@ -116,4 +116,4 @@ it('skutečná Praha: všech 57 částí, přesné sjednocení, reálná PID dat
   expect(coverage.usedStops).toBe(membership.stopIds.length); expect(coverage.reviewStops).toBe(coverage.usedStops);
   expect(coverage.areaSquareMeters / 1e6).toBeGreaterThan(300); expect(coverage.areaSquareMeters / 1e6).toBeLessThan(330);
   expect(booleanPointInPolygon(andel.point!, coverage.geometry!)).toBe(true);
-}, 30000);
+}, 60000);

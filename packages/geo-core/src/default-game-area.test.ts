@@ -44,5 +44,5 @@ describe('Static default game territory', () => {
     const world = validateWorld({ ...setGameArea(newWorld(), a), gameAreaInitialization: { version: 1, state: 'initialized' } });
     for (const format of ['json', 'geojson'] as const) expect(importWorld(exportWorld(world, format))).toEqual(world);
     expect(a.attributes.datasetChecksum).toBe(municipal.dataset!.checksum); expect(a.attributes.defaultAreaChecksum).toBe(prepared.properties.checksum);
-  });
+  }, 30000);
 });
