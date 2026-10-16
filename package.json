@@ -37,6 +37,7 @@
     "@turf/turf": "^7.3.0",
     "@zip.js/zip.js": "2.24.0",
     "csv-parse": "6.1.0",
+    "geos-wasm": "3.1.1",
     "jsts": "2.12.1",
     "leaflet": "1.9.4",
     "proj4": "2.22.0",

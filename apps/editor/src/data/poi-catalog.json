@@ -120,9 +120,9 @@
   "parkSourceStatus": {
     "layer": "MPP_100_Parky_p",
     "documentationUrl": "https://geoportalpraha.cz/data-a-sluzby/35e82d77fbd44d96b470bf5731fbb0d4",
-    "status": "metadata_verified_archive_blocked",
+    "status": "archive_audited_candidates_not_published",
     "checkedAt": "2026-10-16",
-    "reason": "Metadata Geoportálu potvrzují vrstvu MPP, EPSG:5514, ID a NAZEV a skutečný ZIP. Původní archiv blokuje cloudová proxy pro mp.iprpraha.cz (CONNECT 403); obsah 953 objektů a licence dosud nejsou ověřené."
+    "reason": "Originální ZIP ověřen 16. 10. 2026: 953 záznamů, tři bezpečné opravy GEOS a sjednocení ID 2773 dávají 952 platných kandidátů. Konkrétní licence a herní schválení parků nejsou doložené; kandidáti se importují uživatelským potvrzením."
   },
   "airportArpInput": [
     [

@@ -1,0 +1,136 @@
+{
+  "checkedAt": "2026-10-16",
+  "downloadUrl": "https://mp.iprpraha.cz/portal/sharing/rest/content/items/72516a5b78b749bb8ecaae563e0c47c8/data",
+  "archiveBytes": 2098951,
+  "originalChecksum": "b6edf4d01e704f16362aad810d9f5dcb338d235ecea4234bdab6470446c463d9",
+  "originalCrs": "S-JTSK / Křovákovo zobrazení (definice PRJ)",
+  "prj": "PROJCS[\"S-JTSK_Krovak_East_North\",GEOGCS[\"GCS_S_JTSK\",DATUM[\"D_S_JTSK\",SPHEROID[\"Bessel_1841\",6377397.155,299.1528128]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Krovak\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Pseudo_Standard_Parallel_1\",78.5],PARAMETER[\"Scale_Factor\",0.9999],PARAMETER[\"Azimuth\",30.28813975277778],PARAMETER[\"Longitude_Of_Center\",24.83333333333333],PARAMETER[\"Latitude_Of_Center\",49.5],PARAMETER[\"X_Scale\",-1.0],PARAMETER[\"Y_Scale\",1.0],PARAMETER[\"XY_Plane_Rotation\",90.0],UNIT[\"Meter\",1.0]]",
+  "encoding": "utf-8",
+  "fields": [
+    "ID",
+    "NAZEV",
+    "HIERARCHIE",
+    "ZASTAVITEL",
+    "KAPITOLA",
+    "LOKALITA",
+    "VPS_VPO",
+    "INDIVIDUAL",
+    "SHAPE_LEN"
+  ],
+  "files": [
+    {
+      "name": "MPP_100_Parky_p.cpg",
+      "bytes": 5,
+      "checksum": "3ad3031f5503a4404af825262ee8232cc04d4ea6683d42c5dd0a2f2a27ac9824"
+    },
+    {
+      "name": "MPP_100_Parky_p.dbf",
+      "bytes": 336731,
+      "checksum": "3b0627c68cf2ac12296c0ad5ac7a5ba224516b363b15756260391f52c58ba622"
+    },
+    {
+      "name": "MPP_100_Parky_p.prj",
+      "bytes": 573,
+      "checksum": "57aed3fc2b90a6c64e2f3b095466f07eadd71f8c687ac1b33e023e57b45e69e1"
+    },
+    {
+      "name": "MPP_100_Parky_p.sbn",
+      "bytes": 9436,
+      "checksum": "19ea79249a5ed0c151b3a147318280a3ee3a5fd970913ccfdb637c2349116da1"
+    },
+    {
+      "name": "MPP_100_Parky_p.sbx",
+      "bytes": 812,
+      "checksum": "cf42b8fa0ee9149a588860829f2f37baac1b6ae51a1e38e1594e8159023e2b41"
+    },
+    {
+      "name": "MPP_100_Parky_p.shp",
+      "bytes": 3450720,
+      "checksum": "99dfecc38dfab4f1986c6256cd60b5346532e9d0cbbd2865d2675a357b80abda"
+    },
+    {
+      "name": "MPP_100_Parky_p.shp.xml",
+      "bytes": 1309202,
+      "checksum": "48b648057d40c897a6aa1a68b23b4fb19f15684273cea02c4a4bb69e48678516"
+    },
+    {
+      "name": "MPP_100_Parky_p.shx",
+      "bytes": 7724,
+      "checksum": "ec04ab8a7f8b61002be77f882b56b811ae5a710b6521dd762b3b8c83acf0eb25"
+    }
+  ],
+  "sourceRecords": 953,
+  "validSourceGeometriesAfterRepair": 953,
+  "resultParks": 952,
+  "unnamed": 0,
+  "issues": [],
+  "repairs": [
+    {
+      "row": 197,
+      "sourceId": "3121",
+      "name": "Park V Pláni",
+      "engine": "GEOS 3.13.0 / geos-wasm 3.1.1",
+      "reason": "Neplatná topologie polygonu: Ring Self-intersection [14.4498291010069, 50.024658753400054].",
+      "accepted": true,
+      "beforeAreaM2": 4374.957041961631,
+      "afterAreaM2": 4374.957041821757,
+      "areaDifferenceM2": 1.3987391866976395e-07,
+      "areaToleranceM2": 4.374957041961631,
+      "beforeChecksum": "7e4a76910aa7e69befcf982dcf4a25cdf34629f7437c742cdbc8b0ca254d6cc7",
+      "afterChecksum": "4c2db726074e1e2a8534362d7d733b99ccaef901f2ea81ae8053d705192211d2",
+      "warning": null
+    },
+    {
+      "row": 222,
+      "sourceId": "2440",
+      "name": "Skalky v Křeslicích",
+      "engine": "GEOS 3.13.0 / geos-wasm 3.1.1",
+      "reason": "Neplatná topologie polygonu: Ring Self-intersection [14.563826528550639, 50.02523143740328].",
+      "accepted": true,
+      "beforeAreaM2": 22716.387309603087,
+      "afterAreaM2": 22716.38731039062,
+      "areaDifferenceM2": 7.875314622651786e-07,
+      "areaToleranceM2": 22.71638730960309,
+      "beforeChecksum": "30cdb33dbcd1129857b5ecfb626868cd0c53eb83a713ffa52b07f9d3a85d6857",
+      "afterChecksum": "e1d51b075f84b211ad0a2cbb30f7c5c3ff483fa6035e8e83835b1741af738326",
+      "warning": null
+    },
+    {
+      "row": 835,
+      "sourceId": "2589",
+      "name": "Park u Kaštanu",
+      "engine": "GEOS 3.13.0 / geos-wasm 3.1.1",
+      "reason": "Neplatná topologie polygonu: Ring Self-intersection [14.361363503469411, 50.08425922876396].",
+      "accepted": true,
+      "beforeAreaM2": 5112.306959453816,
+      "afterAreaM2": 5112.306959460263,
+      "areaDifferenceM2": 6.447407940868288e-09,
+      "areaToleranceM2": 5.112306959453815,
+      "beforeChecksum": "791c950c632310335f7ea9e78844b8dacecf614d4bb3e85fb38c2e49404d72ac",
+      "afterChecksum": "3ee74bd67f9a7eaed758622e574e382a540f6aa344995de4a271ede589188ca1",
+      "warning": null
+    }
+  ],
+  "merges": [
+    {
+      "sourceId": "2773",
+      "rows": [
+        944,
+        945
+      ],
+      "names": [
+        "Park u OC Letňany",
+        "Park u OC Letňany II."
+      ],
+      "engine": "GEOS 3.13.0 / geos-wasm 3.1.1",
+      "resultType": "MultiPolygon",
+      "polygonParts": 2
+    }
+  ],
+  "allReferencePointsStrictlyInside": true,
+  "allOutputGeometriesValidatedWith": [
+    "JSTS 2.12.1 IsValidOp",
+    "GEOS 3.13.0 GEOSisValid"
+  ],
+  "license": "XML references IPR data provision rules; specific license remains undocumented."
+}

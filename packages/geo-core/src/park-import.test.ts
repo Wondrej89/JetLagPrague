@@ -1,8 +1,12 @@
 import { expect, test } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import { zipSync, strToU8 } from 'fflate';
+import { area, booleanPointInPolygon } from '@turf/turf';
+import { parkTopology } from './park-topology';
+import { sha256 } from './pid-snapshot';
+import { canonicalJson } from './administrative';
 import { analyzeParkFile, readParkFile, type ParkImportOptions } from './park-import';
-import { applyParkUpdate, decidePoi, defaultPoiConfiguration, exportWorld, importWorld, newWorld, resolvePois, validateGeometry, verifyParkDataset } from './index';
+import { applyParkUpdate, decidePoi, defaultPoiConfiguration, exportWorld, importWorld, newWorld, resolvePois, isArea, validateGeometry, verifyParkDataset } from './index';
 import { fixtureArea, shapeFiles, shapeZip } from './test-fixtures/park-zip';
 const filename = 'MPP_CUR_MPP_100_PARKY_P.zip';
 const options: ParkImportOptions = { source: { id: 'ipr-mpp-100-parky', provider: 'Syntetická testovací data, nikoliv IPR', url: 'https://example.test/parks', license: { name: 'Nedoložena', url: null }, dataDate: null, retrievedAt: '2026-10-16T10:00:00Z', verification: 'user_supplied', note: 'Testovací fixture' }, idField: 'ID', nameField: 'NAZEV' };
@@ -28,28 +32,78 @@ test('supports multipolygon, holes and WGS84 GeoJSON without dropping any part',
   const input = { type: 'FeatureCollection', features: [{ type: 'Feature', properties: { ID: 1, NAZEV: 'Český park' }, geometry: fixtureArea }] };
   const json = await readParkFile(strToU8(JSON.stringify(input)), 'parks.geojson'); expect((await analyzeParkFile(json, options)).candidate!.records[0].geometry).toEqual(fixtureArea);
 });
-test('duplicate identities are explicit, deterministic across reorder and geometry updates, preserve decisions and require manual review for ambiguous attributes', async () => {
-  const rows = [{ id: 0, name: 'Část A', geometry: fixtureArea }, { id: 0, name: 'Část B', geometry: fixtureArea }];
-  const file = await readParkFile(shapeZip(rows), filename);
-  const unresolved = await analyzeParkFile(file, options); expect(unresolved.duplicates).toHaveLength(2); expect(unresolved.candidate).toBeNull();
-  const first = (await analyzeParkFile(file, { ...options, confirmDuplicateIds: true })).candidate!;
-  let config = applyParkUpdate(defaultPoiConfiguration(), first); config = decidePoi(config, first.records[0], { status: 'approved' }); config = decidePoi(config, first.records[1], { status: 'excluded' });
-  const changed = structuredClone(rows).reverse(); changed[0].geometry.coordinates[0][1][1] += 0.001;
-  const second = (await analyzeParkFile(await readParkFile(shapeZip(changed), filename), { ...options, confirmDuplicateIds: true })).candidate!;
-  expect(second.records.map(r => r.id).sort()).toEqual(first.records.map(r => r.id).sort());
-  config = applyParkUpdate(config, second); expect(resolvePois([], config).map(r => r.status).sort()).toEqual(['approved', 'excluded']);
-  const same = await readParkFile(shapeZip([rows[0], rows[0]]), filename); const ambiguous = await analyzeParkFile(same, { ...options, confirmDuplicateIds: true }); expect(ambiguous.candidate).toBeNull(); expect(ambiguous.duplicates.every(r => r.ambiguous)).toBe(true);
-  const manual = await analyzeParkFile(same, { ...options, confirmDuplicateIds: true, identities: { 1: 'curated-a', 2: 'curated-b' } }); expect(manual.candidate?.records).toHaveLength(2);
+test('same official IDs automatically union, retain all names and attributes, and preserve decisions across reorder and updates', async () => {
+  const separate = structuredClone(fixtureArea); separate.coordinates = separate.coordinates.map(ring => ring.map(([x, y]) => [x + 0.03, y]));
+  const rows = [{ id: 2773, name: 'Park u OC Letňany II.', geometry: separate }, { id: 2773, name: 'Park u OC Letňany', geometry: fixtureArea }];
+  const firstReport = await analyzeParkFile(await readParkFile(shapeZip(rows), filename), options);
+  expect(firstReport.issues).toEqual([]); expect(firstReport.merges).toHaveLength(1);
+  const first = firstReport.candidate!; expect(first.records).toHaveLength(1);
+  const park = first.records[0]; expect(park.id).toBe('park:ipr-mpp-100-parky:2773'); expect(park.name).toBe('Park u OC Letňany');
+  expect(park.geometry.type).toBe('MultiPolygon'); if (park.geometry.type === 'MultiPolygon') expect(park.geometry.coordinates).toHaveLength(2);
+  expect(park.importAudit?.sourceNames).toEqual(['Park u OC Letňany', 'Park u OC Letňany II.']);
+  expect(park.importAudit?.sourceRecords.map(r => r.attributes.ID)).toEqual([2773, 2773]);
+  if (!isArea(park.geometry)) throw new Error('Expected area');
+  expect(booleanPointInPolygon(park.point, park.geometry, { ignoreBoundary: true })).toBe(true);
+  let config = decidePoi(applyParkUpdate(defaultPoiConfiguration(), first), park, { status: 'approved', name: 'Moje jméno', point: park.point, note: 'Ruční rozhodnutí' });
+  const changed = structuredClone(rows).reverse(); changed[1].geometry.coordinates[0][1][1] += 0.001;
+  const second = (await analyzeParkFile(await readParkFile(shapeZip(changed), filename), options)).candidate!;
+  expect(second.records[0].id).toBe(park.id); expect(second.records[0].name).toBe(park.name);
+  config = applyParkUpdate(config, second); expect(resolvePois([], config)[0]).toMatchObject({ status: 'approved', name: 'Moje jméno', point: park.point, note: 'Ruční rozhodnutí' });
+  config = decidePoi(config, resolvePois([], config)[0], { status: 'excluded' });
+  expect(resolvePois([], applyParkUpdate(config, first))[0].status).toBe('excluded');
+  const identical = await analyzeParkFile(await readParkFile(shapeZip([rows[0], rows[0]]), filename), options);
+  expect(identical.candidate!.records).toHaveLength(1); expect(identical.candidate!.records[0].sourceId).toBe('2773');
 });
-test('reports every invalid geometry with original ID, name and row; only explicitly selected lossless repairs are audited', async () => {
+test('overlapping duplicate polygons use union, not an invalid concatenation; source order does not affect geometry or name', async () => {
+  const shifted = structuredClone(fixtureArea); shifted.coordinates = shifted.coordinates.map(ring => ring.map(([x, y]) => [x + 0.01, y]));
+  const rows = [{ id: 5, name: 'B', geometry: fixtureArea }, { id: 5, name: 'A', geometry: shifted }];
+  const first = (await analyzeParkFile(await readParkFile(shapeZip(rows), filename), options)).candidate!.records[0];
+  const second = (await analyzeParkFile(await readParkFile(shapeZip(rows.reverse()), filename), options)).candidate!.records[0];
+  expect(first.geometry.type).toBe('Polygon'); expect(first.geometry).toEqual(second.geometry); expect(first.point).toEqual(second.point); expect(first.name).toBe('A');
+  expect(area(first.geometry)).toBeGreaterThan(area(fixtureArea)); expect(area(first.geometry)).toBeLessThan(area(fixtureArea) * 2);
+});
+test('legacy split identities keep their decisions and migrate consensus; conflicts stay review-only', async () => {
+  const merged = (await analyzeParkFile(await readParkFile(shapeZip([{ id: 2773, name: 'A', geometry: fixtureArea }, { id: 2773, name: 'B', geometry: fixtureArea }]), filename), options)).candidate!;
+  const records = ['old-a', 'old-b'].map(key => ({ ...merged.records[0], id: `park:ipr-mpp-100-parky:${key}`, sourceIdentity: { key, fingerprint: key, method: 'manual' as const, reviewRequired: false } }));
+  const old = { ...merged, records }; old.checksum = await sha256(canonicalJson({ source: old.source, records, importRecord: old.importRecord }));
+  let config = applyParkUpdate(defaultPoiConfiguration(), old);
+  for (const park of records) config = decidePoi(config, park, { status: 'approved', point: park.point, name: 'Původní ruční jméno' });
+  const compatible = applyParkUpdate(config, merged);
+  expect(resolvePois([], compatible).find(p => p.id === merged.records[0].id)).toMatchObject({ status: 'approved', name: 'Původní ruční jméno', point: records[0].point });
+  expect(compatible.manual).toHaveLength(2); expect(compatible.decisions).toHaveLength(3);
+  expect(resolvePois([], compatible).filter(p => p.attributes.sourceMergedInto).every(p => p.status === 'excluded')).toBe(true);
+  config = decidePoi(config, records[1], { status: 'excluded' });
+  const conflicting = applyParkUpdate(config, merged);
+  expect(resolvePois([], conflicting).find(p => p.id === merged.records[0].id)?.status).toBe('review');
+  expect(conflicting.decisions.slice(0, 2)).toEqual(config.decisions);
+  expect(importWorld(exportWorld({ ...newWorld(), poi: conflicting }, 'geojson')).poi).toEqual(conflicting);
+});
+test('MakeValid retains all polygon parts, revalidates and audits area and checksums; unsafe results block acceptance', async () => {
+  const selfTouch = { type: 'Polygon', coordinates: [[...fixtureArea.coordinates[0], [14.4, 50.06], [14.39, 50.06], [14.39, 50.07], [14.4, 50.07]]] };
+  const read = (geometry: unknown) => readParkFile(strToU8(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', properties: { ID: 1, NAZEV: 'Syntetický samodotyk' }, geometry }] })), 'self-touch.geojson');
+  const report = await analyzeParkFile(await read(selfTouch), options);
+  expect(report.issues).toEqual([]); expect(report.repairs).toHaveLength(1); expect(report.repairs[0]).toMatchObject({ accepted: true, sourceId: '1', warning: null });
+  const park = report.candidate!.records[0]; expect(park.geometry.type).toBe('MultiPolygon');
+  if (park.geometry.type === 'MultiPolygon') expect(park.geometry.coordinates).toHaveLength(2);
+  expect(park.importAudit?.repairedRows).toEqual([1]); expect(report.repairs[0].areaDifferenceM2).toBeLessThan(0.01);
+  await expect(verifyParkDataset(report.candidate)).resolves.toBeDefined();
+  const differentArea = { type: 'Polygon', coordinates: [[...fixtureArea.coordinates[0], [14.39, 50.07], [14.39, 50.06], [14.4, 50.06], [14.4, 50.07]]] };
+  const changedArea = await analyzeParkFile(await read(differentArea), options);
+  expect(changedArea.candidate).toBeNull(); expect(changedArea.repairs[0].beforeAreaM2).toBeGreaterThan(0);
+  expect(changedArea.repairs[0].areaDifferenceM2).toBeGreaterThan(changedArea.repairs[0].areaToleranceM2);
+  expect(changedArea.repairs[0].accepted).toBe(false);
+  const spike = structuredClone(fixtureArea); spike.coordinates[0].splice(1, 0, [14.39, 50.065], [14.4, 50.07]);
+  const collapsed = await analyzeParkFile(await read(spike), options);
+  expect(collapsed.candidate).toBeNull(); expect(collapsed.repairs[0]).toMatchObject({ accepted: false, result: { type: 'GeometryCollection' } });
+  expect(collapsed.issues[0].message).toMatch(/nepolygonové/);
+});
+test('reports unsafe and malformed geometries with original IDs without accepting area changes', async () => {
   const wrong = { type: 'Polygon', coordinates: [[[14.4, 50], [14.42, 50.02], [14.42, 50], [14.4, 50.02], [14.4, 50]]] };
   const file = await readParkFile(strToU8(JSON.stringify({ type: 'FeatureCollection', features: [1, 2].map(ID => ({ type: 'Feature', properties: { ID, NAZEV: `Špatný park ${ID}` }, geometry: wrong })) })), 'wrong.json');
   const report = await analyzeParkFile(file, options); expect(report.candidate).toBeNull(); expect(report.issues).toHaveLength(2); expect(report.issues[1]).toMatchObject({ row: 2, sourceId: '2', name: 'Špatný park 2' });
   const malformed = await readParkFile(strToU8(JSON.stringify({ type: 'FeatureCollection', features: [1, 2].map(ID => ({ type: 'Feature', properties: { ID, NAZEV: `Vadná struktura ${ID}` }, geometry: ID === 1 ? { type: 'Polygon', coordinates: null } : 'malformed geometry' })) })), 'malformed.json');
   const malformedReport = await analyzeParkFile(malformed, options); expect(malformedReport.issues).toHaveLength(2); expect(malformedReport.candidate).toBeNull();
-  const repeated = structuredClone(fixtureArea); repeated.coordinates[0].splice(1, 0, repeated.coordinates[0][0]);
-  const repeatedFile = await readParkFile(strToU8(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', properties: { ID: 3 }, geometry: repeated }] })), 'repeated.json');
-  const repaired = await analyzeParkFile(repeatedFile, { ...options, removeRepeatedVertices: true }); expect(repaired.repairs).toEqual([{ row: 1, removedVertices: 1 }]); expect(repaired.candidate).not.toBeNull();
+  expect(report.repairs.every(repair => !repair.accepted && repair.warning?.includes('Plocha'))).toBe(true);
 });
 test('OGC validation accepts isolated point contacts, rejects crossings, overlapping components and holes outside the shell', () => {
   const touch = { type: 'MultiPolygon', coordinates: [[[[14.4, 50], [14.41, 50], [14.41, 50.01], [14.4, 50.01], [14.4, 50]]], [[[14.41, 50.01], [14.42, 50.01], [14.42, 50.02], [14.41, 50.02], [14.41, 50.01]]]] };
@@ -77,10 +131,29 @@ test('rejects missing files, unknown CRS/encoding, corrupt indexes, CRC errors, 
   await expect(readParkFile(corrupted, filename)).rejects.toThrow();
 });
 // Explicit opt-in: no network and no substituted synthetic geometry for this audit.
-test.skipIf(!process.env.PARKS_ZIP)('real IPR ZIP contains all 953 objects and a complete diagnostic report', async () => {
+test.skipIf(!process.env.PARKS_ZIP)('real IPR ZIP: 953 records, three safe repairs, one union, 952 valid parks, interior points and stable decisions', async () => {
   const file = await readParkFile(new Uint8Array(await readFile(process.env.PARKS_ZIP!)), filename);
   expect(file.features).toHaveLength(953); expect(file.originalCrs).toContain('S-JTSK');
-  const report = await analyzeParkFile(file, options); expect(report.valid + report.invalid).toBe(953);
-  expect(file.features.some(feature => /[áčďéěíňóřšťúůýž]/i.test(String(feature.properties.NAZEV)))).toBe(true);
-  console.log(JSON.stringify({ objects: file.features.length, valid: report.valid, invalid: report.invalid, duplicates: report.duplicates.length, unnamed: report.unnamed, issues: report.issues.map(({ geometry: _geometry, ...issue }) => { void _geometry; return issue; }) }));
+  const report = await analyzeParkFile(file, options);
+  expect(report.issues).toEqual([]); expect(report.valid).toBe(953); expect(report.invalid).toBe(0);
+  expect(report.repairs.map(r => r.sourceId).sort()).toEqual(['2440', '2589', '3121']);
+  expect(report.repairs.every(r => r.accepted && r.areaDifferenceM2 < r.areaToleranceM2)).toBe(true);
+  expect(report.merges).toHaveLength(1); expect(report.merges[0]).toMatchObject({ sourceId: '2773', names: ['Park u OC Letňany', 'Park u OC Letňany II.'] });
+  const dataset = report.candidate!; expect(dataset.records).toHaveLength(952); expect(new Set(dataset.records.map(p => p.id)).size).toBe(952);
+  for (const park of dataset.records) {
+    expect(() => validateGeometry(park.geometry)).not.toThrow();
+    if (!isArea(park.geometry)) throw new Error('Expected area');
+    expect(park.point).toHaveLength(2); expect(booleanPointInPolygon(park.point, park.geometry, { ignoreBoundary: true })).toBe(true);
+    // Independent GEOS validation of all output, including unchanged polygons.
+    await expect(parkTopology(park.geometry, 'validate')).resolves.toHaveProperty('type');
+  }
+  expect(await verifyParkDataset(dataset)).toEqual(dataset);
+  let config = applyParkUpdate(defaultPoiConfiguration(), dataset);
+  for (const [i, status] of (['approved', 'excluded'] as const).entries()) config = decidePoi(config, dataset.records[i], { status, point: dataset.records[i].point, note: 'Zachovat po aktualizaci' });
+  const again = (await analyzeParkFile(file, options)).candidate!;
+  expect(again.records).toEqual(dataset.records);
+  const updated = applyParkUpdate(config, again); expect(updated.decisions).toEqual(config.decisions);
+  expect(importWorld(exportWorld({ ...newWorld(), poi: updated }, 'geojson')).poi).toEqual(updated);
+  expect(report.originalFeatures).toHaveLength(953);
+  expect(dataset.importRecord).toMatchObject({ originalChecksum: file.originalChecksum, originalFeatures: file.originalFeatures, repairs: report.repairs });
 }, 120000);

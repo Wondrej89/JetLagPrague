@@ -14,11 +14,15 @@ Parky lze bezpečně importovat z GeoJSON, nakreslit, přejmenovat, skutečně s
 
 **Původní omezení zdrojů URK a letišť:** dokumentaci IPR `URK_Parky_p` i letecké podklady AIM blokovala síť cloudového prostředí (HTTPS CONNECT 403). Endpoint parkových geometrií, atributy, stabilní ID a licence proto nejsou ověřené; publikováno je **0 oficiálních parků**. Nevkládají se náhradní zelené plochy. Letiště používají schválené ARP souřadnice ze zadání s výslovným záznamem, že aktuální oficiální letecký dokument nebylo možné nezávisle ověřit.
 
-Pro parky dodejte export **přesně URK_Parky_p** jako WGS84 GeoJSON FeatureCollection s Polygon/MultiPolygon, původním stabilním ID a názvem, skutečným URL zdroje/metadat, licencí a datem, pokud je doložené. Použijte **Načíst / aktualizovat parky**; všichni noví kandidáti začínají k revizi. Publikování schválených parků do statického katalogu má samostatný příkaz `npm run poi:publish -- --world cesta/k/exportu.json`.
+Pro parky použijte **Načíst / aktualizovat parky**. Přijímá původní ZIP **MPP_100_Parky_p** i WGS84 GeoJSON konkrétní parkové vrstvy (včetně URK, pokud je doložená). Všichni noví kandidáti začínají k revizi; publikování schválených parků do statického katalogu má samostatný příkaz `npm run poi:publish -- --world cesta/k/exportu.json`.
 
-**Přímý GIS ZIP:** formulář **Načíst / aktualizovat parky** přijímá také původní `MPP_CUR_MPP_100_PARKY_P.zip` ze skutečné vrstvy **MPP_100_Parky_p**. Externí převod není potřeba: Web Worker načte SHP/SHX/DBF/PRJ/CPG, dekóduje české atributy a přes `proj4` převede souřadnice do WGS84. Náhled ukáže CRS, počty objektů, chyby, duplicity a rozdíly; problémové geometrie lze zobrazit v mapě. Originální souřadnice, atributy, metadata a kontrolní součty zůstanou v záznamu importu. Import je transakční a nemění ruční rozhodnutí bez jednoznačného stabilního klíče.
+**Jednoduchý GIS ZIP import:** po výběru `MPP_CUR_MPP_100_PARKY_P.zip` se automaticky načtou SHP/SHX/DBF/PRJ/CPG, české atributy a přes `proj4` souřadnice WGS84. **GEOS MakeValid 3.13.0** opraví bezpečné samoprůniky a geometrický union sjednotí záznamy se stejným oficiálním ID. Náhled obsahuje souhrn, opravy, sloučení, rozdíly a možnost zobrazení v mapě. Stačí potvrdit **Použít parkový zdroj**; ruční opravy ani přidělování klíčů nejsou potřeba.
 
-Metadata Geoportálu nyní potvrzují vrstvu MPP, CRS 5514 a skutečný odkaz ZIP. **Originální archiv v cloudu stále blokuje proxy (CONNECT 403); audit všech 953 skutečných objektů proto čeká na zpřístupnění souboru.** [Audit konkrétního zdroje](data/source-metadata/parks-mpp-source-audit.md).
+Ověřeno přímo na originálním archivu: **953 záznamů → tři opravy (3121, 2440, 2589) + sloučení dvojice 2773 → 952 validních parků**, každý s jedním bodem striktně uvnitř. Zachovávají se všechny polygonové části, otvory, původní názvy a atributy. Bez zjednodušování hranic. [Audit zdroje a kontrolních součtů](data/source-metadata/parks-mpp-source-audit.md).
+
+Automatické přijetí opravy vyžaduje pouze polygonový výsledek, opětovnou validaci a změnu geografické plochy nejvýše `max(0,01 m²; 0,1 % původní plochy)`. Nespolehlivá či nulová původní plocha a nepolygonové zbytky import zablokují s varováním; žádné části se nezahazují. Herní schválení a doložení licence zůstávají oddělené od geometrické kontroly.
+
+Původní souřadnice, atributy, metadata, SHA-256 a audit automatických operací zůstávají v datasetu i exportu světa. Diagnostiku lze stáhnout také před potvrzením. Stabilní ID používá původní oficiální kód; opakovaný import zachovává ruční body, názvy, schválení a vyloučení. Při přechodu ze starých rozdělených duplicit se původní identity a rozhodnutí archivují; shodná rozhodnutí se přenesou, rozporná či neúplná vyžadují revizi.
 
 [Úplný návod POI, přesný požadovaný soubor, pravidla geometrie a publikace](docs/POI_DATA.md).
 
@@ -132,7 +136,7 @@ GeoJSON používá **[longitude, latitude]**, volitelně třetí výškovou sou�
 
 ## Testy
 
-Testy POI ověřují přesné tři ARP body, Matching/Measuring v metrech, deterministické shody, konkávní parky, otvory i MultiPolygony, zachování revizí při změně a zmizení zdroje, přesun bodu, skutečný union a bezeztrátový JSON/GeoJSON přenos. Test publikace chrání letiště a odmítá nezdokumentované licence; E2E prochází celé ovládání včetně reloadu a přetažení bodu.
+Testy POI ověřují přesné tři ARP body, Matching/Measuring v metrech, deterministické shody, konkávní parky, otvory i MultiPolygony, zachování revizí při změně a zmizení zdroje, přesun bodu, skutečný union a bezeztrátový JSON/GeoJSON přenos. Originální ZIP lze ověřit příkazem `PARKS_ZIP=/cesta/MPP_CUR_MPP_100_PARKY_P.zip npm test` a stejnou proměnnou při `npm run test:e2e`; testy bez ní tento samostatný audit výslovně přeskočí. GEOS ve workeru je součástí sestavení a nepotřebuje CDN ani server. [Licence knihovny](docs/THIRD_PARTY.md). Test publikace chrání letiště a odmítá nezdokumentované licence; E2E prochází celé ovládání včetně reloadu a přetažení bodu.
 
 Testy výchozí oblasti ověřují přesnou shodu se sjednocením všech 57 částí, kontrolní součty, MultiPolygon s otvory, první otevření bez cache, pořadí úložišť, blokaci autosave během načítání/chyby, zachování vlastní i smazané oblasti, obnovu s potvrzením a PID/zóny bez ručního vytvoření hranice.
 

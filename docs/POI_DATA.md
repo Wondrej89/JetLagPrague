@@ -18,9 +18,9 @@ Jde o **přesné ARP souřadnice schválené v zadání**, nikoli centroidy leti
 
 Požadovaná vrstva je **URK_Parky_p**, odkazovaná v [dokumentaci UAP IPR](https://uap.iprpraha.cz/texty/100/2.1.3). Pokus o otevření přesného dodaného odkazu 16. 10. 2026 skončil **HTTPS CONNECT 403 na proxy cloudového prostředí**. Ověřen byl také známý portál `https://opendata.iprpraha.cz/`: vrací HTTP 303 na článek `www.geoportalpraha.cz/cs/clanek/271/prazska-otevrena-data`; cílový host zablokovala proxy stejnou chybou CONNECT 403. Jde o blokaci přístupu v tomto prostředí, nikoli důkaz, že služba IPR neexistuje nebo je neveřejná.
 
-Toto zjištění se vztahuje k dřívější vrstvě URK. Nově je potvrzena konkrétní vrstva **MPP_100_Parky_p** z Geoportálu: [audit aktuálního zdroje](../data/source-metadata/parks-mpp-source-audit.md). Metadata potvrzují odkaz archivu, CRS a atributy, ale samotný archiv blokuje cloudová proxy. Jeho skutečný obsah a počet 953 tedy dosud nejsou ověřené. **Žádná datová URL není odhadnutá a žádné zelené plochy ani testovací polygony nejsou vydávané za pražské parky.** Publikovaný katalog zatím obsahuje **0 oficiálních parků**. Syntetické geometrie jsou výhradně v testech.
+Toto dřívější zjištění se vztahuje k vrstvě URK. Nově byla stažena a skutečně ověřena konkrétní vrstva **MPP_100_Parky_p**: [audit zdroje](../data/source-metadata/parks-mpp-source-audit.md), [strojově čitelný audit](../data/source-metadata/parks-mpp-import-audit.json). ZIP obsahuje 953 záznamů; automatický postup vytvoří **952 validních parků** po třech opravách a jednom sjednocení ID 2773. Nepoužívá náhradní zelené plochy ani data z Mapy.com.
 
-V nastavení cloudového prostředí je připravené doplnění přístupu na `uap.iprpraha.cz`, `www.geoportalpraha.cz` a `aim.rlp.cz`; pouhé uložení návrhu změny nepovoluje síť běžícího prostředí. Po zpřístupnění lze navázat ověřením konkrétní služby z dokumentace. Mapy.com se pro získávání POI nepoužívá.
+Publikovaný katalog zatím obsahuje **0 schválených oficiálních parků**. Ověření geometrie nenahrazuje herní schválení a konkrétní licenci. Metadata archivu odkazují na pravidla poskytování dat IPR; neposkytují konkrétní licenční identifikátor ani úplné podmínky. Kandidáty lze nyní importovat přímo bez externí GIS opravy.
 
 ## Jaký soubor dodat a jak ho importovat
 
@@ -31,7 +31,9 @@ Přijímá se původní **Shapefile ZIP MPP_100_Parky_p** i GeoJSON konkrétní 
 - Původní pole názvu, pokud existuje. Bez doloženého názvu bude park k revizi a před schválením je nutné název doplnit.
 - Skutečné URL zdrojové služby nebo metadat, poskytovatele, licenci s odkazem a datum dat, pokud je doložené. Neznámé údaje označte jako nedoložené; nestanovujte je podle data stažení.
 
-V editoru otevřete **Body zájmu → Načíst / aktualizovat parky**, vyplňte metadata i přesná pole ID/názvu a nejprve zvolte **Zkontrolovat import**. Limit je 20 MB a 10 000 objektů. Chybná geometrie, duplicitní/chybějící ID nebo neplatné souřadnice odmítnou celý import. Neprobíhá oprava, zjednodušení ani odhad hranic. Náhled ukáže přidané, změněné a chybějící objekty; až **Použít parkový zdroj** mění svět. Import sám neuděluje status ověřeného poskytovatele ani neschvaluje parky.
+V editoru otevřete **Body zájmu → Načíst / aktualizovat parky** a vyberte ZIP. Rozpoznaná polygonová vrstva s ID se automaticky načte, převede, opraví, sjednotí a ověří. Náhled ukáže přidané, změněné a chybějící objekty i audit oprav a sloučení; až **Použít parkový zdroj** mění svět. Vlastní GeoJSON umožňuje vyplnit pole ID/názvu a metadata a zvolit **Zkontrolovat import**. Parametry lze upravit i po automatickém náhledu ZIPu. Limit je 20 MB a 10 000 zdrojových objektů.
+
+Chybějící ID, neplatné souřadnice nebo nebezpečná oprava odmítnou celý import. Shodná ID se automaticky sjednotí do jednoho parku. Import sám neuděluje status ověřeného poskytovatele ani neschvaluje kandidáty pro otázky.
 
 Při aktualizaci použijte **stejné stálé ID zdroje a stejná oficiální ID objektů**. Nová pole ID nebo přejmenování namespace by vytvořily nové identity. Zdrojová metadata, všechny původní atributy, původní ID a SHA-256 vstupního souboru i zpracovaného datasetu zůstávají uložené.
 
@@ -53,15 +55,21 @@ Celý import ukáže všechny zjištěné chyby s číslem původního záznamu,
 
 Globální `validateGeometry()` nadále kontroluje každou plochu. JSTS `IsValidOp` ověřuje OGC topologii: rozlišuje přípustný izolovaný bodový dotyk od skutečných samoprůniků, překryvů, vnějších/vnořených otvorů a odpojeného vnitřku. Samotný `Turf.kinks()` toto rozlišení neměl. Validní otvor může s pláštěm sdílet jediný bod, pokud zůstává topologicky validní; ruční nástroj přidání otvoru si zachovává přísnější pravidlo kreslení striktně uvnitř. Drobné validní části se nevynechávají a práh 0,01 m² už neodmítá nenulové GIS plochy.
 
-Jediná nabízená automatická úprava je **výslovné odstranění sousedních totožných vrcholů**, které nemění hranici. Náhled i importní audit uvádějí počty a dotčené řádky. Původní souřadnice zůstanou zachované. Neprobíhá buffer(0), odhad hranic, zjednodušení, odstraňování malých částí ani automatická oprava skutečných samoprůniků.
+Při `Ring Self-intersection` nebo `Self-intersection` se automaticky provede **GEOS 3.13.0 MakeValid**, standardní algoritmus linework, pomocí `geos-wasm 3.1.1`. Nepoužívá se buffer(0), zjednodušování ani vynechávání malých ploch. GEOS zachovává polygonové části a otvory; kolekce obsahující pouze polygony se bezeztrátově převede na MultiPolygon. Jakýkoliv nepolygonový prvek opravu zablokuje a zůstane v diagnostice. Výsledek musí projít GEOS i globálním JSTS `validateGeometry()`.
 
-### Duplicitní identity a aktualizace
+Geografická plocha v m² se před/po opravě počítá Turf `area()` ze souřadnic WGS84. Automatické přijetí vyžaduje nenulovou kladnou konečnou původní i výslednou plochu a rozdíl nejvýše **max(0,01 m²; 0,1 % původní plochy)**. Plocha samoprotínajícího se vstupu není sama důkazem správné interpretace; kontrola je konzervativní pojistka a nejasný či nulový základ vyžaduje revizi. Tři konkrétní MPP opravy mění plochu o méně než 0,000001 m². Další typy neplatnosti (např. otvor mimo plášť) se automaticky neodhadují.
 
-Původní ID zůstává v `sourceId` i původních atributech. Jednoznačný stabilní klíč duplicity je zvlášť v `sourceIdentity.key`. Výchozí návrh používá SHA-256 původního ID a obsahových atributů; vylučuje `OBJECTID`/`FID` a odvozená pole plochy či délky. Nezávisí na pořadí ani geometrii, proto běžná změna geometrie a přeřazení záznamů zachová klíč a rozhodnutí.
+Náhled uvádí každý opravený objekt i případná varování. **Stáhnout diagnostiku a audit** uchová původní objekty, nepolygonové výsledky i neúspěšné pokusy před potvrzením. Geometricky bezpečné opravy nepotřebují jednotlivé schválení.
 
-Uživatel musí skupiny duplicit výslovně potvrdit. Pokud jsou stejné i obsahové atributy, geometrický otisk slouží pouze jako orientační návrh a je potřeba ručně určit stabilní klíče podle podkladů nebo předchozího importu. Stejné objekty se neslučují ani neodstraňují automaticky. Seznam ukazuje klíče předchozího importu pro ruční propojení. Nejednoznačná vazba nemůže tiše převzít schválení jiného parku. Změna názvu či jiných identifikačních atributů může vyžadovat ruční propojení; stará rozhodnutí a historické geometrie zůstávají zachované.
+### Shodná ID a aktualizace
 
-`ParkDataset.importRecord` uchovává původní geometrie v originálním CRS a atributy, PRJ, CPG, zvolená pole, transformační postup, seznam souborů s velikostí a SHA-256, checksum originálního archivu a audit výslovných úprav. SHA-256 normalizovaného datasetu zahrnuje také tento záznam. Starší dataset bez `importRecord` používá původní kontrolní součet; kompatibilita draftů a publikace se zachovává. Archiv se nestává schváleným katalogem; kandidáti dál procházejí běžnou revizí a `poi:publish`.
+Všechny záznamy stejného oficiálního ID jsou **jeden park**. GEOS `UnaryUnion` provede skutečné sjednocení: překryvy se rozpustí, nesouvislé části zůstanou MultiPolygonem, otvory se zachovají podle výsledné topologie. Stabilní identita je `park:<namespace>:<oficiální ID>`; pořadová čísla ani otisky atributů identitu nemění.
+
+Zdrojové části se řadí podle názvu a následně kanonického obsahu podle kódů Unicode, nezávisle na pořadí řádků či jazykovém nastavení. Zobrazený název je první neprázdný. Všechny původní názvy a kompletní atributy každého záznamu jsou v `Poi.importAudit`; původní geometrie jsou v `ParkDataset.importRecord.originalFeatures`. Po sjednocení se vytvoří právě jeden striktně vnitřní referenční bod. Dvojice „Park u OC Letňany“ / „Park u OC Letňany II.“ tak používá ID **2773**.
+
+Aktualizace zachová rozhodnutí podle oficiálního ID. Starší importér mohl rozdělit duplicitní ID pomocí `sourceIdentity.key`; toto pole zůstává kvůli kompatibilitě podporované. Při aktualizaci se staré identity archivují se všemi rozhodnutími a vazbou `sourceMergedInto`, přestanou vstupovat do otázek. Shodná a úplná schválení/vyloučení se přenesou na sjednocenou identitu; rozpory nebo neúplné revize vytvoří stav k revizi. Konfliktní ruční názvy či body zůstávají dohledatelné v původních rozhodnutích a archivovaných objektech. Již existující rozhodnutí pro sjednocené ID má přednost.
+
+`ParkDataset.importRecord` uchovává původní geometrie v originálním CRS a atributy, PRJ, CPG, zvolená pole, transformační postup, seznam souborů s velikostí a SHA-256 a checksum originálního archivu. Audit verze 2 navíc uvádí engine, parametry kontroly plochy, řádky, důvod opravy, původní/výslednou plochu, geometrické checksumy a celý opravený výsledek; sloučení odkazuje na všechny původní řádky a názvy. `Poi.importAudit` umožňuje dohledat zpracování konkrétního parku ve vlastnostech. SHA-256 datasetu zahrnuje celý audit. Starší dataset bez `importRecord` a/nebo `importAudit` se ověřuje původním způsobem; schéma světa se nemění.
 
 ## Ruční revize
 
@@ -103,4 +111,14 @@ Vzdálenost je k **referenčnímu bodu** letiště nebo parku, v metrech, Havers
 
 ### Stav ověření originálu
 
-Celá automatická sada nad binárními testovacími Shapefile ZIPy ověřuje čtení, projekci, české názvy, MultiPolygony/otvory, CRC, limity a bezpečné aktualizace. **Nejde o ověření originálních 953 parků.** Pro něj je připraven oddělený test s `PARKS_ZIP`; bez skutečného souboru je výslovně přeskočený. Konkrétní blokace a přesná oficiální URL jsou v [auditu MPP](../data/source-metadata/parks-mpp-source-audit.md).
+Automatická sada nad binárními testovacími Shapefile ZIPy ověřuje čtení, projekci, české názvy, MultiPolygony/otvory, CRC, limity, bezpečné opravy, blokování nepolygonových zbytků a výrazné změny plochy, skutečný union a zachování rozhodnutí včetně migrace starých identit.
+
+Audit byl spuštěn i nad **originálním ZIPem**: 953 načtených objektů, bezpečné opravy 3121/2440/2589, union dvou záznamů 2773, 952 výsledných parků, všechny validní podle JSTS i GEOS a všechny referenční body uvnitř. Ověřuje se opakovaný import a kompletní export/import světa. E2E zahrnuje automatický import téhož ZIPu, potvrzení, IndexedDB a reload.
+
+```sh
+curl -fL 'https://mp.iprpraha.cz/portal/sharing/rest/content/items/72516a5b78b749bb8ecaae563e0c47c8/data' -o /tmp/MPP_CUR_MPP_100_PARKY_P.zip
+PARKS_ZIP=/tmp/MPP_CUR_MPP_100_PARKY_P.zip npm test
+PARKS_ZIP=/tmp/MPP_CUR_MPP_100_PARKY_P.zip npm run test:e2e
+```
+
+Bez `PARKS_ZIP` se pouze audit skutečného archivu explicitně přeskočí; syntetické regresní testy se spouštějí vždy. Živá síť není součástí běžného buildu ani importu lokálního ZIPu. Použitý GEOS/WASM je přibalen do importního workeru (přibližně 3,2 MB před gzip); nezvětšuje hlavní vstup aplikace ani nevyžaduje CDN. [Licence a zdroj knihovny](THIRD_PARTY.md).

@@ -19,14 +19,31 @@ Odpověď potvrzuje:
 - Titulek ZIPu: „Celá Praha (SHP)(S-JTSK) 2 MB“, velikost uvedená v metadatech 2 098 951 bajtů.
 - Služba uvedená v metadatech: https://mp.iprpraha.cz/arcgis/rest/services/Hosted/MPP_CUR_MPP_100_PARKY_P/FeatureServer/0
 
-**Blokace skutečného souboru:** přímý ZIP potvrzený také uživatelem vrací v cloudovém prostředí CONNECT 403 z proxy pro `mp.iprpraha.cz`. Nebyl stažen. Tvrzení o **953 objektech pochází ze zadání**, nikoli z úspěšného auditu binárního archivu. Nelze dosud doložit jeho SHA-256, skutečné duplicity, kódování CPG ani seznam případných neplatných geometrií. Síťová blokace se neobchází a skutečný test není nahrazen syntetickými parky.
+**Originální archiv skutečně stažen a ověřen 16. 10. 2026.** Dřívější CONNECT 403 se při aktuálním pokusu již neprojevil. Velikost je 2 098 951 bajtů; SHA-256:
 
-Návrh cloudového nastavení doplňuje `geoportalpraha.cz`, `mp.iprpraha.cz` a `iprpraha.maps.arcgis.com`, zachovává dřívější domény. Aktivace vyžaduje uložení/publikování prostředí uživatelem. Alternativou je přiložení původního ZIPu do chatu. Samotná aplikace uživatelský ZIP zpracuje lokálně v prohlížeči bez přístupu cloudu k tomuto hostu.
+`b6edf4d01e704f16362aad810d9f5dcb338d235ecea4234bdab6470446c463d9`
 
-Po zpřístupnění originálu spusťte:
+Archiv obsahuje 953 polygonových záznamů a CPG `UTF-8`. Skutečná pole DBF jsou `ID`, `NAZEV`, `HIERARCHIE`, `ZASTAVITEL`, `KAPITOLA`, `LOKALITA`, `VPS_VPO`, `INDIVIDUAL`, `SHAPE_LEN`; `OBJECTID` v tomto exportu není. PRJ obsahuje `S-JTSK_Krovak_East_North`; převod proj4 zachoval všechny zdrojové vrcholy.
+
+Původní topologická kontrola zjistila přesně tři chyby `Ring Self-intersection`:
+
+| Původní řádek | ID | Název | Výsledek GEOS MakeValid |
+| --- | --- | --- | --- |
+| 197 | 3121 | Park V Pláni | Polygon s otvorem |
+| 222 | 2440 | Skalky v Křeslicích | MultiPolygon, všechny části zachovány |
+| 835 | 2589 | Park u Kaštanu | Polygon s otvorem |
+
+Opravy GEOS 3.13.0 byly opětovně validovány; změna geografické plochy každé je pod 0,000001 m², výrazně pod limitem `max(0,01 m²; 0,1 %)`. Žádný výsledek neobsahuje nepolygonové zbytky. Řádky **944 a 945**, „Park u OC Letňany“ a „Park u OC Letňany II.“, mají stejné oficiální ID **2773** a byly sjednoceny do jednoho parku. Název prvního v deterministickém pořadí je „Park u OC Letňany“; všechny názvy, atributy a původní geometrie jsou dohledatelné.
+
+Výsledek: **952 unikátních parků**, 0 blokujících chyb, všechny geometrie platné podle JSTS IsValidOp i GEOSisValid, právě jeden striktně vnitřní referenční bod u každého parku. Ověřen opakovaný import, zachování schválení/vyloučení i referenčních bodů a kompletní GeoJSON přenos světa. [Strojově čitelný audit včetně checksumů jednotlivých souborů a geometrických operací](parks-mpp-import-audit.json).
+
+XML v ZIPu uvádí „Pravidla pro poskytování dat a výstupů z datového skladu Geografického informačního systému hl. m. Prahy“ a odkaz na Geoportál. Konkrétní licenční identifikátor a úplné podmínky nejsou součástí záznamu. Import proto automaticky nenahrazuje nedoloženou licenci ani neschvaluje parky pro hru. Samotný ZIP není přibalen jako publikovaný katalog.
+
+Opakování auditu bez síťové závislosti testů:
 
 ```sh
-PARKS_ZIP=/cesta/MPP_CUR_MPP_100_PARKY_P.zip npx vitest run packages/geo-core/src/park-import.test.ts
+PARKS_ZIP=/cesta/MPP_CUR_MPP_100_PARKY_P.zip npm test
+PARKS_ZIP=/cesta/MPP_CUR_MPP_100_PARKY_P.zip npm run test:e2e
 ```
 
-Audit vyžaduje skutečných 953 záznamů, kontroluje S-JTSK a české atributy a vypíše počty validních/neplatných geometrií a identit i konkrétní problémy. Stažení není součástí běžného sestavení ani GitHub Pages.
+Bez souboru jsou samostatné audity originálu výslovně přeskočené. Testy se nikdy nevydávají za audit aktuálně dostupného upstream archivu bez jeho načtení. Běžný build ani GitHub Pages zdroj nestahují.

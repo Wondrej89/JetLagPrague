@@ -1,7 +1,9 @@
 import { ZipReader, Uint8ArrayReader, type FileEntry } from '@zip.js/zip.js';
 import { parseShp, parseDbf } from 'shpjs';
 import proj4 from 'proj4';
-import type { Geometry as JsonGeometry, FeatureCollection, Position } from 'geojson';
+import { area } from '@turf/turf';
+import { parkTopology, polygonalResult, PARK_TOPOLOGY_ENGINE } from './park-topology';
+import type { Geometry as JsonGeometry, FeatureCollection } from 'geojson';
 import { canonicalJson } from './administrative';
 import { sha256 } from './pid-snapshot';
 import { isArea, validateGeometry, type AreaGeometry } from './index';
@@ -15,10 +17,17 @@ export interface ParkFile {
   features: ImportFeature[]; originalFeatures: ImportFeature[]; fields: string[]; suggestedId: string; suggestedName: string; transformation: string;
 }
 export type ParkFileInfo = Omit<ParkFile, 'features' | 'originalFeatures'> & { count: number };
-export interface ParkImportOptions { source: Omit<PoiSource, 'rawChecksum'>; idField: string; nameField: string; removeRepeatedVertices?: boolean; identities?: Record<string, string>; confirmDuplicateIds?: boolean }
+export interface ParkImportOptions { source: Omit<PoiSource, 'rawChecksum'>; idField: string; nameField: string }
 export interface ParkImportIssue { row: number; sourceId: string; name: string; message: string; geometry: AreaGeometry | null }
-export interface DuplicateIdentity { row: number; sourceId: string; name: string; fingerprint: string; proposedKey: string; ambiguous: boolean; geometry: AreaGeometry | null }
-export interface ParkImportReport { info: ParkFileInfo; valid: number; invalid: number; unnamed: number; duplicates: DuplicateIdentity[]; issues: ParkImportIssue[]; repairs: { row: number; removedVertices: number }[]; candidate: ParkDataset | null }
+export interface ParkRepair {
+  row: number; sourceId: string; name: string; engine: string; reason: string; accepted: boolean;
+  beforeAreaM2: number; afterAreaM2: number; areaDifferenceM2: number; areaToleranceM2: number;
+  beforeChecksum: string; afterChecksum: string; result: JsonGeometry; warning: string | null;
+}
+export interface ParkMerge { sourceId: string; rows: number[]; names: string[]; engine: string; geometry: AreaGeometry }
+export interface ParkImportReport { info: ParkFileInfo; originalFeatures: ImportFeature[]; valid: number; invalid: number; unnamed: number; merges: ParkMerge[]; issues: ParkImportIssue[]; repairs: ParkRepair[]; candidate: ParkDataset | null }
+// A zero/negative area is not a trustworthy baseline for automatic repair.
+export const PARK_REPAIR_AREA_POLICY = { relative: 0.001, absoluteM2: 0.01 };
 function fail(message: string): never { throw new Error(message); }
 const readText = (bytes: Uint8Array) => new TextDecoder('utf-8', { fatal: true }).decode(bytes).replace(/^\uFEFF/, '').trim();
 function jsonValue(value: unknown): unknown {
@@ -189,58 +198,80 @@ function displayGeometry(geometry: JsonGeometry | null): AreaGeometry | null {
   return geometry;
 
 }
-function removeRepeated(geometry: AreaGeometry) {
-  let removed = 0;
-  const ring = (positions: Position[]) => positions.filter((p, i) => { const keep = !i || p.some((n, j) => n !== positions[i - 1][j]); if (!keep) removed++; return keep; });
-  const coordinates = geometry.type === 'Polygon' ? geometry.coordinates.map(ring) : geometry.coordinates.map(part => part.map(ring));
-  return { geometry: { type: geometry.type, coordinates } as AreaGeometry, removed };
-}
 export async function analyzeParkFile(file: ParkFile, options: ParkImportOptions): Promise<ParkImportReport> {
   const source = poiSourceSchema.parse({ ...options.source, rawChecksum: file.originalChecksum });
-  const info = parkFileInfo(file), issues: ParkImportIssue[] = [], duplicates: DuplicateIdentity[] = [], repairs: ParkImportReport['repairs'] = [];
-  const rows = await Promise.all(file.features.map(async (f, i) => {
+  const info = parkFileInfo(file), issues: ParkImportIssue[] = [], merges: ParkMerge[] = [], repairs: ParkRepair[] = [];
+  const rows = file.features.map((f, i) => {
     const code = options.idField === '$id' ? f.id : f.properties[options.idField];
-    const sourceId = (typeof code === 'string' || typeof code === 'number') && String(code).trim() ? String(code) : '';
+    const sourceId = (typeof code === 'string' || typeof code === 'number') && String(code).trim() ? String(code).trim() : '';
     const name = typeof f.properties[options.nameField] === 'string' ? String(f.properties[options.nameField]).trim() : '';
-    const fingerprint = await sha256(canonicalJson({ sourceId, attributes: Object.fromEntries(Object.entries(f.properties).filter(([key]) => !/^(OBJECTID|FID|SHAPE[._](AREA|LEN|LENGTH)|SHAPE_AREA|SHAPE_LENG|AREA|PERIMETER)$/i.test(key))) }));
-    return { f, row: i + 1, sourceId, name, fingerprint };
-  }));
-  const groups = new Map<string, typeof rows>();
-  for (const row of rows) { const group = groups.get(row.sourceId) ?? []; group.push(row); groups.set(row.sourceId, group); }
-  const records: Poi[] = []; let valid = 0;
+    return { f, row: i + 1, sourceId, name, geometry: null as AreaGeometry | null };
+  });
+  const groups = new Map<string, typeof rows>(); let valid = 0;
   for (const row of rows) {
-    let key = row.sourceId; let sourceIdentity: Poi['sourceIdentity'];
+    const group = groups.get(row.sourceId) ?? []; group.push(row); groups.set(row.sourceId, group);
     const preview = displayGeometry(row.f.geometry);
-    const group = groups.get(row.sourceId)!;
-    if (row.sourceId && group.length > 1) {
-      const ambiguous = group.filter(r => r.fingerprint === row.fingerprint).length > 1;
-      const digest = ambiguous ? await sha256(canonicalJson(row.f.geometry)) : row.fingerprint;
-      const proposedKey = `${row.sourceId}~${digest.slice(0, 16)}`;
-      const manualKey = options.identities?.[String(row.row)];
-      duplicates.push({ row: row.row, sourceId: row.sourceId, name: row.name, fingerprint: row.fingerprint, proposedKey, ambiguous, geometry: preview });
-      key = manualKey?.trim() || proposedKey;
-      sourceIdentity = { key, fingerprint: row.fingerprint, method: manualKey ? 'manual' : 'attribute-derived', reviewRequired: !options.confirmDuplicateIds || (ambiguous && !manualKey) };
-    }
     try {
       if (!row.sourceId) fail('Chybí stabilní původní ID.');
       if (!preview) fail('Chybí platná polygonová geometrie WGS84.');
-      const prepared = options.removeRepeatedVertices ? removeRepeated(preview) : { geometry: preview, removed: 0 };
-      if (prepared.removed) repairs.push({ row: row.row, removedVertices: prepared.removed });
-      const geometry = validateGeometry(prepared.geometry);
-      if (!isArea(geometry)) fail('Park musí být Polygon nebo MultiPolygon.');
-      const record: Poi = { id: parkId(source.id, key), category: 'park', sourceId: row.sourceId, name: row.name, geometry, point: interiorReferencePoint(geometry), source, status: 'review', reviewedAt: null,
-        note: row.name ? 'Importovaný kandidát; ověřte název a vymezení.' : 'Bez doloženého názvu; nutná revize.', attributes: row.f.properties as Poi['attributes'], ...(sourceIdentity ? { sourceIdentity } : {}) };
-      records.push(poiSchema.parse(record)); valid++;
+      let geometry: AreaGeometry;
+      try {
+        const checked = validateGeometry(preview);
+        if (!isArea(checked)) fail('Park musí být Polygon nebo MultiPolygon.');
+        geometry = checked;
+      } catch (error) {
+        const reason = (error as Error).message;
+        // Structural errors, invalid holes and other topology failures still
+        // require review; never guess how their source intended them to look.
+        if (!/Ring Self-intersection|(?:^|: )Self-intersection/.test(reason)) throw error;
+        const result = await parkTopology(preview, 'make-valid');
+        const polygon = polygonalResult(result);
+        const beforeAreaM2 = area(preview), afterAreaM2 = area(result);
+        const areaDifferenceM2 = Math.abs(afterAreaM2 - beforeAreaM2);
+        const areaToleranceM2 = Math.max(PARK_REPAIR_AREA_POLICY.absoluteM2, Math.abs(beforeAreaM2) * PARK_REPAIR_AREA_POLICY.relative);
+        let warning = !polygon ? 'Oprava vytvořila nepolygonové prvky; žádná část nebyla zahozena. Nutná revize.' : null;
+        if (![beforeAreaM2, afterAreaM2, areaDifferenceM2].every(Number.isFinite) || beforeAreaM2 <= 0 || afterAreaM2 <= 0 || areaDifferenceM2 > areaToleranceM2) warning = [warning, 'Plocha po opravě nemá spolehlivý základ nebo se významně změnila (limit 0,1 % / 0,01 m²). Nutná revize.'].filter(Boolean).join(' ');
+        let checked: AreaGeometry | undefined;
+        if (polygon) {
+          try { const value = validateGeometry(polygon); if (isArea(value)) checked = value; }
+          catch (error) { warning = [warning, `Opětovná validace selhala: ${(error as Error).message}`].filter(Boolean).join(' '); }
+        }
+        repairs.push({ row: row.row, sourceId: row.sourceId, name: row.name, engine: PARK_TOPOLOGY_ENGINE, reason, accepted: !warning && !!checked,
+          beforeAreaM2, afterAreaM2, areaDifferenceM2, areaToleranceM2, beforeChecksum: await sha256(canonicalJson(preview)), afterChecksum: await sha256(canonicalJson(result)), result, warning });
+        if (warning || !checked) fail(warning ?? 'Opravu nelze bezpečně přijmout.');
+        geometry = checked;
+      }
+      row.geometry = geometry; valid++;
     } catch (error) { issues.push({ row: row.row, sourceId: row.sourceId, name: row.name, message: (error as Error).message, geometry: preview }); }
   }
-  const keys = new Set<string>();
-  for (const record of records) { if (keys.has(record.id)) issues.push({ row: 0, sourceId: record.sourceId, name: record.name, message: 'Navržené identity nejsou jedinečné; přiřaďte odlišné stabilní klíče ručně.', geometry: record.geometry as AreaGeometry }); keys.add(record.id); }
-  const unresolved = records.some(r => r.sourceIdentity?.reviewRequired);
+  const records: Poi[] = [];
+  // Unicode code-unit order is independent of the host locale and input row
+  // order. Raw rows are retained separately, not used as identity suffixes.
+  const compare = (a: string, b: string) => a < b ? -1 : a > b ? 1 : 0;
+  for (const [sourceId, group] of [...groups].sort(([a], [b]) => compare(a, b))) {
+    if (group.some(row => !row.geometry)) continue;
+    group.sort((a, b) => compare(a.name || '\uffff', b.name || '\uffff') || compare(canonicalJson(a.f), canonicalJson(b.f)));
+    const first = group[0], names = group.map(row => row.name);
+    try {
+      let geometry = first.geometry!;
+      if (group.length > 1) {
+        const result = polygonalResult(await parkTopology({ type: 'GeometryCollection', geometries: group.map(row => row.geometry!) }, 'union'));
+        if (!result) fail('Sjednocení nevrátilo pouze polygonové části; nutná revize.');
+        const checked = validateGeometry(result); if (!isArea(checked)) fail('Sjednocení parků musí být polygonové.');
+        geometry = checked;
+        merges.push({ sourceId, rows: group.map(row => row.row), names, engine: PARK_TOPOLOGY_ENGINE, geometry });
+      }
+      const record: Poi = { id: parkId(source.id, sourceId), category: 'park', sourceId, name: names.find(Boolean) ?? '', geometry, point: interiorReferencePoint(geometry), source, status: 'review', reviewedAt: null,
+        note: names.some(Boolean) ? 'Importovaný kandidát; ověřte název a vymezení.' : 'Bez doloženého názvu; nutná revize.', attributes: first.f.properties as Poi['attributes'],
+        importAudit: { sourceRows: group.map(row => row.row), sourceNames: names, sourceRecords: group.map(row => ({ row: row.row, attributes: row.f.properties as Poi['attributes'] })), repairedRows: repairs.filter(repair => repair.accepted && group.some(row => row.row === repair.row)).map(repair => repair.row), merged: group.length > 1 } };
+      records.push(poiSchema.parse(record));
+    } catch (error) { issues.push({ row: first.row, sourceId, name: first.name, message: (error as Error).message, geometry: first.geometry }); }
+  }
   let candidate: ParkDataset | null = null;
-  if (!issues.length && !unresolved) {
-    const importRecord = JSON.parse(JSON.stringify({ format: file.format, filename: file.filename, layerName: file.layerName, originalCrs: file.originalCrs, prj: file.prj, cpg: file.cpg, encoding: file.encoding,
-      files: file.files, originalChecksum: file.originalChecksum, transformation: file.transformation, originalFeatures: file.originalFeatures, repairs, idField: options.idField, nameField: options.nameField }));
+  if (!issues.length) {
+    const importRecord = JSON.parse(JSON.stringify({ version: 2, format: file.format, filename: file.filename, layerName: file.layerName, originalCrs: file.originalCrs, prj: file.prj, cpg: file.cpg, encoding: file.encoding,
+      files: file.files, originalChecksum: file.originalChecksum, transformation: file.transformation, originalFeatures: file.originalFeatures, repairs, merges, topologyEngine: PARK_TOPOLOGY_ENGINE, areaPolicy: PARK_REPAIR_AREA_POLICY, idField: options.idField, nameField: options.nameField }));
     candidate = { source, records, importRecord, checksum: await sha256(canonicalJson({ source, records, importRecord })) };
   }
-  return { info, valid, invalid: file.features.length - valid, unnamed: rows.filter(r => !r.name).length, duplicates, issues, repairs, candidate };
+  return { info, originalFeatures: file.originalFeatures, valid, invalid: file.features.length - valid, unnamed: rows.filter(r => !r.name).length, merges, issues, repairs, candidate };
 }

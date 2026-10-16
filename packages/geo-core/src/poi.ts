@@ -29,6 +29,7 @@ export const poiSchema = z.object({
   sourceId: id, source: poiSourceSchema, status: poiStatusSchema,
   reviewedAt: z.iso.datetime().nullable(), note: text,
   sourceIdentity: z.object({ key: id, fingerprint: z.string(), method: z.enum(['attribute-derived', 'manual']), reviewRequired: z.boolean() }).optional(),
+  importAudit: z.object({ sourceRows: z.array(z.number().int().positive()), sourceNames: z.array(text), sourceRecords: z.array(z.object({ row: z.number().int().positive(), attributes: z.record(z.string(), z.json()) })), repairedRows: z.array(z.number().int().positive()), merged: z.boolean() }).optional(),
   attributes: z.record(z.string(), z.json()), memberIds: z.array(id).optional(),
 });
 export type Poi = z.infer<typeof poiSchema>;
@@ -131,10 +132,38 @@ export function compareParkUpdate(previous: ParkDataset | undefined, next: ParkD
  * remain as review-only historical candidates, preserving their geometry. */
 export function applyParkUpdate(configuration: PoiConfiguration, next: ParkDataset): PoiConfiguration {
   const current = configuration.sources.find(s => s.source.id === next.source.id);
+  const mergedInto = new Map<string, string>();
+  const decisions = [...configuration.decisions];
+  for (const park of next.records) {
+    // Previous importer versions split duplicate official IDs with hashed or
+    // manual keys. Archive those identities and keep every original decision.
+    const aliases = [...(current?.records ?? []), ...configuration.manual.filter(p => p.attributes.sourceMissing)]
+      .filter(p => p.source.id === next.source.id && p.sourceId === park.sourceId && p.id !== park.id && p.sourceIdentity);
+    if (!aliases.length) continue;
+    aliases.forEach(p => mergedInto.set(p.id, park.id));
+    if (decisions.some(d => d.id === park.id)) continue;
+    const previous = aliases.map(p => configuration.decisions.find(d => d.id === p.id));
+    if (!previous.some(Boolean)) continue;
+    const agreed = <K extends 'name' | 'point'>(key: K): PoiDecision[K] | undefined => {
+      const values = previous.flatMap(d => d?.[key] === undefined ? [] : [d[key]]);
+      return new Set(values.map(canonicalJson)).size === 1 ? values[0] : undefined;
+    };
+    const sameStatus = previous.every(d => d?.status && d.status === previous[0]?.status);
+    const conflictingOverride = (['name', 'point'] as const).some(key => new Set(previous.flatMap(d => d?.[key] === undefined ? [] : [canonicalJson(d[key])])).size > 1);
+    const status = sameStatus && !conflictingOverride ? previous[0]!.status! : 'review';
+    const name = agreed('name'), point = agreed('point');
+    decisions.push({ id: park.id, status, ...(name === undefined ? {} : { name }), ...(point === undefined ? {} : { point }),
+      reviewedAt: status === 'review' ? null : previous.flatMap(d => d?.reviewedAt ? [d.reviewedAt] : []).sort().at(-1) ?? null,
+      note: `${status === 'review' ? 'Původní rozhodnutí částí nejsou shodná nebo úplná; sjednocený park vyžaduje revizi.' : 'Shodná ruční rozhodnutí převzata ze sloučených částí.'} Původní identity a rozhodnutí jsou archivovány: ${aliases.map(p => p.id).join(', ')}.`.slice(0, 10000) });
+  }
   const missing = current?.records.filter(p => !next.records.some(n => n.id === p.id)) ?? [];
   const existingManual = new Set(configuration.manual.map(p => p.id));
-  return { ...configuration, sources: [...configuration.sources.filter(s => s.source.id !== next.source.id), next],
-    manual: [...configuration.manual.filter(p => !(p.attributes.sourceMissing && next.records.some(n => n.id === p.id))), ...missing.filter(p => !existingManual.has(p.id)).map(p => ({ ...p, status: 'review' as const, attributes: { ...p.attributes, sourceMissing: true }, note: 'Objekt chybí v nové verzi zdroje; historická geometrie vyžaduje revizi.' }))] };
+  const archived = (p: Poi): Poi => mergedInto.has(p.id)
+    ? { ...p, attributes: { ...p.attributes, sourceMissing: true, sourceMergedInto: mergedInto.get(p.id)! }, note: 'Historická identita byla sjednocena podle oficiálního ID; původní atributy a ruční rozhodnutí zůstávají zachovány.' }
+    : p;
+  return { ...configuration, decisions, sources: [...configuration.sources.filter(s => s.source.id !== next.source.id), next],
+    manual: [...configuration.manual.filter(p => !(p.attributes.sourceMissing && next.records.some(n => n.id === p.id))).map(archived),
+      ...missing.filter(p => !existingManual.has(p.id)).map(p => archived({ ...p, status: 'review' as const, attributes: { ...p.attributes, sourceMissing: true }, note: 'Objekt chybí v nové verzi zdroje; historická geometrie vyžaduje revizi.' }))] };
 }
 export function resolvePois(airports: Poi[], configuration: PoiConfiguration): Poi[] {
   // A previously missing source record may reappear; prefer the actual source.
@@ -143,6 +172,7 @@ export function resolvePois(airports: Poi[], configuration: PoiConfiguration): P
   return [...airports, ...sources, ...configuration.manual.filter(p => !sourceIds.has(p.id))].map(record => {
     const decision = record.category === 'airport' ? undefined : decisions.get(record.id);
     const result = { ...record, ...decision, id: record.id };
+    if (record.attributes.sourceMergedInto) return { ...result, status: 'excluded' as const, note: `${result.note} Historická identita sjednocena do ${record.attributes.sourceMergedInto}.` };
     if (record.sourceIdentity?.reviewRequired || (record.category === 'park' && !result.name.trim()) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
       return { ...result, status: result.status === 'excluded' ? 'excluded' as const : 'review' as const, note: `${result.note} Referenční bod nebo dostupnost zdroje vyžaduje revizi.` };
     }
