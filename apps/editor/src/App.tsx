@@ -118,8 +118,10 @@ export function App() {
     return () => { cancelled = true; };
   }, [pid.ready, pid.view, pidArea, pidFilters.territoryOnly, pidConfiguration, pidRequest, pid.deriving]);
   useEffect(() => {
-    if (pidFilters.territoryOnly && membership && pidSelected && !membership.stopIds.includes(pidSelected)) setPidSelected(null);
-  }, [pidFilters.territoryOnly, membership, pidSelected]);
+    // Source diagnostics must remain accessible for inactive/unknown nodes,
+    // whose absence of an active point prevents territorial membership.
+    if (pidFilters.territoryOnly && membership && pidStop?.activity === 'active' && pidStop.point && !membership.stopIds.includes(pidStop.id)) setPidSelected(null);
+  }, [pidFilters.territoryOnly, membership, pidStop]);
   useEffect(() => {
     if (!showCoverage || !pid.view || !pidArea || pid.deriving) return;
     const controller = new AbortController(); const stops = pid.view.stops, area = pidArea, radius = pidConfiguration.radiusMeters;

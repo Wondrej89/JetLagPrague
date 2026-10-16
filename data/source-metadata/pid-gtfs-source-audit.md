@@ -53,6 +53,8 @@ Vybráno **354 aktivních service_id**, **52 663 plánovaných veřejných spoj�
 
 Tramvajový Újezd (uzel 809) se neslučuje s lanovkou pouze podle názvu. Lanovka má v tomto feedu 168 aktivních spojů, ale herní pravidla nadále vyžadují její výslovné schválení. Přípony `P` mají skutečné samostatné GTFS identity; fyzická shoda se dokládá ASW identifikátory či přesnými aliasy. Stav tabulky není tvrzením o okamžité mimořádnosti v dopravě. Příčinu neobsluhy Stodůlek/Cibulky nelze z pouhé absence spojů vydávat za ověřenou konkrétní výluku.
 
+Následná kontrola skutečné publikace v prohlížeči nad sjednocením 57 městských částí vybrala **1 465 herních uzlů a 426 linek v Praze**. Skutečné sjednocení 400m zón oříznuté Prahou má přibližně **315,85 km²**; zahrnuje 1 459 automaticky povolených a 6 uzlů vyžadujících revizi. Dalších 8 aktivních uzlů celé sítě nemá určitelný bod, takže se jejich příslušnost k Praze neodhaduje. Náhled není plošným schválením šesti revidovaných zastávek.
+
 ## Reprodukce a omezení
 
 Archiv se kvůli velikosti neukládá do větve kódu. Větev `pid-data` obsahuje komprimovaný normalizovaný výsledek a všechny jeho verze. Pro opakování auditu je nutné zachovat právě výše uvedené vstupy; oficiální URL se průběžně mění.

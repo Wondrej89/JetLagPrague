@@ -23,6 +23,8 @@ test('GTFS publikace: ruční načtení a porovnání tras, neaktivní uzel, zac
   world.layers[1].features = [newFeature({ type: 'Point', coordinates: [14.405, 50.075] }, 'Zachovaný vlastní objekt')];
   await page.addInitScript(value => { if (!localStorage.getItem('jetlag-praha:world:v1')) localStorage.setItem('jetlag-praha:world:v1', value); }, JSON.stringify(world));
   await page.goto('/'); await expect(page.getByTestId('pid-count')).toContainText('2 / 2');
+  await page.getByLabel('Pouze PID v herní oblasti', { exact: true }).check();
+  await expect(page.getByTestId('pid-count')).toContainText('2 / 2');
   await expect(page.getByText('Trasy linek · provozní den GTFS', { exact: true })).toBeVisible();
   const before = await storedWorld(page);
   await page.getByRole('button', { name: 'Doprava PID', exact: true }).click();
