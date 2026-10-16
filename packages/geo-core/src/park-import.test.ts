@@ -45,7 +45,7 @@ test('reports every invalid geometry with original ID, name and row; only explic
   const wrong = { type: 'Polygon', coordinates: [[[14.4, 50], [14.42, 50.02], [14.42, 50], [14.4, 50.02], [14.4, 50]]] };
   const file = await readParkFile(strToU8(JSON.stringify({ type: 'FeatureCollection', features: [1, 2].map(ID => ({ type: 'Feature', properties: { ID, NAZEV: `Špatný park ${ID}` }, geometry: wrong })) })), 'wrong.json');
   const report = await analyzeParkFile(file, options); expect(report.candidate).toBeNull(); expect(report.issues).toHaveLength(2); expect(report.issues[1]).toMatchObject({ row: 2, sourceId: '2', name: 'Špatný park 2' });
-  const malformed = await readParkFile(strToU8(JSON.stringify({ type: 'FeatureCollection', features: [1, 2].map(ID => ({ type: 'Feature', properties: { ID, NAZEV: `Vadná struktura ${ID}` }, geometry: { type: 'Polygon', coordinates: null } })) })), 'malformed.json');
+  const malformed = await readParkFile(strToU8(JSON.stringify({ type: 'FeatureCollection', features: [1, 2].map(ID => ({ type: 'Feature', properties: { ID, NAZEV: `Vadná struktura ${ID}` }, geometry: ID === 1 ? { type: 'Polygon', coordinates: null } : 'malformed geometry' })) })), 'malformed.json');
   const malformedReport = await analyzeParkFile(malformed, options); expect(malformedReport.issues).toHaveLength(2); expect(malformedReport.candidate).toBeNull();
   const repeated = structuredClone(fixtureArea); repeated.coordinates[0].splice(1, 0, repeated.coordinates[0][0]);
   const repeatedFile = await readParkFile(strToU8(JSON.stringify({ type: 'FeatureCollection', features: [{ type: 'Feature', properties: { ID: 3 }, geometry: repeated }] })), 'repeated.json');

@@ -133,7 +133,7 @@ export async function readParkFile(bytes: Uint8Array, filename: string): Promise
   if (/\.(geojson|json)$/i.test(filename)) {
     const input = JSON.parse(new TextDecoder('utf-8', { fatal: true }).decode(bytes)) as FeatureCollection & { crs?: unknown };
     if (input?.type !== 'FeatureCollection' || input.crs || !Array.isArray(input.features) || !input.features.length || input.features.length > PARK_IMPORT_LIMITS.records) fail('Očekávána FeatureCollection WGS84 bez CRS, nejvýše 10 000 objektů.');
-    const features = input.features.map((f, i) => { if (f?.type !== 'Feature' || (f.properties !== null && (typeof f.properties !== 'object' || Array.isArray(f.properties))) || 'crs' in f || (f.geometry && 'crs' in f.geometry)) fail(`Objekt ${i + 1}: neplatný GeoJSON Feature nebo CRS.`); return { geometry: f.geometry, properties: f.properties ?? {}, ...(f.id === undefined ? {} : { id: f.id }) }; });
+    const features = input.features.map((f, i) => { if (f?.type !== 'Feature' || (f.properties != null && (typeof f.properties !== 'object' || Array.isArray(f.properties))) || 'crs' in f || (f.geometry && typeof f.geometry === 'object' && 'crs' in f.geometry)) fail(`Objekt ${i + 1}: neplatný GeoJSON Feature nebo CRS.`); return { geometry: f.geometry, properties: f.properties ?? {}, ...(f.id === undefined ? {} : { id: f.id }) }; });
     let vertices = 0;
     for (const f of features) {
       const geometry = displayGeometry(f.geometry);
