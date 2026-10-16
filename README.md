@@ -1,10 +1,22 @@
 # Jet Lag Praha · geografický editor
 
-Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny. [Iterace 03B](CODEX_UKOL_03B_GTFS.md) používá aktuální obsluhu z GTFS a ruční serverovou publikaci.
+Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny. [Iterace 03B](CODEX_UKOL_03B_GTFS.md) používá aktuální obsluhu z GTFS a ruční serverovou publikaci. **Iterace 04A** přidává letiště, správu parků a geografické funkce POI pro Matching a Measuring.
 
 Iterace 02 používá dodané soubory `data/raw/mestskecasti.geojson` (**57 městských částí**) a `data/raw/katastralni-uzemi-praha.geojson` (**112 katastrálních území Prahy**). Zachovává všechny souřadnice a atributy, podporuje samostatné zobrazení vrstev, zvýraznění území, přesouvatelný testovací bod a kontrolovanou aktualizaci zdrojů. Mapy.com poskytuje pouze mapový podklad.
 
 Původ je zaznamenán v `data/source-metadata/`: městské části mají v dodaných datech poskytovatele HMP-IPR a katalogový odkaz IPR, katalogový odkaz ČSÚ pro katastry doložil uživatel. **Licence a datum platnosti celé sady nejsou v dodaných souborech uvedeny a zůstávají výslovně nedoložené.** Datum převzetí do repozitáře se za datum platnosti nevydává. MIT licence kódu automaticky neurčuje licenci zdrojových geodat.
+
+## Iterace 04A – letiště a parky
+
+Vlevo v **Body zájmu** jsou samostatné přepínače letišť a parků, počty schválených/neschválených objektů, hledání a volitelné referenční body parků. Tři pevná schválená letiště **LKPR, LKKB a LKTC** s přesnými souřadnicemi ze zadání jsou součástí statického katalogu aplikace a fungují i na novém zařízení. Výběr v mapě nebo seznamu zobrazí ID, souřadnice a původ.
+
+Parky lze bezpečně importovat z GeoJSON, nakreslit, přejmenovat, skutečně sjednotit jejich části, schválit nebo vyloučit a přesunout referenční bod uvnitř polygonu. Zdrojová data jsou oddělená od ručních rozhodnutí; jejich aktualizace zachová jména, body, schválení i vyloučení. Vše se uchovává v draftu a kompletních JSON/GeoJSON zálohách.
+
+**Omezení zdrojů:** dokumentaci IPR `URK_Parky_p` i letecké podklady AIM blokovala síť cloudového prostředí (HTTPS CONNECT 403). Endpoint parkových geometrií, atributy, stabilní ID a licence proto nejsou ověřené; publikováno je **0 oficiálních parků**. Nevkládají se náhradní zelené plochy. Letiště používají schválené ARP souřadnice ze zadání s výslovným záznamem, že aktuální oficiální letecký dokument nebylo možné nezávisle ověřit.
+
+Pro parky dodejte export **přesně URK_Parky_p** jako WGS84 GeoJSON FeatureCollection s Polygon/MultiPolygon, původním stabilním ID a názvem, skutečným URL zdroje/metadat, licencí a datem, pokud je doložené. Použijte **Načíst / aktualizovat parky**; všichni noví kandidáti začínají k revizi. Publikování schválených parků do statického katalogu má samostatný příkaz `npm run poi:publish -- --world cesta/k/exportu.json`.
+
+[Úplný návod POI, přesný požadovaný soubor, pravidla geometrie a publikace](docs/POI_DATA.md).
 
 ## Iterace 03 – PID a úkrytové zóny
 
@@ -107,7 +119,7 @@ GTFS import odděluje čisté jádro `pid-gtfs.ts` od ZIP/CSV a sítě ve `scrip
 
 - `apps/editor/src/App.tsx`: vrstvy, vlastnosti, import/export, historie a lokální ukládání.
 - `apps/editor/src/MapCanvas.tsx`: adaptér Leaflet + Geoman Free, Mapy.com podklad a kreslicí nástroje. Poskytovatel podkladu neovlivňuje datový kontrakt.
-- `packages/geo-core/src/index.ts`: sdílené typy `WorldDraft`, `GeoLayer`, `GeoFeature`, Zod validace a služby `importGeoJson`, `exportWorld`, `distanceMeters`, `makeMetricCircle`, `pointInArea`, `addHole`, `saveDraft`, `loadDraft`. Jádro nepoužívá DOM ani mapový klíč; lze je později využít na serveru. Verze 2 přidává zdrojová metadata vrstvy; volitelné `gameStops` zachovává oddělená pravidla, propojení a ruční výjimky iterace 03. POI zůstávají rezervované.
+- `packages/geo-core/src/index.ts`: sdílené typy `WorldDraft`, `GeoLayer`, `GeoFeature`, Zod validace a služby `importGeoJson`, `exportWorld`, `distanceMeters`, `makeMetricCircle`, `pointInArea`, `addHole`, `saveDraft`, `loadDraft`. Jádro nepoužívá DOM ani mapový klíč; lze je později využít na serveru. Verze 2 přidává zdrojová metadata vrstvy; volitelné `gameStops` zachovává oddělená pravidla, propojení a ruční výjimky iterace 03. Volitelné `poi` odděluje zdroje parků, ruční objekty, rozhodnutí a viditelnost; `poi.ts` obsahuje rozšiřitelný POI model a geografické funkce.
 - `packages/geo-core/src/administrative.ts`: stabilní oficiální identity, SHA-256, porovnání verzí, bezpečná aktualizace a klasifikace bodu.
 - `apps/editor/src/PositionInspector.tsx`, `AdministrativePanel.tsx`: diagnostika bodu a správa zdrojových verzí. `draft-store.ts` spravuje IndexedDB a kompatibilní zálohu.
 - `tests/editor.spec.ts`, `tests/administrative.spec.ts`, `tests/prague-editor.spec.ts`: funkční scénáře v reálném Chromiu, včetně migrace a zachování vlastních dat.
@@ -115,6 +127,8 @@ GTFS import odděluje čisté jádro `pid-gtfs.ts` od ZIP/CSV a sítě ve `scrip
 GeoJSON používá **[longitude, latitude]**, volitelně třetí výškovou souřadnici. Turf počítá vzdálenost velké kružnice na kouli s poloměrem 6 371 008,8 m (nikoli elipsoidální geodézii). Metrický kruh je aproximován 128 úseky; každý vrchol leží v požadované geodetické vzdálenosti od středu. Vrcholy jsou stabilní bez ohledu na zoom. `pointInArea` používá celý polygon včetně otvorů a všech částí, nikoli obdélník nebo centroid. Vnější hranice a hranice otvoru se započítává do plochy, vnitřek otvoru se nezapočítává. Tato iterace neřeší geometrii přes datovou hranici ±180°; projekt je zaměřený na Prahu.
 
 ## Testy
+
+Testy POI ověřují přesné tři ARP body, Matching/Measuring v metrech, deterministické shody, konkávní parky, otvory i MultiPolygony, zachování revizí při změně a zmizení zdroje, přesun bodu, skutečný union a bezeztrátový JSON/GeoJSON přenos. Test publikace chrání letiště a odmítá nezdokumentované licence; E2E prochází celé ovládání včetně reloadu a přetažení bodu.
 
 Testy výchozí oblasti ověřují přesnou shodu se sjednocením všech 57 částí, kontrolní součty, MultiPolygon s otvory, první otevření bez cache, pořadí úložišť, blokaci autosave během načítání/chyby, zachování vlastní i smazané oblasti, obnovu s potvrzením a PID/zóny bez ručního vytvoření hranice.
 
@@ -187,4 +201,4 @@ Datum platnosti celé sady a její licence nejsou v dodaných souborech doložen
 
 Validace skutečných 169 geometrií a všech čtyř pražských referenčních bodů prošla. Při opakované práci se už ověřené geometrie používají jako neměnné objekty, aby každá úprava vlastností znovu neověřovala všech téměř 100 tisíc vrcholů. Po obnovení stránky proběhne validace uloženého draftu znovu. Pro plnou sadu je určená IndexedDB; pokud ji prohlížeč zakáže a localStorage nemá dost místa, editor oznámí neuložené změny a je potřeba použít export.
 
-PID je implementované podle návodu výše; přibalená časově nesourodá data zůstávají výslovně označená k revizi. POI, otázky, simulátor hráčů, multiplayer, obecné GIS union/difference/clipping v editoru a publikování neměnných herních release zůstávají odložené. Export je stále draft. Kreslení nové oddělené části vlastního MultiPolygonu nemá samostatný nástroj; podporuje se import, úprava vrcholů a validovaný editor GeoJSON. Souběžná editace více kartami není podporovaná.
+PID je implementované podle návodu výše; přibalená časově nesourodá data zůstávají výslovně označená k revizi. Další POI kategorie, katalog otázek, simulátor hráčů, multiplayer, obecné GIS union/difference/clipping v editoru a publikování neměnných herních release zůstávají odložené. Export je stále draft. Kreslení nové oddělené části vlastního MultiPolygonu nemá samostatný nástroj; podporuje se import, úprava vrcholů a validovaný editor GeoJSON. Souběžná editace více kartami není podporovaná.

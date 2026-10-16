@@ -3,17 +3,18 @@ import L from 'leaflet';
 import '@geoman-io/leaflet-geoman-free';
 import 'leaflet/dist/leaflet.css';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
-import { distanceMeters, isManagedLayer, validateGeometry, type AreaGeometry, type Geometry, type WorldDraft } from '@jetlag/geo-core';
+import { distanceMeters, isManagedLayer, validateGeometry, type AreaGeometry, type Geometry, type WorldDraft, type Poi, type PoiConfiguration } from '@jetlag/geo-core';
 import type { Position, Feature } from 'geojson';
 import type { PidMapState } from './pid-types';
 import { modeColors } from './PidPanel';
 
-export type Tool = 'select' | 'point' | 'line' | 'polygon' | 'hole' | 'circle' | 'measure' | 'edit' | 'inspect';
+export type Tool = 'select' | 'point' | 'line' | 'polygon' | 'hole' | 'circle' | 'measure' | 'edit' | 'inspect' | 'park';
 export interface Selection { layerId: string; featureId: string }
 export interface MapHandle { prague(): void; fit(): void; fitArea(geometry: AreaGeometry): void; saveEdit(): void; focus(point: Position): void }
 interface Props {
   world: WorldDraft; selected: Selection | null; tool: Tool; apiKey: string;
   pid?: PidMapState;
+  poi?: { records: Poi[]; visibility: PoiConfiguration['visibility']; selected: string | null; moving: boolean; onSelect(id: string): void; onReference(point: [number, number]): boolean };
   testPoint: Position | null;
   onTestPoint(point: Position): void;
   onSelect(selection: Selection): void;
@@ -31,6 +32,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
   const drawn = useRef<L.FeatureGroup>(L.featureGroup());
   const measurement = useRef<L.FeatureGroup>(L.featureGroup());
   const testMarker = useRef<L.Marker | null>(null);
+  const poiLayers = useRef<L.LayerGroup>(L.layerGroup());
   const pidStops = useRef<L.LayerGroup>(L.layerGroup());
   const pidRoutes = useRef<L.LayerGroup>(L.layerGroup());
   const pidDetails = useRef<L.LayerGroup>(L.layerGroup());
@@ -66,6 +68,8 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     measurement.current.addTo(instance);
     const coveragePane = instance.createPane('hiding-coverage'); coveragePane.style.zIndex = '350'; coveragePane.style.pointerEvents = 'none';
     coverageLayer.current.addTo(instance);
+    const poiPane = instance.createPane('poi-polygons'); poiPane.style.zIndex = '460';
+    poiLayers.current.addTo(instance);
     const pane = instance.createPane('pid-data'); pane.style.zIndex = '450'; pane.style.pointerEvents = 'none';
     pidRenderer.current = L.canvas({ padding: 0.2, pane: 'pid-data' });
     pidRoutes.current.addTo(instance); pidStops.current.addTo(instance); pidDetails.current.addTo(instance);
@@ -156,7 +160,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     const tool = props.tool;
     if (tool === 'point') instance.pm.enableDraw('Marker', { markerStyle: { icon: L.divIcon({ className: 'draw-point', iconSize: [16, 16] }) } });
     if (tool === 'line') instance.pm.enableDraw('Line');
-    if (tool === 'polygon' || tool === 'hole') instance.pm.enableDraw('Polygon');
+    if (tool === 'polygon' || tool === 'hole' || tool === 'park') instance.pm.enableDraw('Polygon');
     if (tool === 'edit' && props.selected) featureLayers.current.get(`${props.selected.layerId}/${props.selected.featureId}`)?.pm?.enable({ allowSelfIntersection: false });
     if (tool === 'measure') current.current.onMeasure(null);
     const click = (event: L.LeafletMouseEvent) => {
@@ -182,6 +186,38 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
       for (const layer of layers) layer.pm?.disable();
     };
   }, [props.tool, props.selected, props.world]);
+
+  useEffect(() => {
+    const instance = map.current; if (!instance) return;
+    const group = poiLayers.current; group.clearLayers();
+    for (const poi of props.poi?.records ?? []) {
+      if (poi.category === 'airport' ? !props.poi?.visibility.airports : !props.poi?.visibility.parks) continue;
+      const selected = props.poi?.selected === poi.id;
+      const color = poi.status === 'approved' ? '#267a52' : poi.status === 'excluded' ? '#777777' : '#b67929';
+      const select = (event: L.LeafletEvent) => {
+        if (current.current.tool !== 'select') return;
+        L.DomEvent.stopPropagation(event); current.current.poi?.onSelect(poi.id);
+      };
+      const label = () => { const element = document.createElement('span'); element.textContent = `${poi.name || 'Park bez názvu'} · ${poi.id}`; return element; };
+      if (poi.geometry.type !== 'Point') {
+        const geometry: Feature = { type: 'Feature', geometry: poi.geometry, properties: {} };
+        const layer = L.geoJSON(geometry, { pane: 'poi-polygons', pmIgnore: true, snapIgnore: true, style: { color, weight: selected ? 4 : 2, fillOpacity: poi.status === 'excluded' ? 0.02 : 0.13, dashArray: poi.status === 'review' ? '5 4' : undefined } });
+        layer.on('click', select); layer.bindTooltip(label()); layer.addTo(group);
+      }
+      if (poi.category === 'airport' || props.poi?.visibility.referencePoints || selected) {
+        const marker = L.marker([poi.point[1], poi.point[0]], { pmIgnore: true, snapIgnore: true, draggable: poi.category === 'park' && selected && props.poi?.moving,
+          title: poi.name || poi.id, zIndexOffset: selected ? 900 : 600,
+          icon: L.divIcon({ className: `poi-marker ${poi.category === 'airport' ? 'airport-marker' : 'park-marker'} ${selected ? 'selected' : ''}`, html: poi.category === 'airport' ? '✈' : '♧', iconSize: [30, 30], iconAnchor: [15, 15] }) });
+        marker.on('click', select); marker.bindTooltip(label());
+        marker.on('dragend', () => {
+          const point = marker.getLatLng();
+          if (!current.current.poi?.onReference([point.lng, point.lat])) marker.setLatLng([poi.point[1], poi.point[0]]);
+        });
+        marker.addTo(group);
+      }
+    }
+    return () => { group.clearLayers(); };
+  }, [props.poi?.records, props.poi?.visibility, props.poi?.selected, props.poi?.moving]);
 
   useEffect(() => {
     const instance = map.current;
@@ -282,5 +318,5 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     return () => { layers.clearLayers(); renderer.remove(); };
   }, [props.pid?.coverage, props.pid?.coverageReview]);
 
-  return <div ref={container} className="map-canvas" aria-label="Mapa geografického editoru" data-testid="map" data-pid-coverage-type={props.pid?.coverage?.type ?? 'none'} data-pid-zone-type={props.pid?.zone?.type ?? 'none'} data-pid-route-count={props.pid?.routes.length ?? 0} data-pid-stop-count={props.pid?.stops.length ?? 0} />;
+  return <div ref={container} className="map-canvas" aria-label="Mapa geografického editoru" data-testid="map" data-poi-airport-count={props.poi?.records.filter(p => p.category === 'airport' && props.poi?.visibility.airports).length ?? 0} data-poi-park-count={props.poi?.records.filter(p => p.category === 'park' && props.poi?.visibility.parks).length ?? 0} data-pid-coverage-type={props.pid?.coverage?.type ?? 'none'} data-pid-zone-type={props.pid?.zone?.type ?? 'none'} data-pid-route-count={props.pid?.routes.length ?? 0} data-pid-stop-count={props.pid?.stops.length ?? 0} />;
 });

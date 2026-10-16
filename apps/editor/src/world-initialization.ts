@@ -1,4 +1,4 @@
-import { defaultGameAreaFeature, setGameArea, validateWorld, verifyAdministrativeSources, type DefaultGameArea, type WorldDraft } from '@jetlag/geo-core';
+import { defaultGameAreaFeature, setGameArea, validateWorld, verifyAdministrativeSources, verifyPoiSources, type DefaultGameArea, type WorldDraft } from '@jetlag/geo-core';
 
 export class DefaultAreaLoadError extends Error {
   constructor(public readonly world: WorldDraft, cause: unknown) {
@@ -19,6 +19,7 @@ export async function initializeEditorWorld(options: {
   const saved = indexed ?? options.readLegacy();
   const world = validateWorld(saved ?? options.placeholder);
   await verifyAdministrativeSources(world);
+  await verifyPoiSources(world.poi);
   if (saved) {
     if (world.layers.find(layer => layer.kind === 'game_area')!.features.length || world.gameAreaInitialization) return world;
     return { ...world, gameAreaInitialization: { version: 1, state: 'legacy-empty' } };

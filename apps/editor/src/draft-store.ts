@@ -1,4 +1,4 @@
-import { saveDraft, validateWorld, verifyAdministrativeSources, type WorldDraft } from '@jetlag/geo-core';
+import { saveDraft, validateWorld, verifyAdministrativeSources, verifyPoiSources, type WorldDraft } from '@jetlag/geo-core';
 
 const DATABASE = 'jetlag-praha-editor';
 const STORE = 'drafts';
@@ -24,6 +24,7 @@ export async function readIndexedDraft(): Promise<WorldDraft | null> {
     if (value === undefined) return null;
     const world = validateWorld(value);
     await verifyAdministrativeSources(world);
+    await verifyPoiSources(world.poi);
     return world;
   } finally { db.close(); }
 }

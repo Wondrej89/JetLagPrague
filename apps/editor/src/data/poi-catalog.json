@@ -1,0 +1,147 @@
+{
+  "airports": [
+    {
+      "id": "LKPR",
+      "category": "airport",
+      "name": "Letiště Václava Havla Praha – Ruzyně",
+      "point": [
+        14.26,
+        50.100833
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.26,
+          50.100833
+        ]
+      },
+      "sourceId": "LKPR",
+      "source": {
+        "id": "prague-approved-airport-arp-v1",
+        "provider": "Zadání iterace 04A – tři schválené ARP souřadnice",
+        "url": "https://aim.rlp.cz/",
+        "license": {
+          "name": "Licence leteckých podkladů nedoložena; převzaty pouze tři souřadnice ze zadání",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-16T18:10:00Z",
+        "rawChecksum": "440f986e9d26e05a32a2679b6144163ea00e76a8410f5f3e99ef5350a8dbe9f7",
+        "verification": "curated",
+        "note": "Přesně tři lokálně schválené objekty a ARP souřadnice ze zadání iterace 04A. Oficiální podklady nebylo možné v cloudovém prostředí ověřit: HTTPS CONNECT 403 pro aim.rlp.cz. Aktuálnost letecké publikace není doložená."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-16T18:10:00Z",
+      "note": "Schválená lokální herní kategorie bez ohledu na komerční provoz. Referenční bod ARP podle zadání.",
+      "attributes": {}
+    },
+    {
+      "id": "LKKB",
+      "category": "airport",
+      "name": "Letiště Praha-Kbely",
+      "point": [
+        14.543639,
+        50.121367
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.543639,
+          50.121367
+        ]
+      },
+      "sourceId": "LKKB",
+      "source": {
+        "id": "prague-approved-airport-arp-v1",
+        "provider": "Zadání iterace 04A – tři schválené ARP souřadnice",
+        "url": "https://aim.rlp.cz/",
+        "license": {
+          "name": "Licence leteckých podkladů nedoložena; převzaty pouze tři souřadnice ze zadání",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-16T18:10:00Z",
+        "rawChecksum": "440f986e9d26e05a32a2679b6144163ea00e76a8410f5f3e99ef5350a8dbe9f7",
+        "verification": "curated",
+        "note": "Přesně tři lokálně schválené objekty a ARP souřadnice ze zadání iterace 04A. Oficiální podklady nebylo možné v cloudovém prostředí ověřit: HTTPS CONNECT 403 pro aim.rlp.cz. Aktuálnost letecké publikace není doložená."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-16T18:10:00Z",
+      "note": "Schválená lokální herní kategorie bez ohledu na komerční provoz. Referenční bod ARP podle zadání.",
+      "attributes": {}
+    },
+    {
+      "id": "LKTC",
+      "category": "airport",
+      "name": "Letiště Točná",
+      "point": [
+        14.425556,
+        49.985278
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.425556,
+          49.985278
+        ]
+      },
+      "sourceId": "LKTC",
+      "source": {
+        "id": "prague-approved-airport-arp-v1",
+        "provider": "Zadání iterace 04A – tři schválené ARP souřadnice",
+        "url": "https://aim.rlp.cz/",
+        "license": {
+          "name": "Licence leteckých podkladů nedoložena; převzaty pouze tři souřadnice ze zadání",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-16T18:10:00Z",
+        "rawChecksum": "440f986e9d26e05a32a2679b6144163ea00e76a8410f5f3e99ef5350a8dbe9f7",
+        "verification": "curated",
+        "note": "Přesně tři lokálně schválené objekty a ARP souřadnice ze zadání iterace 04A. Oficiální podklady nebylo možné v cloudovém prostředí ověřit: HTTPS CONNECT 403 pro aim.rlp.cz. Aktuálnost letecké publikace není doložená."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-16T18:10:00Z",
+      "note": "Schválená lokální herní kategorie bez ohledu na komerční provoz. Referenční bod ARP podle zadání.",
+      "attributes": {}
+    }
+  ],
+  "parks": {
+    "version": 1,
+    "sources": [],
+    "manual": [],
+    "decisions": [],
+    "visibility": {
+      "airports": true,
+      "parks": true,
+      "referencePoints": false
+    }
+  },
+  "parkSourceStatus": {
+    "layer": "URK_Parky_p",
+    "documentationUrl": "https://uap.iprpraha.cz/texty/100/2.1.3",
+    "status": "blocked",
+    "checkedAt": "2026-10-16",
+    "reason": "HTTPS CONNECT 403 v síťové politice cloudového prostředí. Geometrie, atributy, stabilní ID ani licence neověřeny. Žádné plochy zeleně nebyly nahrazeny za parky."
+  },
+  "airportArpInput": [
+    [
+      "LKPR",
+      "Letiště Václava Havla Praha – Ruzyně",
+      14.26,
+      50.100833
+    ],
+    [
+      "LKKB",
+      "Letiště Praha-Kbely",
+      14.543639,
+      50.121367
+    ],
+    [
+      "LKTC",
+      "Letiště Točná",
+      14.425556,
+      49.985278
+    ]
+  ]
+}

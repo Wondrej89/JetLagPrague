@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { booleanPointInPolygon, booleanValid, circle, distance, feature, intersect, area, kinks, polygon } from '@turf/turf';
 import type { Point, LineString, Polygon, MultiPolygon, Position } from 'geojson';
+import { poiConfigurationSchema, validatePoiConfiguration } from './poi';
 import { gameStopConfigurationSchema, validateGameStopConfiguration } from './game-stop-configuration';
 
 export type Geometry = Point | LineString | Polygon | MultiPolygon;
@@ -99,6 +100,7 @@ const worldSchema = z.object({
   schemaVersion: z.literal(SCHEMA_VERSION), id, title: text.min(1), updatedAt: z.iso.datetime(),
   layers: z.array(geoLayerSchema).min(1).max(200),
   gameStops: gameStopConfigurationSchema.optional(),
+  poi: poiConfigurationSchema.optional(),
   gameAreaInitialization: z.object({ version: z.literal(1), state: z.enum(['initialized', 'intentionally-empty', 'legacy-empty']) }).optional(),
 });
 export type GeoFeature = z.infer<typeof geoFeatureSchema>;
@@ -121,6 +123,7 @@ export function validateWorld(input: unknown): WorldDraft {
   if (!parsed.success) throw new Error(`Neplatný datový balíček: ${parsed.error.issues.slice(0, 6).map(i => `${i.path.join('.')}: ${i.message}`).join('; ')}`);
   const world = parsed.data;
   if (world.gameStops) validateGameStopConfiguration(world.gameStops);
+  if (world.poi) validatePoiConfiguration(world.poi);
   if (world.layers.filter(l => l.kind === 'game_area').length !== 1) throw new Error('Svět musí mít právě jednu vrstvu Herní oblast.');
   const ids = new Set<string>();
   for (const layer of world.layers) {
@@ -261,3 +264,5 @@ export * from './pid-gtfs';
 export * from './pid-catalog';
 export * from './pid-shared';
 export * from './hide-selection';
+
+export * from './poi';

@@ -116,6 +116,7 @@ test('chyba výchozího souboru neuloží prázdný nový svět; opakovaná obno
   await page.goto('/'); await ready(page); await expect(page.getByRole('alert')).toContainText('Automatické ukládání je pozastavené');
   expect(await rawStoredWorld(page)).toBeNull(); expect(await page.evaluate(key => localStorage.getItem(key), key)).toBeNull();
   offline = false; await page.getByRole('button', { name: 'Obnovit výchozí území Prahy', exact: true }).click();
-  await expect.poll(async () => (await storedWorld(page)).layers[0].features.length).toBe(1);
+  // UI commit precedes the asynchronous IndexedDB write; a missing first record is expected until it completes.
+  await expect.poll(async () => (await rawStoredWorld(page))?.layers[0].features.length).toBe(1);
   await expect(page.getByRole('alert')).toHaveCount(0);
 });

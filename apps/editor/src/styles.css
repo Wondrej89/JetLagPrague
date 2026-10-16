@@ -203,3 +203,24 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .pid-history-notice strong { font-size: 13px; }
 .pid-map-status { position: absolute; z-index: 700; top: 92px; left: 62px; right: 16px; padding: 12px; background: #fff8e6; border: 1px solid #c99741; border-radius: 6px; color: #684914; font-size: 12px; }
 .pid-map-status button { display: block; margin-top: 8px; }
+
+.poi-controls { padding: 16px 0; border-bottom: 1px solid var(--border, #dde3db); }
+.poi-controls fieldset { border: 0; padding: 0; min-width: 0; }
+.poi-toggle { display: flex; align-items: center; gap: 8px; margin: 10px 0 3px; }
+.poi-toggle input { width: auto; }
+.poi-counts { margin: 2px 0 8px 24px; font-size: 11px; color: #607065; }
+.poi-source-warning, .poi-merge p { font-size: 12px; line-height: 1.5; color: #6c572e; }
+.poi-list { max-height: 280px; overflow-y: auto; margin-top: 8px; }
+.poi-row { display: flex; align-items: center; gap: 6px; }
+.poi-row > input { flex: 0 0 auto; width: auto; }
+.poi-row > button { flex: 1; text-align: left; display: flex; flex-direction: column; min-width: 0; margin: 3px 0; }
+.poi-row small { font-size: 10px; overflow-wrap: anywhere; color: #69766d; }
+.poi-row .chosen { border-color: #267a52; background: #edf5ef; }
+.poi-review-actions { display: flex; flex-wrap: wrap; gap: 5px; margin: 12px 0; }
+.poi-checksum { display: block; font-size: 10px; overflow-wrap: anywhere; white-space: normal; margin: 8px 0; }
+.poi-marker { display: grid; place-items: center; border-radius: 50%; background: #fff; border: 2px solid #305c78; color: #254e6b; font-size: 20px; box-shadow: 0 2px 5px #0003; }
+.park-marker { color: #267a52; border-color: #267a52; }
+.poi-marker.selected { outline: 3px solid #e4a348; }
+.poi-status { font-weight: 600; color: #88621e; }
+.poi-status.approved { color: #267a52; }
+.poi-status.excluded { color: #737373; }

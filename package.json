@@ -29,7 +29,8 @@
     "pid:legacy:publish": "tsx scripts/refresh-pid-publication.ts",
     "pid:check": "tsx scripts/check-pid.ts",
     "pid:gtfs": "tsx scripts/refresh-pid-gtfs.ts",
-    "pid:stage": "tsx scripts/stage-pid-publication.ts"
+    "pid:stage": "tsx scripts/stage-pid-publication.ts",
+    "poi:publish": "tsx scripts/publish-poi.ts"
   },
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "2.20.2",
