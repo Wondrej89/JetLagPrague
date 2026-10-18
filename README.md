@@ -172,8 +172,8 @@ Playwright použije `/usr/bin/chromium`, pokud existuje; jinak svůj nainstalova
 
 1. V repozitáři nastavte **Settings → Pages → Source: GitHub Actions**.
 2. Do **Settings → Secrets and variables → Actions** přidejte secret `VITE_MAPY_API_KEY` s veřejným klientským klíčem, omezeným na svůj web Pages (a příslušnou cestu, pokud omezení poskytovatele cesty podporuje).
-3. Workflow **Deploy editor to GitHub Pages** se spustí po každém pushi do `main`; lze jej spustit také ručně v záložce Actions přes **Run workflow**.
-4. Workflow ověří lint, jednotkové testy, administrativní data (`data:check`), převezme publikaci z `pid-data` (`pid:stage`), ověří ji (`pid:check`), provede build a nasadí `dist`. Nestahuje GTFS ani jiné živé zdroje PID. Pokud větev ještě neexistuje, použije označený historický bootstrap. Chybu přístupu k existující větvi neobchází návratem ke starým datům. Chybějící nebo chybné hranice nasazení zastaví. Relativní Vite `base: './'` podporuje cestu `/JetLagPrague/` bez změny aplikace. Pro vlastní doménu upravte povolené referery klíče.
+3. Workflow **Deploy game and editor to GitHub Pages** se spustí po každém pushi do `main`; lze jej spustit také ručně v záložce Actions přes **Run workflow**.
+4. Workflow ověří lint, jednotkové testy, administrativní data (`data:check`), převezme publikaci z `pid-data` (`pid:stage`), ověří ji (`pid:check`), ověří herní release při buildu a nasadí `dist/site` (veřejná aplikace v kořeni, editor v `editor/`). Nestahuje GTFS ani jiné živé zdroje PID. Pokud větev ještě neexistuje, použije označený historický bootstrap. Chybu přístupu k existující větvi neobchází návratem ke starým datům. Chybějící nebo chybné hranice nasazení zastaví. Relativní Vite `base: './'` podporuje cesty `/JetLagPrague/` a `/JetLagPrague/editor/`. Pro vlastní doménu upravte povolené referery klíče.
 
 Bez secretu se build úmyslně nezastaví: editor zobrazí stav chybějícího klíče. Pro funkční podklad musí být klíč doplněn při buildu nebo v Nastavení mapy.
 
