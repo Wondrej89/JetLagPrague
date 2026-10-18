@@ -40,10 +40,18 @@ export const parkDatasetSchema = z.object({
 export type ParkDataset = z.infer<typeof parkDatasetSchema>;
 const decisionSchema = z.object({ id, name: text.optional(), point: pointSchema.optional(), status: poiStatusSchema.optional(), reviewedAt: z.iso.datetime().nullable(), note: text.optional() });
 export type PoiDecision = z.infer<typeof decisionSchema>;
+export const parkHierarchySchema = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal('unknown')]);
+export type ParkHierarchy = z.infer<typeof parkHierarchySchema>;
+export const parkFiltersSchema = z.object({
+  hierarchies: z.array(parkHierarchySchema).max(5).refine(values => new Set(values).size === values.length),
+  showOutside: z.boolean(), status: z.enum(['all', 'approved', 'excluded', 'review']), approvedOnlyMap: z.boolean(),
+});
+export type ParkFilters = z.infer<typeof parkFiltersSchema>;
 export const poiConfigurationSchema = z.object({
   version: z.literal(1), sources: z.array(parkDatasetSchema).max(50),
   manual: z.array(poiSchema).max(10000), decisions: z.array(decisionSchema).max(20000),
   visibility: z.object({ airports: z.boolean(), parks: z.boolean(), referencePoints: z.boolean() }),
+  parkFilters: parkFiltersSchema.optional(),
 });
 export type PoiConfiguration = z.infer<typeof poiConfigurationSchema>;
 export function defaultPoiConfiguration(): PoiConfiguration {
@@ -179,19 +187,25 @@ export function resolvePois(airports: Poi[], configuration: PoiConfiguration): P
     return result;
   });
 }
-export function decidePoi(configuration: PoiConfiguration, poi: Poi, change: Partial<Omit<PoiDecision, 'id'>>): PoiConfiguration {
+export function preparePoiDecision(poi: Poi, previous: PoiDecision | undefined, change: Partial<Omit<PoiDecision, 'id'>>, reviewedAt = new Date().toISOString()): PoiDecision {
   if (poi.category !== 'park') throw new Error('Schválená letiště této lokální kategorie se automaticky nemění.');
   if (change.point) {
     pointSchema.parse(change.point);
     if (!isArea(poi.geometry) || !booleanPointInPolygon(change.point, poi.geometry, { ignoreBoundary: true })) throw new Error('Referenční bod musí ležet uvnitř parku, mimo otvory a hranici.');
   }
-  const previous = configuration.decisions.find(d => d.id === poi.id);
-  const decision = decisionSchema.parse({ ...previous, ...change, id: poi.id, reviewedAt: new Date().toISOString() });
+  const decision = decisionSchema.parse({ ...previous, ...change, id: poi.id, reviewedAt });
   if (decision.status === 'approved') {
+    const geometry = validateGeometry(poi.geometry);
+    if (!isArea(geometry)) throw new Error('Park musí mít platnou polygonovou geometrii.');
+    if (poi.sourceIdentity?.reviewRequired) throw new Error('Identita zdrojového objektu vyžaduje revizi.');
     if (!(decision.name ?? poi.name).trim()) throw new Error('Před schválením doplňte doložený název parku.');
     if (poi.attributes.sourceMissing) throw new Error('Objekt chybí ve zdroji; nejprve doložte aktuální vymezení.');
     if (!isArea(poi.geometry) || !booleanPointInPolygon(decision.point ?? poi.point, poi.geometry, { ignoreBoundary: true })) throw new Error('Před schválením opravte referenční bod uvnitř aktuální geometrie.');
   }
+  return decision;
+}
+export function decidePoi(configuration: PoiConfiguration, poi: Poi, change: Partial<Omit<PoiDecision, 'id'>>): PoiConfiguration {
+  const decision = preparePoiDecision(poi, configuration.decisions.find(d => d.id === poi.id), change);
   return { ...configuration, decisions: [...configuration.decisions.filter(d => d.id !== poi.id), decision] };
 }
 export function createManualPark(geometry: AreaGeometry, name = ''): Poi {

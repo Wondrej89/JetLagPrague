@@ -132,5 +132,17 @@
     "JSTS 2.12.1 IsValidOp",
     "GEOS 3.13.0 GEOSisValid"
   ],
-  "license": "XML references IPR data provision rules; specific license remains undocumented."
+  "license": "XML references IPR data provision rules; specific license remains undocumented.",
+  "hierarchyAudit": {
+    "checkedAt": "2026-10-18",
+    "parks": 952,
+    "counts": {
+      "1": 58,
+      "2": 60,
+      "3": 196,
+      "4": 638,
+      "unknown": 0
+    },
+    "note": "Audit konkrétního archivu po sjednocení oficiálních ID; UI počítá vlastní aktuální dataset."
+  }
 }

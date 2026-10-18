@@ -16,7 +16,7 @@ import { type TerritoryMembership, type HidingCoverage } from '@jetlag/geo-core'
 import { territoryTask } from './territory-task';
 import { TerritoryControls } from './TerritoryControls';
 import { PidDataNotice } from './PidDataNotice';
-import { withPublishedParks, applyParkUpdate, decidePoi, createManualPark, mergeParks, resolvePois, verifyPoiSources, type Poi, type PoiDecision } from '@jetlag/geo-core';
+import { defaultParkFilters, filterParkPois, decideParkHierarchies, undoParkBulk, parkMatchesHierarchy, withPublishedParks, applyParkUpdate, decidePoi, createManualPark, mergeParks, resolvePois, verifyPoiSources, type Poi, type PoiDecision, type ParkDecisionChange } from '@jetlag/geo-core';
 import { publishedAirports, publishedParks } from './poi-data';
 import { PoiControls, PoiProperties, ParkImportDialog } from './PoiPanel';
 import { loadDefaultGameArea } from './default-game-area';
@@ -63,6 +63,37 @@ export function App() {
   const editing = tool === 'edit';
   const poiConfiguration = useMemo(() => withPublishedParks(world.poi, publishedParks), [world.poi]);
   const pois = useMemo(() => resolvePois(publishedAirports, poiConfiguration), [poiConfiguration]);
+  const parkFilters = useMemo(() => poiConfiguration.parkFilters ?? defaultParkFilters(), [poiConfiguration.parkFilters]);
+  const mapPois = useMemo(() => filterParkPois(pois, parkFilters, 'map'), [pois, parkFilters]);
+  const [parkBulkBusy, setParkBulkBusy] = useState(false);
+  const [parkBulkUndo, setParkBulkUndo] = useState<{ worldId: string; changes: ParkDecisionChange[] } | null>(null);
+  const [parkBulkNotice, setParkBulkNotice] = useState<{ message: string; skipped: { id: string; name: string; reason: string }[] } | null>(null);
+  async function bulkParkStatus(status: 'approved' | 'excluded') {
+    const before = latestWorld.current;
+    const configuration = withPublishedParks(before.poi, publishedParks);
+    const selectedHierarchies = (configuration.parkFilters ?? defaultParkFilters()).hierarchies;
+    const count = resolvePois([], configuration).filter(poi => parkMatchesHierarchy(poi, selectedHierarchies)).length;
+    if (!count || !confirm(`${status === 'approved' ? 'Schválit' : 'Vyloučit'} všechny parky vybraných hierarchií (${count})? Hledání, stav a mapový výřez nemají na výběr vliv.`)) return;
+    setParkBulkBusy(true); setParkBulkNotice(null);
+    try {
+      const result = await decideParkHierarchies(configuration, selectedHierarchies, status, () => new Promise<void>(resolve => requestAnimationFrame(() => resolve())));
+      if (latestWorld.current !== before) throw new Error('Svět se během zpracování změnil. Hromadná akce nebyla uložena; spusťte ji znovu.');
+      if (result.changed) {
+        commit({ ...before, poi: result.configuration });
+        setParkBulkUndo({ worldId: before.id, changes: result.undo });
+      }
+      setParkBulkNotice({ message: `Výběr: ${result.matched}. ${status === 'approved' ? 'Schváleno' : 'Vyloučeno'}: ${result.changed}. Beze změny: ${result.matched - result.changed - result.skipped.length}. Přeskočeno: ${result.skipped.length}.`, skipped: result.skipped });
+    } catch (error) { setError(errorText(error)); }
+    finally { setParkBulkBusy(false); }
+  }
+  function undoParkStatus() {
+    if (!parkBulkUndo || parkBulkUndo.worldId !== latestWorld.current.id) return;
+    const before = latestWorld.current;
+    const result = undoParkBulk(withPublishedParks(before.poi, publishedParks), parkBulkUndo.changes);
+    if (result.restored) commit({ ...before, poi: result.configuration });
+    setParkBulkUndo(null);
+    setParkBulkNotice({ message: `Vráceno rozhodnutí: ${result.restored}. Zachováno pozdějších individuálních změn: ${result.preserved}.`, skipped: [] });
+  }
   const [poiSelected, setPoiSelected] = useState<string | null>(null);
   const selectedPoi = pois.find(p => p.id === poiSelected) ?? null;
   const [poiMoving, setPoiMoving] = useState(false);
@@ -325,7 +356,7 @@ export function App() {
         {world.gameAreaInitialization?.state === 'legacy-empty' && <p className="source-load-error" role="status" data-testid="legacy-empty-area">Uložený svět nemá herní oblast. Nelze zjistit, zda byla dříve smazaná, proto ji automaticky nedoplňujeme. Obnovit ji můžete tlačítkem níže; vlastní data zůstanou zachovaná.</p>}
         <TerritoryControls hasArea={!!pidArea} busy={pragueBusy} disabled={editing} onPrague={() => void restorePragueArea()} onFit={() => { if (pidArea) map.current?.fitArea(pidArea); }} territoryOnly={pidFilters.territoryOnly} onFilter={territoryOnly => setPidFilters(filters => ({ ...filters, territoryOnly }))} filterError={!!membershipFailure} membershipStatus={!pidArea ? 'Herní oblast není definovaná; polohu nelze určit.' : membershipError || (membership ? `${membership.stopIds.length} zastávek a ${membership.routeIds.length} linek v oblasti · ${membership.unknownStops} neurčených bodů` : 'Ověřuji polohu zastávek a průnik tras…')} showCoverage={showCoverage} onCoverage={setShowCoverage} radius={pidConfiguration.radiusMeters} coverage={coverage} coverageStatus={!pidArea ? 'Chybí herní oblast.' : coverageError || (coverage ? coverage.geometry ? 'Společná úkrytová plocha zobrazena.' : 'Žádná společná úkrytová plocha.' : 'Počítám sjednocení všech úkrytových zón…')} />
         <PidControls disabled={editing} view={filteredPidView} sourceView={pid.view} filterPending={membershipPending} filterError={membershipFailure} loadError={pid.loadError} updateError={pid.updateError} warning={[pid.warning, pidPreferencesWarning].filter(Boolean).join(" ")} filters={pidFilters} onChange={setPidFilters} onSelect={stop => selectPid(stop, true)} selected={pidSelected} onSources={() => setPidSources(true)} onRetry={() => void pid.refresh()} busy={pid.busy} radius={pidConfiguration.radiusMeters} onRadius={radiusMeters => attempt(() => commit({ ...world, gameStops: { ...pidConfiguration, radiusMeters } }))} />
-        <PoiControls pois={pois} configuration={poiConfiguration} selected={poiSelected} disabled={editing || hydrating} drawing={tool === 'park'} onVisibility={visibility => attempt(() => commit({ ...world, poi: { ...poiConfiguration, visibility } }))} onSelect={selectPoi} onAdd={() => { setTool(value => value === 'park' ? 'select' : 'park'); setSelected(null); setPidSelected(null); setPoiSelected(null); setPoiMoving(false); }} onImport={() => setParkImporting(true)} onMerge={(ids, name) => attempt(() => { const result = mergeParks(poiConfiguration, pois.filter(p => ids.includes(p.id)), name); commit({ ...world, poi: result.configuration }); selectPoi(result.park); })} />
+        <PoiControls onFilters={parkFilters => attempt(() => commit({ ...world, poi: { ...poiConfiguration, parkFilters } }))} onBulk={status => void bulkParkStatus(status)} onUndoBulk={() => attempt(undoParkStatus)} canUndoBulk={!!parkBulkUndo && parkBulkUndo.worldId === world.id} bulkBusy={parkBulkBusy} bulkNotice={parkBulkNotice} pois={pois} configuration={poiConfiguration} selected={poiSelected} disabled={editing || hydrating} drawing={tool === 'park'} onVisibility={visibility => attempt(() => commit({ ...world, poi: { ...poiConfiguration, visibility } }))} onSelect={selectPoi} onAdd={() => { setTool(value => value === 'park' ? 'select' : 'park'); setSelected(null); setPidSelected(null); setPoiSelected(null); setPoiMoving(false); }} onImport={() => setParkImporting(true)} onMerge={(ids, name) => attempt(() => { const result = mergeParks(poiConfiguration, pois.filter(p => ids.includes(p.id)), name); commit({ ...world, poi: result.configuration }); selectPoi(result.park); })} />
         <div className="objects-heading"><h3>Objekty <span>{active.features.length}</span></h3><button onClick={() => map.current?.fit()}>Zobrazit vše</button></div>
         <label className="search-label"><input aria-label="Hledat objekty aktivní vrstvy" placeholder="Vyhledat oblast nebo objekt…" value={filter} onChange={e => setFilter(e.target.value)} /></label>
         <div className="object-list">{active.features.filter(f => f.name.toLocaleLowerCase('cs').includes(filter.toLocaleLowerCase('cs'))).map(f => <button disabled={editing} key={f.id} className={selected?.featureId === f.id && selected.layerId === active.id ? 'chosen' : ''} onClick={() => { setPoiSelected(null); setPoiMoving(false); setPidSelected(null); setSelected({ layerId: active.id, featureId: f.id }); setTool('select'); }}><span aria-hidden="true">{f.geometry.type === 'Point' ? '●' : f.geometry.type === 'LineString' ? '╱' : '⬡'}</span><span>{f.name}<small>{f.circle ? 'Metrický kruh' : f.geometry.type}</small></span></button>)}
@@ -340,7 +371,7 @@ export function App() {
           <div className="history-buttons"><button aria-label="Zpět" disabled={!history.past.length || editing} onClick={() => undo()}>↶</button><button aria-label="Znovu" disabled={!history.future.length || editing} onClick={() => undo(true)}>↷</button></div>
         </div>
         <div className="map-stage">
-          <MapCanvas ref={map} poi={{ preview: parkImportPreview, records: pois, visibility: poiConfiguration.visibility, selected: poiSelected, moving: poiMoving && tool === 'select', onSelect: id => { const poi = pois.find(p => p.id === id); if (poi) selectPoi(poi); }, onReference: point => updatePoi({ point }) }} pid={{ stops: pidStops, routes: pidRoutes, selected: pidPreviewStop, platforms: pidPlatforms, showPlatforms: pidShowPlatforms, zone: pidZone, coverage: coverage?.geometry ?? null, coverageReview: !!coverage?.reviewStops, moveReference: pidMoving, highlightedRoute: pidFilters.selectedRoute, onSelect: id => { const stop = pid.view?.stops.find(value => value.id === id); if (stop) selectPid(stop); }, onReference: setPidPreview, onBounds: setPidBounds }} testPoint={testPoint} onTestPoint={setTestPoint} world={world} selected={selected} tool={tool} apiKey={apiKey} onSelect={selection => { setPoiSelected(null); setPoiMoving(false); setPidSelected(null); setSelected(selection); setActiveId(selection.layerId); }} onCreate={geometry => attempt(() => addGeometry(geometry))} onCircle={center => attempt(() => addGeometry(makeMetricCircle(center, Number(radius)), { center, radiusMeters: Number(radius) }))} onEdit={geometry => attempt(() => { updateFeature({ geometry }); setTool('select'); })} onMeasure={setMeasurement} onError={setError} onTileStatus={setTileStatus} />
+          <MapCanvas ref={map} poi={{ preview: parkImportPreview, records: mapPois, visibility: poiConfiguration.visibility, selected: poiSelected, moving: poiMoving && tool === 'select', onSelect: id => { const poi = pois.find(p => p.id === id); if (poi) selectPoi(poi); }, onReference: point => updatePoi({ point }) }} pid={{ stops: pidStops, routes: pidRoutes, selected: pidPreviewStop, platforms: pidPlatforms, showPlatforms: pidShowPlatforms, zone: pidZone, coverage: coverage?.geometry ?? null, coverageReview: !!coverage?.reviewStops, moveReference: pidMoving, highlightedRoute: pidFilters.selectedRoute, onSelect: id => { const stop = pid.view?.stops.find(value => value.id === id); if (stop) selectPid(stop); }, onReference: setPidPreview, onBounds: setPidBounds }} testPoint={testPoint} onTestPoint={setTestPoint} world={world} selected={selected} tool={tool} apiKey={apiKey} onSelect={selection => { setPoiSelected(null); setPoiMoving(false); setPidSelected(null); setSelected(selection); setActiveId(selection.layerId); }} onCreate={geometry => attempt(() => addGeometry(geometry))} onCircle={center => attempt(() => addGeometry(makeMetricCircle(center, Number(radius)), { center, radiusMeters: Number(radius) }))} onEdit={geometry => attempt(() => { updateFeature({ geometry }); setTool('select'); })} onMeasure={setMeasurement} onError={setError} onTileStatus={setTileStatus} />
           {(membershipPending || membershipFailure) && <div className="pid-map-status" role="status" data-testid="pid-filter-map-status">{membershipFailure || 'Ověřuji polohu PID v herní oblasti… Poslední zobrazení může čekat na přepočet.'}{membershipFailure && <button onClick={() => setPidFilters(filters => ({ ...filters, territoryOnly: false }))}>Vypnout prostorový filtr</button>}</div>}
           {tileStatus !== 'ready' && <div className={`map-notice ${tileStatus === 'error' ? 'warning' : ''}`} role="status"><strong>{tileStatus === 'missing' ? 'Chybí API klíč Mapy.com' : tileStatus === 'error' ? 'Mapový podklad se nepodařilo načíst' : 'Načítám mapový podklad…'}</strong><span>{tileStatus === 'missing' ? 'Přidejte klientský klíč v Nastavení mapy nebo do .env.local. Geometrie lze editovat i bez podkladu.' : tileStatus === 'error' ? 'Ověřte klíč, povolený HTTP referer, službu maptiles, limit a síťové připojení. Vaše geometrie zůstávají zachované.' : 'Mapy.com REST API'}</span></div>}
           <button className="prague-button" onClick={() => map.current?.prague()}>⌖ Zpět na Prahu</button>

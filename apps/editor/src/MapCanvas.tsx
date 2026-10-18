@@ -193,7 +193,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     for (const poi of props.poi?.records ?? []) {
       if (poi.category === 'airport' ? !props.poi?.visibility.airports : !props.poi?.visibility.parks) continue;
       const selected = props.poi?.selected === poi.id;
-      const color = poi.status === 'approved' ? '#267a52' : poi.status === 'excluded' ? '#777777' : '#b67929';
+      const color = poi.status === 'approved' ? '#267a52' : poi.status === 'excluded' ? '#777777' : '#738078';
       const select = (event: L.LeafletEvent) => {
         if (current.current.tool !== 'select') return;
         L.DomEvent.stopPropagation(event); current.current.poi?.onSelect(poi.id);
@@ -201,13 +201,13 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
       const label = () => { const element = document.createElement('span'); element.textContent = `${poi.name || 'Park bez názvu'} · ${poi.id}`; return element; };
       if (poi.geometry.type !== 'Point') {
         const geometry: Feature = { type: 'Feature', geometry: poi.geometry, properties: {} };
-        const layer = L.geoJSON(geometry, { pane: 'poi-polygons', pmIgnore: true, snapIgnore: true, style: { color, weight: selected ? 4 : 2, fillOpacity: poi.status === 'excluded' ? 0.02 : 0.13, dashArray: poi.status === 'review' ? '5 4' : undefined } });
+        const layer = L.geoJSON(geometry, { pane: 'poi-polygons', pmIgnore: true, snapIgnore: true, style: { className: `poi-polygon ${poi.status}`, color, weight: selected ? 4 : 2, fillOpacity: poi.status === 'approved' ? 0.16 : poi.status === 'excluded' ? 0.02 : 0, dashArray: poi.status === 'review' ? '5 4' : undefined } });
         layer.on('click', select); layer.bindTooltip(label()); layer.addTo(group);
       }
       if (poi.category === 'airport' || props.poi?.visibility.referencePoints || selected) {
         const marker = L.marker([poi.point[1], poi.point[0]], { pmIgnore: true, snapIgnore: true, draggable: poi.category === 'park' && selected && props.poi?.moving,
           title: poi.name || poi.id, zIndexOffset: selected ? 900 : 600,
-          icon: L.divIcon({ className: `poi-marker ${poi.category === 'airport' ? 'airport-marker' : 'park-marker'} ${selected ? 'selected' : ''}`, html: poi.category === 'airport' ? '✈' : '♧', iconSize: [30, 30], iconAnchor: [15, 15] }) });
+          icon: L.divIcon({ className: `poi-marker ${poi.category === 'airport' ? 'airport-marker' : 'park-marker'} ${poi.status} ${selected ? 'selected' : ''}`, html: poi.category === 'airport' ? '✈' : '♧', iconSize: [30, 30], iconAnchor: [15, 15] }) });
         marker.on('click', select); marker.bindTooltip(label());
         marker.on('dragend', () => {
           const point = marker.getLatLng();

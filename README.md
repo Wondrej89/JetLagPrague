@@ -12,6 +12,12 @@ Vlevo v **Body zájmu** jsou samostatné přepínače letišť a parků, počty 
 
 Parky lze bezpečně importovat z GeoJSON, nakreslit, přejmenovat, skutečně sjednotit jejich části, schválit nebo vyloučit a přesunout referenční bod uvnitř polygonu. Zdrojová data jsou oddělená od ručních rozhodnutí; jejich aktualizace zachová jména, body, schválení i vyloučení. Vše se uchovává v draftu a kompletních JSON/GeoJSON zálohách.
 
+**Výběr parků pro hru:** v **Body zájmu → Výběr parků podle hierarchie** jsou skutečné počty čtyř hierarchií (výchozí výběr 1) a samostatná skupina bez hierarchie. Jedním potvrzením lze celý výběr schválit nebo vyloučit, nezávisle na hledání a mapovém výřezu. Neplatní kandidáti se přeskočí s diagnostikou. **Vrátit poslední hromadnou akci** obnoví původní rozhodnutí a zachová pozdější individuální úpravy.
+
+**Zobrazit jen parky ve hře** ukáže v mapě **všechny schválené parky napříč hierarchiemi**, včetně ručně přidaných výjimek. Seznam má filtry **Vše / Schválené / Vyloučené / K revizi**, hledání a volbu zobrazení parků mimo pracovní hierarchie. Pro úplný seznam schválených použijte **Schválené** a **Zobrazit také parky mimo vybrané hierarchie**. Živé počty ukazují celý katalog. Schválené parky jsou zelené, vyloučené šedé, revize má neutrální obrys. Ve vlastnostech jsou rychlé akce **Vyřadit ze hry / Vrátit do hry**. Pracovní filtry a stav mapového náhledu se uchovávají v draftu; nezmění schválení ani geografické výsledky.
+
+Nové parky při aktualizaci zůstávají k revizi. `npm run poi:publish` zachovává úplné editorové zdroje a navíc vytváří `gameParks` pouze ze schválených parků. Matching a Measuring nadále ignorují vyloučené i neschválené objekty. [Podrobnosti a omezení](docs/POI_DATA.md#hromadná-správa-podle-hierarchie).
+
 **Původní omezení zdrojů URK a letišť:** dokumentaci IPR `URK_Parky_p` i letecké podklady AIM blokovala síť cloudového prostředí (HTTPS CONNECT 403). Endpoint parkových geometrií, atributy, stabilní ID a licence proto nejsou ověřené; publikováno je **0 oficiálních parků**. Nevkládají se náhradní zelené plochy. Letiště používají schválené ARP souřadnice ze zadání s výslovným záznamem, že aktuální oficiální letecký dokument nebylo možné nezávisle ověřit.
 
 Pro parky použijte **Načíst / aktualizovat parky**. Přijímá původní ZIP **MPP_100_Parky_p** i WGS84 GeoJSON konkrétní parkové vrstvy (včetně URK, pokud je doložená). Všichni noví kandidáti začínají k revizi; publikování schválených parků do statického katalogu má samostatný příkaz `npm run poi:publish -- --world cesta/k/exportu.json`.

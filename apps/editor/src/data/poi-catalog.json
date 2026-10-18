@@ -117,6 +117,7 @@
       "referencePoints": false
     }
   },
+  "gameParks": [],
   "parkSourceStatus": {
     "layer": "MPP_100_Parky_p",
     "documentationUrl": "https://geoportalpraha.cz/data-a-sluzby/35e82d77fbd44d96b470bf5731fbb0d4",

@@ -5,7 +5,7 @@ import { storedWorld } from './draft-helper';
 
 const irregular: AreaGeometry = { type: 'Polygon', coordinates: [[[14.4, 50.07], [14.42, 50.07], [14.42, 50.074], [14.404, 50.074], [14.404, 50.09], [14.4, 50.09], [14.4, 50.07]]] };
 const separate: AreaGeometry = { type: 'MultiPolygon', coordinates: [[[[14.43, 50.08], [14.44, 50.08], [14.44, 50.09], [14.43, 50.09], [14.43, 50.08]]], [[[14.45, 50.08], [14.46, 50.08], [14.46, 50.09], [14.45, 50.09], [14.45, 50.08]]]] };
-function fixture(name = 'Testovací park A') { return { type: 'FeatureCollection', features: [ { type: 'Feature', properties: { stable: 'A', title: name }, geometry: irregular }, { type: 'Feature', properties: { stable: 'B', title: 'Testovací park B' }, geometry: separate } ] }; }
+function fixture(name = 'Testovací park A') { return { type: 'FeatureCollection', features: [ { type: 'Feature', properties: { stable: 'A', title: name, HIERARCHIE: 1 }, geometry: irregular }, { type: 'Feature', properties: { stable: 'B', title: 'Testovací park B', HIERARCHIE: 1 }, geometry: separate } ] }; }
 async function ready(page: Page) { await expect(page.locator('.app-shell')).toHaveAttribute('aria-busy', 'false'); }
 async function importParks(page: Page, name?: string) {
   await page.getByRole('button', { name: 'Načíst / aktualizovat parky', exact: true }).click();
@@ -113,6 +113,7 @@ test('ručně kreslený park vytvoří platnou geometrii oddělenou od vlastníc
   await expect(page.getByTestId('poi-count-park')).toContainText('0 schválených');
   await page.getByRole('button', { name: 'Znovu', exact: true }).click();
   await expect(page.getByTestId('poi-count-park')).toContainText('1 schválených');
+  await page.getByLabel('Zobrazit také parky mimo vybrané hierarchie', { exact: true }).check();
   await page.locator('.poi-list').getByRole('button', { name: /Ručně vymezený park/ }).click();
   const beforePoint = (await storedWorld(page)).poi!.manual[0].point;
   await page.getByRole('button', { name: 'Přesunout bod parku v mapě', exact: true }).click();

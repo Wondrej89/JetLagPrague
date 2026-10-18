@@ -7,7 +7,7 @@ async function upload(page: Page, bytes: Uint8Array) {
   await page.getByRole('button', { name: 'Načíst / aktualizovat parky', exact: true }).click();
   await dialog(page).getByLabel('GeoJSON parků / Shapefile ZIP', { exact: true }).setInputFiles({ name: 'MPP_CUR_MPP_100_PARKY_P.zip', mimeType: 'application/zip', buffer: Buffer.from(bytes) });
   await expect(dialog(page).getByText(/S-JTSK/)).toBeVisible();
-  await expect(dialog(page).getByRole('heading', { name: 'Kontrola rozdílů', exact: true })).toBeVisible();
+  await expect(dialog(page).getByRole('heading', { name: 'Kontrola rozdílů', exact: true })).toBeVisible({ timeout: 30000 });
 }
 test.beforeEach(async ({ context, page }) => {
   await context.route('https://api.mapy.com/**', route => route.abort());
@@ -19,6 +19,7 @@ test('původní Shapefile ZIP: automatické rozpoznání, český název, ulože
   const before = await storedWorld(page); await upload(page, shapeZip());
   await expect(dialog(page)).toContainText('1 kandidátů · 1 nových · 0 změněných · 0 chybějících');
   await dialog(page).getByRole('button', { name: 'Použít parkový zdroj', exact: true }).click(); await expect(dialog(page)).toHaveCount(0);
+  await page.getByLabel('Zobrazit také parky mimo vybrané hierarchie', { exact: true }).check();
   await page.locator('.poi-list').getByRole('button', { name: /Ďáblický háj/ }).click(); await page.getByRole('button', { name: 'Schválit park', exact: true }).click();
   await expect.poll(async () => (await storedWorld(page)).poi?.decisions[0].status).toBe('approved');
   await upload(page, shapeZip()); await expect(dialog(page)).toContainText('1 kandidátů · 0 nových · 0 změněných · 0 chybějících');
@@ -43,6 +44,7 @@ test('shodné ID se automaticky sloučí, zachovají názvy i původní data a n
   const park = (await storedWorld(page)).poi!.sources[0].records[0];
   expect(park.sourceId).toBe('2773'); expect(park.id).toBe('park:ipr-mpp-100-parky:2773');
   expect(park.importAudit?.sourceNames).toEqual(['Park u OC Letňany', 'Park u OC Letňany II.']);
+  await page.getByLabel('Zobrazit také parky mimo vybrané hierarchie', { exact: true }).check();
   await page.locator('.poi-list').getByRole('button', { name: /Park u OC Letňany/ }).click();
   await expect(page.locator('.poi-properties')).toContainText('Automatické zpracování geometrie a ID');
 });

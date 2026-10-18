@@ -80,6 +80,24 @@ Aktualizace zachová rozhodnutí podle oficiálního ID. Starší importér mohl
 
 Schválení, vyloučení, přejmenování, poznámky a ruční bod jsou samostatná rozhodnutí podle stabilního ID; nezasahují do zdrojových záznamů ani jejich kontrolního součtu. Aktualizace je nesmaže. Pokud zdroj změní hranici tak, že ruční bod leží mimo ni, bod i původní rozhodnutí zůstanou uchované, ale účinný stav bude k revizi, dokud se bod neopraví. Zmizelý zdrojový objekt se zachová s historickou geometrií k revizi, neslouží automaticky pro otázky; původní vyloučení zůstává účinné. Při návratu stejného ID se rozhodnutí opět použije.
 
+## Hromadná správa podle hierarchie
+
+V bloku **Výběr parků podle hierarchie** vyberte jednu nebo více skupin: 1 – metropolitní, 2 – čtvrťové, 3 – lokalitní, 4 – místní. Výchozí je pouze 1. Počty vznikají z aktuálních parků po sjednocení duplicitních ID, nikdy z pevné tabulky. `HIERARCHIE` přijímá čísla i číselné řetězce. Chybějící/neznámá hodnota a rozporné hodnoty původních sloučených částí patří do **Bez určené hierarchie**, kterou lze vybrat samostatně. Vlastní parky bez atributu jsou v této skupině také.
+
+Pracovní hierarchie a filtry **Vše / Schválené / Vyloučené / K revizi** filtrují seznam i běžné zobrazení mapy. **Zobrazit také parky mimo vybrané hierarchie** dovolí vybrat výjimky nebo zobrazit úplný zdroj. Hledání působí pouze na seznam; název, interní i oficiální ID jsou prohledávané. Živé součty všech/schválených/vyloučených/k revizi vždy popisují celý dostupný katalog, včetně vlastních a historických objektů.
+
+**Zobrazit jen parky ve hře** je samostatný úplný mapový náhled: ukazuje všechny účinně schválené parky napříč hierarchiemi. Pracovní hierarchie, stavový filtr seznamu ani hledání z něj neschovají schválenou výjimku. Pro úplný seznam schválených zároveň vyberte **Schválené** a **Zobrazit také parky mimo vybrané hierarchie**. Globální přepínač vrstvy Parky zůstává nadřazený. Filtry nemění schválení, publikaci ani Matching/Measuring. Přepínače i hierarchie jsou ve volitelném `PoiConfiguration.parkFilters`, ukládají se v IndexedDB a kompletních exportech; staré drafty získají výchozí filtr bez změny zdrojových dat.
+
+**Schválit všechny parky vybraných hierarchií** a **Vyloučit všechny parky vybraných hierarchií** se vztahují přesně na vybrané skupiny v celém katalogu. Před potvrzením se zobrazí počet, bez ohledu na mapový výřez, hledání, stavový filtr, limit prvních 100 řádků seznamu nebo přepínač zobrazení ostatních hierarchií. Schválení používá stejné kontroly jako jednotlivá akce: validní polygon, doložený neprázdný název, jednoznačná identita, aktuální zdroj a platný bod striktně uvnitř. Neplatný kandidát se přeskočí a v souhrnu zůstane jeho ID a důvod. Ostatní validní parky se zpracují; zdrojové geometrie se nemění.
+
+Dávka upraví mapu `PoiDecision` a provede **jeden commit světa / jeden zápis draftu**, nikoli stovky samostatných uložení. Každých 32 kandidátů vrátí řízení prohlížeči. Změní-li se mezitím svět jinou operací, dávka se neuloží přes novější data. Existující body, ruční názvy a poznámky se zachovají. Nový park ve stejné hierarchii při pozdější aktualizaci automaticky nedostane schválení; je třeba další výslovná akce.
+
+**Vrátit poslední hromadnou akci** obnoví pouze rozhodnutí dotčené poslední dávkou. Pozdější individuální změny se zachovají a jejich počet se vypíše. Ostatní vrstvy, PID, hranice, filtry i nové zdrojové aktualizace zůstanou zachované. Dávka se účastní také běžné historie Zpět/Znovu jako jediná operace. Samostatný bod vrácení poslední dávky je dostupný během aktuálního otevření editoru; reload zachová rozhodnutí a filtry, ale historii vrácení neobnovuje.
+
+Zelená označuje schválený park, šedá vyloučený a neutrální přerušovaný obrys park k revizi. Po výběru schváleného parku v seznamu nebo mapě zvolte **Vyřadit ze hry**. Zdroj se nesmaže; změní se rozhodnutí na `excluded`. **Vrátit do hry** znovu používá schvalovací kontroly. V náhledu hry vyloučený park ihned zmizí, vlastnosti zůstanou otevřené pro případné vrácení.
+
+Ověřeno 18. 10. 2026 na originálním ZIPu se stejným SHA-256 jako při importním auditu: 952 parků, hierarchie **58 / 60 / 196 / 638**, bez neurčené hierarchie. Tyto hodnoty jsou audit konkrétního souboru; UI je vždy znovu počítá z vlastních dat. Automatické testy pokrývají i neplatné kandidáty, neznámé hodnoty, řetězcové atributy, potvrzení/storno, jednu databázovou změnu, pozdější individuální změny, reload, import/export a aktualizaci s novým parkem.
+
 ## Datový model a přenos
 
 `Poi` obsahuje `id`, rozšiřitelnou `category`, `name`, `point`, `geometry`, `sourceId`, `source`, `status`, `reviewedAt`, `note`; navíc původní `attributes` a případně `memberIds`. Statusy jsou `review`, `approved`, `excluded`. Kategorie je řetězec, proto stejné funkce mohou později používat muzea, zoo, akvária, golf, knihovny, nemocnice a konzuláty. Jejich editory ani data tato iterace nepřidává.
@@ -101,7 +119,7 @@ npm run test:e2e
 npm run build
 ```
 
-Příkaz ověří datasetové checksumy, zachová statická letiště a zapíše pouze parkovou část `apps/editor/src/data/poi-catalog.json`. Před publikací importovaných schválených parků vyžaduje doloženou licenci s URL, také u sloučených původních částí. Ruční rozhodnutí nenahrazují kontrolu skutečného původu dat. Zkontrolujte změny katalogu, commitněte je a nasaďte obvyklým workflow GitHub Pages. Běžný build sám nestahuje parky ani nečte něčí prohlížeč. Katalog otázek, multiplayer a systém neměnných herních release zůstávají mimo rozsah.
+Příkaz ověří datasetové checksumy a zachová statická letiště. Do `apps/editor/src/data/poi-catalog.json` zapíše editorové `parks` se všemi zdroji a rozhodnutími a samostatné **`gameParks` pouze ze schválených parků**. Pole `parks` zachovává kandidáty pro další revize a aktualizace; neslouží jako neomezený herní seznam. `gameParks` obsahuje účinná jména, ruční body, stav a ID schválených objektů. Vyloučené a neschválené objekty v tomto herním seznamu nejsou. Publikace ignoruje pracovní filtry a vypnuté vrstvy. Před publikací importovaných schválených parků vyžaduje doloženou licenci s URL, také u sloučených původních částí. Ruční rozhodnutí nenahrazují kontrolu skutečného původu dat. Zkontrolujte změny katalogu, commitněte je a nasaďte obvyklým workflow GitHub Pages. Běžný build sám nestahuje parky ani nečte něčí prohlížeč. Katalog otázek, multiplayer a systém neměnných herních release zůstávají mimo rozsah.
 
 ## Geografické funkce
 

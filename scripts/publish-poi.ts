@@ -10,7 +10,8 @@ const world = importWorld(await readFile(resolve(process.argv[argument + 1]), 'u
 if (!world.poi) throw new Error('Svět neobsahuje parkové zdroje ani rozhodnutí.');
 const parks = poiConfigurationSchema.parse(world.poi);
 validatePoiConfiguration(parks); await verifyPoiSources(parks);
-for (const park of resolvePois([], parks).filter(p => p.status === 'approved')) {
+const gameParks = resolvePois([], parks).filter(p => p.category === 'park' && p.status === 'approved');
+for (const park of gameParks) {
   if (park.source.id !== 'manual' && (!park.source.license.url || /nedoložen|neznám|neověřen/i.test(park.source.license.name))) throw new Error(`Park ${park.id}: před publikací doložte licenci původního zdroje i její URL.`);
   if (Array.isArray(park.attributes.origins)) for (const origin of park.attributes.origins) {
     if (!origin || typeof origin !== 'object' || Array.isArray(origin) || !origin.source || typeof origin.source !== 'object' || Array.isArray(origin.source)) throw new Error(`Park ${park.id}: chybí metadata původních částí.`);
@@ -20,5 +21,5 @@ for (const park of resolvePois([], parks).filter(p => p.status === 'approved')) 
 }
 const path = 'apps/editor/src/data/poi-catalog.json';
 const catalog = JSON.parse(await readFile(path, 'utf8'));
-await writeFile(path, `${JSON.stringify({ ...catalog, parks }, null, 2)}\n`);
-console.log(`Připraven statický katalog: ${resolvePois([], parks).filter(p => p.status === 'approved').length} schválených parků. Zkontrolujte diff a publikujte přes GitHub Pages.`);
+await writeFile(path, `${JSON.stringify({ ...catalog, parks, gameParks }, null, 2)}\n`);
+console.log(`Připraven statický katalog: ${gameParks.length} schválených parků. Zkontrolujte diff a publikujte přes GitHub Pages.`);
