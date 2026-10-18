@@ -266,3 +266,5 @@ export * from './hide-selection';
 export * from './poi';
 
 export * from './park-selection';
+
+export * from './game-release';

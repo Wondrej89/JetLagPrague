@@ -4,7 +4,7 @@ import { transportModeSchema, wgs84PointSchema } from './pid-model';
 const id = z.string().min(1).max(300);
 const groupIds = z.array(id).min(1).refine(ids => new Set(ids).size === ids.length, 'Duplicitní vazba skupiny.');
 export const gameStopConfigurationSchema = z.object({
-  schemaVersion: z.literal(1), radiusMeters: z.number().positive().max(100000).default(400),
+  schemaVersion: z.literal(1), allowedModes: z.array(transportModeSchema).min(1).refine(values => new Set(values).size === values.length).optional(), radiusMeters: z.number().positive().max(100000).default(400),
   // Identity is based on source codes, never stop names or proximity.
   nodes: z.array(z.object({ id, name: z.string().trim().min(1).max(10000), groupIds,
     justification: z.string().trim().min(1).max(10000),

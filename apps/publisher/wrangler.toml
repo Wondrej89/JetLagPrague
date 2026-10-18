@@ -1,0 +1,25 @@
+name = "jetlag-prague-publisher"
+main = "src/worker.ts"
+compatibility_date = "2026-10-18"
+workers_dev = true
+
+[limits]
+cpu_ms = 30000
+
+[vars]
+ALLOWED_ORIGIN = "https://wondrej89.github.io"
+EDITOR_URL = "https://wondrej89.github.io/JetLagPrague/editor/"
+ALLOWED_GITHUB_USER_ID = "64984949"
+REPOSITORY_ID = "1420367545"
+GITHUB_APP_ID = ""
+GITHUB_CLIENT_ID = ""
+GITHUB_INSTALLATION_ID = ""
+# Secrets: GITHUB_CLIENT_SECRET, GITHUB_APP_PRIVATE_KEY (wrangler secret put).
+
+[[durable_objects.bindings]]
+name = "COORDINATOR"
+class_name = "PublisherCoordinator"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["PublisherCoordinator"]

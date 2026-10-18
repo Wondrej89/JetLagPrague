@@ -1,4 +1,4 @@
-import { buildGameStops, comparePidSnapshots, comparePidRoutes, pragueDate, readPidSnapshot, referenceZoneGeometry, territoryMembership, type PidSnapshot } from '@jetlag/geo-core';
+import { buildGameDataRelease, buildGameStops, comparePidSnapshots, comparePidRoutes, pragueDate, readPidSnapshot, referenceZoneGeometry, territoryMembership, type PidSnapshot } from '@jetlag/geo-core';
 import { indexedPidStorage } from './pid-store';
 import { decodePidData, loadPublishedPid } from './pid-fetch';
 import type { PidCommand, PidComparison, PidSummary, PidView, RouteDrawing } from './pid-types';
@@ -69,7 +69,8 @@ async function run(command: PidCommand): Promise<unknown> {
     await indexedPidStorage.write(candidate); snapshot = candidate; candidate = null;
     return view(command.configuration);
   }
-  if (!snapshot) throw new Error('Chybí snapshot k exportu.');
+  if (!snapshot) throw new Error('Chybí snapshot PID pro export nebo publikaci.');
+  if (command.action === 'game-release') return buildGameDataRelease(command.world, command.airports, snapshot);
   return new Response(new Blob([JSON.stringify(snapshot)]).stream().pipeThrough(new CompressionStream('gzip'))).arrayBuffer();
 }
 // Sequential commands prevent an earlier hydrate/refresh from overwriting a later import.

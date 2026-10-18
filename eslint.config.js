@@ -3,7 +3,7 @@ import ts from 'typescript-eslint';
 import hooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 export default ts.config(
-  { ignores: ['dist/**', 'node_modules/**', 'test-results/**', 'playwright-report/**'] },
+  { ignores: ['dist/**', 'node_modules/**', 'test-results/**', 'playwright-report/**', '**/.wrangler/**', '**/worker-build/**'] },
   js.configs.recommended,
   ...ts.configs.recommended,
   { files: ['**/*.{ts,tsx}'], languageOptions: { globals: { ...globals.browser, ...globals.node } }, plugins: { 'react-hooks': hooks }, rules: { ...hooks.configs.recommended.rules, 'react-hooks/set-state-in-effect': 'off', 'react-hooks/refs': 'off' } },

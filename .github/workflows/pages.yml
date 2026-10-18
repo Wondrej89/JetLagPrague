@@ -1,4 +1,4 @@
-name: Deploy editor to GitHub Pages
+name: Deploy game and editor to GitHub Pages
 on:
   push:
     branches: [main]
@@ -48,10 +48,11 @@ jobs:
       - run: npm run build
         env:
           VITE_MAPY_API_KEY: ${{ secrets.VITE_MAPY_API_KEY }}
+          VITE_PUBLISHER_URL: ${{ vars.PUBLISHER_URL }}
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: dist
+          path: dist/site
   deploy:
     needs: build
     runs-on: ubuntu-latest

@@ -47,7 +47,9 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
   const byGroup = new Map<string, PidPlatform[]>();
   const allByGroup = new Map<string, PidPlatform[]>();
   for (const platform of snapshot.platforms) { const list = allByGroup.get(platform.groupId) ?? []; list.push(platform); allByGroup.set(platform.groupId, list); }
-  for (const platform of snapshot.platforms) if (platform.publicStop && platform.services.length) {
+  for (const original of snapshot.platforms) {
+    const platform = configuration.allowedModes ? { ...original, services: original.services.filter(service => configuration.allowedModes!.includes(service.mode)) } : original;
+    if (!platform.publicStop || !platform.services.length) continue;
     const list = byGroup.get(platform.groupId) ?? []; list.push(platform); byGroup.set(platform.groupId, list);
   }
   const linked = new Set(configuration.nodes.flatMap(node => node.groupIds));

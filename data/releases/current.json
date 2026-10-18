@@ -1,0 +1,20 @@
+{
+  "format": "jetlag-prague-game-catalog",
+  "schemaVersion": 1,
+  "current": {
+    "releaseId": "release:708f3e415c4515546c73b2a26be8ff8a2517298b6b8aa9388a66774ae386a47b",
+    "file": "release-708f3e415c4515546c73b2a26be8ff8a2517298b6b8aa9388a66774ae386a47b.json",
+    "checksum": "cada6637802b35baf521e7b08c690f6ac7c457104d8e0531b943c848fd5ad95d",
+    "publishedAt": "2026-10-18T20:37:28.607Z",
+    "kind": "reference"
+  },
+  "versions": [
+    {
+      "releaseId": "release:708f3e415c4515546c73b2a26be8ff8a2517298b6b8aa9388a66774ae386a47b",
+      "file": "release-708f3e415c4515546c73b2a26be8ff8a2517298b6b8aa9388a66774ae386a47b.json",
+      "checksum": "cada6637802b35baf521e7b08c690f6ac7c457104d8e0531b943c848fd5ad95d",
+      "publishedAt": "2026-10-18T20:37:28.607Z",
+      "kind": "reference"
+    }
+  ]
+}

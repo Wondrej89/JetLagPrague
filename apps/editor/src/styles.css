@@ -248,3 +248,16 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .park-marker.review { color: #738078; border-color: #8a958d; border-style: dashed; }
 .park-game-action { min-height: 42px; font-weight: 600; margin: 10px 0; }
 .park-bulk-notice { max-height: 230px; overflow: auto; background: #f1f6f2; padding: 8px; overflow-wrap: anywhere; }
+
+.publication-dialog { width: min(880px, 96vw); max-height: 90vh; overflow: auto; }
+.publication-dialog code { overflow-wrap: anywhere; font-size: .75rem; }
+.publication-dialog h3 { margin-top: 24px; }
+.publication-actions, .publication-modes { display: flex; flex-wrap: wrap; gap: 10px; margin: 12px 0; }
+.publication-modes label { display: flex; align-items: center; gap: 5px; }
+.publication-modes input { width: auto; }
+.publication-counts { display: grid; grid-template-columns: 160px 1fr; gap: 10px; }
+.publication-counts dd { margin: 0; min-width: 0; }
+.publication-dialog table { width: 100%; text-align: left; border-collapse: collapse; }
+.publication-dialog th, .publication-dialog td { padding: 8px; border-bottom: 1px solid var(--border, #ddd); }
+.publication-dialog .message { display: block; }
+.header-actions { flex-wrap: wrap; justify-content: flex-end; }

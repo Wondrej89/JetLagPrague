@@ -1,4 +1,11 @@
-# Jet Lag Praha · geografický editor
+# JetLagPrague · veřejná hra a geografický editor
+
+Veřejný klient je na **[JetLagPrague/](https://wondrej89.github.io/JetLagPrague/)**, geografický editor na **[JetLagPrague/editor/](https://wondrej89.github.io/JetLagPrague/editor/)**. Lokální světy, parky, PID rozhodnutí a zálohy editoru zůstávají zachované na stejném originu; veřejná stránka jejich IndexedDB nečte ani nemění. Před dalšími úpravami si v editoru stáhněte úplnou zálohu.
+
+Nový panel **Publikace herních podkladů** kontroluje a porovnává samostatný verzovaný herní katalog. Bez nastavené GitHub App a Cloudflare Workeru zobrazuje **„Publikace není nakonfigurována“** a zápis zůstává zakázaný. Kompletní český [postup aktivace, publikace, ověření nasazení a rollbacku](docs/PUBLISHING.md) odděluje hotovou infrastrukturu od kroků vyžadujících přihlášení vlastníka účtů. **Živá publikace dosud není ověřená; vyžaduje ruční konfiguraci a skutečný E2E test.**
+
+Statický počáteční release obsahuje 3 letiště, 169 administrativních oblastí a 1 465 referenčních zastávek uvnitř Prahy (PID 2026-10-16), zatím 0 centrálně schválených parků. Je označený jako reference, nikoli platný podklad ostré hry. Schválení ve vašem prohlížeči zůstávají soukromá, dokud je výslovně nepublikujete. Multiplayer a herní místnosti zatím nejsou dostupné.
+
 
 Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny. [Iterace 03B](CODEX_UKOL_03B_GTFS.md) používá aktuální obsluhu z GTFS a ruční serverovou publikaci. **Iterace 04A** přidává letiště, správu parků a geografické funkce POI pro Matching a Measuring.
 
@@ -86,10 +93,10 @@ Node.js **22.12+** (ověřeno na 24.19), npm a moderní prohlížeč.
 npm ci
 cp .env.example .env.local
 # Do .env.local doplňte VITE_MAPY_API_KEY.
-npm run dev
+npm run dev:editor  # editor; npm run dev:game nebo npm run dev spustí veřejného klienta
 ```
 
-Příkazy spouštějte z kořene repozitáře. Na strojích s nedostupnou výchozí npm cache lze použít `npm ci --cache /tmp/jetlag-npm-cache`. Pro produkční výstup spusťte `npm run build`; vznikne `dist/`. `npm run preview` jej umožní lokálně ověřit.
+Příkazy spouštějte z kořene repozitáře. Na strojích s nedostupnou výchozí npm cache lze použít `npm ci --cache /tmp/jetlag-npm-cache`. Pro produkční výstup spusťte `npm run build`; vznikne `dist/site/` s oběma aplikacemi. Samostatné sestavy jsou v `dist/game/` a `dist/editor/`; `npm run preview` zobrazí veřejnou aplikaci, `npm run preview:editor` editor.
 
 ## Mapy.com a klíč
 

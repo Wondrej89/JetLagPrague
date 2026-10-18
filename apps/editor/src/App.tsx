@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react';
 import { addHole, exportWorld, importGeoJson, importWorld, isArea, loadDraft, makeMetricCircle, newFeature, newLayer, newWorld, applyAdministrativeUpdate, isManagedLayer, verifyAdministrativeSources, validateGeometry, validateWorld, type GeoFeature, type GeoLayer, type Geometry, type WorldDraft } from '@jetlag/geo-core';
+import { PublicationDialog } from './PublicationDialog';
 import { MapCanvas, type MapHandle, type Selection, type Tool } from './MapCanvas';
 import type { Position } from 'geojson';
 import { readIndexedDraft, persistWorld } from './draft-store';
@@ -48,6 +49,8 @@ export function App() {
   const [bundled, setBundled] = useState<GeoLayer[]>([]);
   const [sourceError, setSourceError] = useState('');
   const [sourcesOpen, setSourcesOpen] = useState(false);
+  const [publicationOpen, setPublicationOpen] = useState(false);
+  const [relocationNotice, setRelocationNotice] = useState(() => { try { return !sessionStorage.getItem('jetlag-editor-location-notice'); } catch { return true; } });
   const [testPoint, setTestPoint] = useState<Position | null>(null);
   const [radius, setRadius] = useState('250');
   const [measurement, setMeasurement] = useState<number | null>(null);
@@ -324,6 +327,7 @@ export function App() {
       <div className="brand-copy"><span className="eyebrow">JET LAG / PRAHA</span><h1>Geografický editor</h1></div>
       <span className="version-tag">ITERACE 04A <span>·</span> DRAFT</span>
       <div className="header-actions">
+        <button disabled={editing} onClick={() => setPublicationOpen(true)}>Publikace herních podkladů</button>
         <button disabled={editing} onClick={() => setSourcesOpen(true)}>Správa zdrojů</button>
         <button disabled={editing} onClick={() => setPidSources(true)}>Doprava PID</button>
         <button onClick={() => setMapSettings(v => !v)}>Nastavení mapy</button>
@@ -331,6 +335,7 @@ export function App() {
         <button className="primary" disabled={editing} onClick={() => attempt(() => download(exportWorld(world), 'jetlag-praha-draft.json'))}>↑ Export zálohy</button>
       </div>
     </header>
+    {relocationNotice && !hydrating && <div className="message warning">Editor má novou adresu /JetLagPrague/editor/. Úložiště i formát světa zůstávají stejné. Před dalšími úpravami si stáhněte úplnou zálohu. <button onClick={() => download(exportWorld(world), 'jetlag-praha-draft.json')}>Stáhnout zálohu</button><button aria-label="Zavřít oznámení přesunu" onClick={() => { try { sessionStorage.setItem('jetlag-editor-location-notice', 'seen'); } catch { /* Storage may be disabled. */ } setRelocationNotice(false); }}>×</button></div>}
     {error && <div className="message error" role="alert"><span>{error}</span><button onClick={() => setError('')} aria-label="Zavřít chybu">×</button></div>}
     {storageBlocked && <div className="message warning">Automatické ukládání je pozastavené, aby zůstala zachována původní data. <button onClick={() => { if (confirm('Nahradit původní uložený záznam současným draftem?')) setStorageBlocked(false); }}>Nahradit uložený draft</button></div>}
     {mapSettings && <form className="map-settings" onSubmit={e => { e.preventDefault(); setApiKey(String(new FormData(e.currentTarget).get('key') ?? '')); setMapSettings(false); }}>
@@ -389,6 +394,11 @@ export function App() {
         <div className="export-section"><h3>Přenosná data</h3><p>JSON obsahuje celý draft. GeoJSON navíc otevřete v běžných GIS nástrojích; metadata editoru jsou v rozšířených polích.</p><button disabled={editing} onClick={() => attempt(() => download(exportWorld(world, 'geojson'), 'jetlag-praha-draft.geojson'))}>Exportovat GeoJSON</button></div>
       </aside>
     </div>
+    {publicationOpen && <PublicationDialog world={world} pidKey={pid.view?.summary.checksum ?? ''} onClose={() => setPublicationOpen(false)} onBackup={() => download(exportWorld(world), 'jetlag-praha-draft.json')} onRules={gameStops => commit({ ...world, gameStops })} onBuild={async () => {
+      const layers = [...world.layers];
+      for (const layer of bundled) if (!layers.some(existing => existing.id === layer.id)) layers.push(layer);
+      return pid.request({ action: 'game-release', world: { ...world, layers, poi: poiConfiguration }, airports: publishedAirports });
+    }} />}
     {parkImporting && <ParkImportDialog configuration={poiConfiguration} onClose={() => { setParkImporting(false); setParkImportPreview(null); }} onPreview={geometry => { setParkImportPreview(geometry); if (geometry) map.current?.fitArea(geometry); }} onApply={dataset => { commit({ ...world, poi: applyParkUpdate(poiConfiguration, dataset) }); setParkImporting(false); setParkImportPreview(null); }} />}
     {pidSources && <PidSourceDialog view={pid.view} busy={pid.busy} loadError={pid.loadError} updateError={pid.updateError} warning={pid.warning} configuration={pidConfiguration} onClose={() => setPidSources(false)} onRefresh={pid.refresh} onPublished={pid.comparePublished} onCompare={pid.compare} onApply={pid.apply} onExport={exportPid} onReview={stop => { selectPid(stop, true); setPidSources(false); }} />}
     {sourcesOpen && <AdministrativeDialog world={world} bundled={bundled} loadError={sourceError} onClose={() => setSourcesOpen(false)} onApply={layer => { commit(applyAdministrativeUpdate(world, layer)); setSelected(null); setTool('select'); }} />}

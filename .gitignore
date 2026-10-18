@@ -14,3 +14,12 @@ data/raw/pid/.download-*/
 
 # Separate checkout of the authoritative snapshot data branch
 .pid-publication/
+
+# Rebuilt publication copies and local Cloudflare state
+apps/game/public/releases/
+.wrangler/
+apps/publisher/.wrangler/
+apps/publisher/.dev.vars
+apps/publisher/worker-build/
+
+/worker-build/

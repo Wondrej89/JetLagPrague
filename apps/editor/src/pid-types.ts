@@ -1,4 +1,4 @@
-import type { PidSnapshot, GameStop, PidPlatform, SourceDiff, AreaGeometry, GameStopConfiguration, TransportMode } from '@jetlag/geo-core';
+import type { PidSnapshot, GameStop, PidPlatform, SourceDiff, AreaGeometry, GameStopConfiguration, TransportMode, WorldDraft, Poi } from '@jetlag/geo-core';
 
 export type PidSummary = Pick<PidSnapshot, 'id' | 'checksum' | 'serviceDate' | 'downloadedAt' | 'preparedAt' | 'adapterVersion' | 'sources' | 'quality' | 'schemaVersion' | 'routePeriod' | 'gtfs'> & { groupCount: number; platformCount: number; routeCount: number; activePlatformCount: number; inactivePlatformCount: number; unknownPlatformCount: number };
 export type RouteSummary = Pick<PidSnapshot['routes'][number], 'id' | 'number' | 'mode' | 'color' | 'validity'>;
@@ -24,4 +24,5 @@ export type PidCommand =
   | { action: 'zone'; point: [number, number]; area: AreaGeometry | null; radius: number }
   | { action: 'compare'; data: ArrayBuffer }
   | { action: 'apply'; configuration: GameStopConfiguration }
+  | { action: 'game-release'; world: WorldDraft; airports: Poi[] }
   | { action: 'export' };
