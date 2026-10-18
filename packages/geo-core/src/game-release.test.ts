@@ -26,6 +26,13 @@ describe('Published game releases', () => {
     data.pois.find(p=>p.category==='park')!.name='Upravený park'; const three=await createGameDataRelease(data,{kind:'approved',publishedAt:releaseTestDate});
     expect(three.releaseId).not.toBe(one.releaseId); expect(compareGameReleases(one,three).pois).toEqual({added:0,changed:1,removed:0});
   });
+  it('reproduces the same historical artifact on a later day without granting current-game eligibility',async()=> {
+    const {world,snapshot}=await releaseTestInput();
+    const original=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    vi.setSystemTime(new Date('2026-10-16T08:00:00Z'));
+    const rebuilt=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    expect(rebuilt).toEqual(original);expect(gamePublicationErrors(rebuilt).join(' ')).toContain('aktuální');
+  });
   it('uses manual points, explicit group merges and permitted modes without changing draft/export',async()=> {
     const {world,snapshot}=await releaseTestInput(); world.gameStops={...defaultGameStopConfiguration(),allowedModes:['tram'],nodes:[{id:'manual:merged',name:'Test uzel',groupIds:['inside','outside'],justification:'Test sloučení'}]};
     const merged=buildGameStops(snapshot,world.gameStops).find(stop=>stop.id==='manual:merged')!; world.gameStops.overrides=[{stopId:merged.id,sourceSignature:merged.sourceSignature,decision:'allowed',point:[14.42,50.08],approvedAt:releaseTestDate,justification:'Test bod'}];

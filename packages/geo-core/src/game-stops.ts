@@ -41,7 +41,7 @@ function period(platforms: PidPlatform[]): GameStop['service'] {
   const periods = platforms.flatMap(platform => platform.services.map(service => service.period));
   return periods.includes('both') || (periods.includes('day') && periods.includes('night')) ? 'both' : periods.includes('day') ? 'day' : periods.includes('night') ? 'night' : 'unknown';
 }
-export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfiguration = defaultGameStopConfiguration()): GameStop[] {
+export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfiguration = defaultGameStopConfiguration(), referenceDate = pragueDate()): GameStop[] {
   const configuration = validateGameStopConfiguration(input);
   const groups = new Map(snapshot.groups.map(group => [group.id, group]));
   const byGroup = new Map<string, PidPlatform[]>();
@@ -66,7 +66,7 @@ export function buildGameStops(snapshot: PidSnapshot, input: GameStopConfigurati
     const sourceSignature = signature(node.groupIds, platforms);
     const override = overrides.get(node.id);
     const reasons: string[] = [];
-    if (snapshot.serviceDate !== pragueDate()) reasons.push(`Historická referenční data – neověřeno. Datum obsluhy ${snapshot.serviceDate} neodpovídá dnešnímu pražskému datu.`);
+    if (snapshot.serviceDate !== referenceDate) reasons.push(`Historická referenční data – neověřeno. Datum obsluhy ${snapshot.serviceDate} neodpovídá dnešnímu pražskému datu.`);
     if (snapshot.quality?.status === 'review') reasons.push('Zdrojový snapshot není časově nebo vazebně konzistentní; aktuální povolenost nelze určit.');
     const signatureChanged = !!override && override.sourceSignature !== sourceSignature;
     const missingGroups = node.groupIds.filter(id => !groups.has(id));
