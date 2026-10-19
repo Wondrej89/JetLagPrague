@@ -4,7 +4,7 @@ compatibility_date = "2026-10-18"
 workers_dev = true
 
 [limits]
-cpu_ms = 30000
+#cpu_ms = 30000  ##commented out for cloudflare worker compatibility
 
 [vars]
 ALLOWED_ORIGIN = "https://wondrej89.github.io"
