@@ -97,12 +97,12 @@ export class PublisherCoordinator {
     stage = 'consume-oauth-flow';
     const flow = await this.storage.transaction(async tx => { const value = await tx.get<Flow>(key); if (!value || value.expiresAt <= Date.now()) throw new ApiFailure(403, 'OAuth požadavek vypršel nebo již byl použit.'); await tx.delete(key); return value; });
     stage = 'exchange-github-code';
-    const response = await fetch('https://github.com/login/oauth/access_token', { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'JetLagPrague-publisher' }, body: new URLSearchParams({ client_id: this.env.GITHUB_CLIENT_ID, client_secret: this.env.GITHUB_CLIENT_SECRET, code, code_verifier: flow.verifier, redirect_uri: flow.redirectUri }) });
+    const response = await fetch('https://github.com/login/oauth/access_token', { method: 'POST', redirect: 'manual', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'JetLagPrague-publisher' }, body: new URLSearchParams({ client_id: this.env.GITHUB_CLIENT_ID, client_secret: this.env.GITHUB_CLIENT_SECRET, code, code_verifier: flow.verifier, redirect_uri: flow.redirectUri }) });
     if (!response.ok) throw new ApiFailure(502, 'GitHub OAuth není dostupné.');
     stage = 'decode-github-token';
     const result = await response.json() as { access_token?: string }; if (!result.access_token) throw new ApiFailure(401, 'GitHub nepovolil přihlášení.');
     stage = 'request-github-identity';
-    const userResponse = await fetch('https://api.github.com/user', { redirect: 'error', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${result.access_token}`, 'User-Agent': 'JetLagPrague-publisher' } });
+    const userResponse = await fetch('https://api.github.com/user', { redirect: 'manual', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${result.access_token}`, 'User-Agent': 'JetLagPrague-publisher' } });
     if (!userResponse.ok) throw new ApiFailure(401, 'Nelze ověřit GitHub účet.');
     stage = 'decode-github-identity';
     const user = await userResponse.json() as { id: number; login: string };
