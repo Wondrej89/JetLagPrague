@@ -8,6 +8,7 @@ enabled = true
 head_sampling_rate = 1
 invocation_logs = true
 persist = true
+# OAuth callback logs must be shared only after redacting code and state query values.
 
 [observability.traces]
 enabled = false
