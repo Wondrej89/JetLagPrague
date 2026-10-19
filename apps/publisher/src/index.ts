@@ -124,9 +124,30 @@ export class PublisherCoordinator {
     }
   }
   private async publication(request: Request) {
-    await this.session(request); await this.rate(request, 'read', 60, 60000);
-    const github = new GitHubClient(this.env), commit = await github.head(), text = await github.file('data/releases/current.json', commit);
-    return json({ commit, index: text ? readGameReleaseIndex(JSON.parse(text)) : null, deployment: await github.deployment(commit) });
+    let stage = 'verify-session';
+    try {
+      await this.session(request);
+      stage = 'rate-limit';
+      await this.rate(request, 'read', 60, 60000);
+      const github = new GitHubClient(this.env);
+      stage = 'load-github-branch';
+      const commit = await github.head();
+      stage = 'load-release-index';
+      const text = await github.file('data/releases/current.json', commit);
+      stage = 'validate-release-index';
+      const index = text ? readGameReleaseIndex(JSON.parse(text)) : null;
+      stage = 'load-deployment-status';
+      const deployment = await github.deployment(commit);
+      return json({ commit, index, deployment });
+    } catch (error) {
+      // Do not log request headers, tokens, exception messages, or GitHub response bodies.
+      console.error('publisher.publication.failed', {
+        stage,
+        errorType: error instanceof Error ? error.name : typeof error,
+        status: error instanceof ApiFailure ? error.status : undefined,
+      });
+      throw error;
+    }
   }
   private async publish(request: Request, rollback = false): Promise<Response> {
     await this.session(request, true); await this.rate(request, 'publish', 10, 600000);
