@@ -87,22 +87,41 @@ export class PublisherCoordinator {
     return new Response(null, { status: 302, headers: { Location: authorize.href, 'Set-Cookie': flowCookie(state, 600), 'Cache-Control': 'no-store' } });
   }
   private async callback(request: Request): Promise<Response> {
+    let stage = 'rate-limit';
+    try {
     await this.rate(request, 'callback', 15, 600000);
+    stage = 'validate-github-return';
     const url = new URL(request.url), state = url.searchParams.get('state') ?? '', code = url.searchParams.get('code') ?? '';
     if (!/^[A-Za-z0-9_-]{43}$/.test(state) || cookie(request, '__Host-jetlag-oauth') !== state || !code || code.length > 1024) throw new ApiFailure(403, 'OAuth přihlášení nemá platné state nebo vazbu prohlížeče.');
     const key = `flow:${await sha256(state)}`;
+    stage = 'consume-oauth-flow';
     const flow = await this.storage.transaction(async tx => { const value = await tx.get<Flow>(key); if (!value || value.expiresAt <= Date.now()) throw new ApiFailure(403, 'OAuth požadavek vypršel nebo již byl použit.'); await tx.delete(key); return value; });
+    stage = 'exchange-github-code';
     const response = await fetch('https://github.com/login/oauth/access_token', { method: 'POST', redirect: 'error', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/json', 'Content-Type': 'application/x-www-form-urlencoded', 'User-Agent': 'JetLagPrague-publisher' }, body: new URLSearchParams({ client_id: this.env.GITHUB_CLIENT_ID, client_secret: this.env.GITHUB_CLIENT_SECRET, code, code_verifier: flow.verifier, redirect_uri: flow.redirectUri }) });
     if (!response.ok) throw new ApiFailure(502, 'GitHub OAuth není dostupné.');
+    stage = 'decode-github-token';
     const result = await response.json() as { access_token?: string }; if (!result.access_token) throw new ApiFailure(401, 'GitHub nepovolil přihlášení.');
+    stage = 'request-github-identity';
     const userResponse = await fetch('https://api.github.com/user', { redirect: 'error', signal: AbortSignal.timeout(15000), headers: { Accept: 'application/vnd.github+json', Authorization: `Bearer ${result.access_token}`, 'User-Agent': 'JetLagPrague-publisher' } });
     if (!userResponse.ok) throw new ApiFailure(401, 'Nelze ověřit GitHub účet.');
+    stage = 'decode-github-identity';
     const user = await userResponse.json() as { id: number; login: string };
     if (String(user.id) !== this.env.ALLOWED_GITHUB_USER_ID) throw new ApiFailure(403, 'Tento GitHub účet nemá oprávnění publikovat.');
     const token = randomToken(), csrf = randomToken(), expiresAt = Date.now() + 15 * 60000;
+    stage = 'store-publisher-session';
     await this.expiring(`session:${await sha256(token)}`, { expiresAt, userId: String(user.id), login: user.login, csrfHash: await sha256(csrf) } as Session);
+    stage = 'build-popup-response';
     const nonce = randomToken(); const data = JSON.stringify({ type: 'jetlag-publisher-session', token, csrf, expiresAt, login: user.login }).replace(/</g, '\\u003c');
     return new Response(`<!doctype html><html lang="cs"><meta charset="utf-8"><title>Přihlášení správce</title><p>Přihlášení bylo ověřeno. Vraťte se do editoru.</p><script nonce="${nonce}">if(window.opener){window.opener.postMessage(${data},${JSON.stringify(this.env.ALLOWED_ORIGIN)});window.close();}</script></html>`, { headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store', 'Set-Cookie': flowCookie('', 0), 'Content-Security-Policy': `default-src 'none'; script-src 'nonce-${nonce}'; frame-ancestors 'none'; base-uri 'none'`, 'Referrer-Policy': 'no-referrer', 'X-Content-Type-Options': 'nosniff' } });
+    } catch (error) {
+      // Never log OAuth query parameters, cookies, access tokens, secrets or raw errors.
+      console.error('publisher.oauth.callback.failed', {
+        stage,
+        errorType: error instanceof Error ? error.name : typeof error,
+        status: error instanceof ApiFailure ? error.status : undefined,
+      });
+      throw error;
+    }
   }
   private async publication(request: Request) {
     await this.session(request); await this.rate(request, 'read', 60, 60000);
