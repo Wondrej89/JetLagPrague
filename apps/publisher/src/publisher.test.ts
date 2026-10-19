@@ -96,8 +96,8 @@ describe('GitHub OAuth callback',()=>{
   it('binds state to secure browser cookie, validates PKCE and immutable user ID, and mints only a short local session',async()=>{
     const {url,state}=await start();const cookie=responseCookie(state);
     const live=vi.fn(async(input:RequestInfo|URL,options?:RequestInit)=>{
-      if(String(input)==='https://github.com/login/oauth/access_token'){const form=new URLSearchParams(String(options?.body));expect(form.get('client_secret')).toBe('synthetic-secret');expect(await sha256(form.get('code_verifier')!)).toBe([...Uint8Array.from(atob(url.searchParams.get('code_challenge')!.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0))].map(v=>v.toString(16).padStart(2,'0')).join(''));return Response.json({access_token:'github-secret-not-for-browser'});}
-      expect(String(input)).toBe('https://api.github.com/user');return Response.json({id:64984949,login:'RenamedAdmin'});
+      if(String(input)==='https://github.com/login/oauth/access_token'){expect(options?.redirect).toBe('manual');const form=new URLSearchParams(String(options?.body));expect(form.get('client_secret')).toBe('synthetic-secret');expect(await sha256(form.get('code_verifier')!)).toBe([...Uint8Array.from(atob(url.searchParams.get('code_challenge')!.replace(/-/g,'+').replace(/_/g,'/')),c=>c.charCodeAt(0))].map(v=>v.toString(16).padStart(2,'0')).join(''));return Response.json({access_token:'github-secret-not-for-browser'});}
+      expect(String(input)).toBe('https://api.github.com/user');expect(options?.redirect).toBe('manual');return Response.json({id:64984949,login:'RenamedAdmin'});
     });vi.stubGlobal('fetch',live);
     const response=await send(`/auth/callback?code=code&state=${state}`,undefined,{cookie});expect(response.status).toBe(200);const html=await response.text();expect(html).not.toContain('github-secret-not-for-browser');expect(html).not.toContain('synthetic-secret');expect(response.headers.get('Content-Security-Policy')).toContain("frame-ancestors 'none'");
     const session=JSON.parse(html.match(/postMessage\((\{.*?\}),/)![1]);expect(session.expiresAt-Date.now()).toBe(900000);expect((await send('/session',undefined,{Authorization:`Bearer ${session.token}`})).status).toBe(200);
@@ -105,6 +105,14 @@ describe('GitHub OAuth callback',()=>{
     const second=await start();expect((await send(`/auth/callback?code=code&state=${second.state}`)).status).toBe(403);
     vi.stubGlobal('fetch',vi.fn(async(input:RequestInfo|URL)=>String(input).includes('access_token')?Response.json({access_token:'wrong-account'}):Response.json({id:1,login:'Wondrej89'})));expect((await send(`/auth/callback?code=code&state=${second.state}`,undefined,{cookie:responseCookie(second.state)})).status).toBe(403);
     expect(GitHubClient.prototype.commit).not.toHaveBeenCalled();
+  });
+  it('rejects OAuth token redirects instead of following them', async()=>{
+    const {state}=await start();const upstream=vi.fn(async(_input:RequestInfo|URL,options?:RequestInit)=>{
+      expect(options?.redirect).toBe('manual');
+      return new Response(null,{status:302,headers:{Location:'https://untrusted.example/token'}});
+    });vi.stubGlobal('fetch',upstream);
+    const response=await send(`/auth/callback?code=code&state=${state}`,undefined,{cookie:responseCookie(state)});
+    expect(response.status).toBe(502);expect(upstream).toHaveBeenCalledOnce();
   });
 });
 function responseCookie(state:string){return `__Host-jetlag-oauth=${state}`;}
@@ -115,7 +123,7 @@ it('GitHub App accepts PKCS#1/PKCS#8 keys, restricts tokens to one repo, and use
   const api=vi.fn(async(input:RequestInfo|URL,options?:RequestInit)=>{
     if(String(input).includes('/access_tokens'))return Response.json({token:'scoped-token',repositories:[{id:1420367545,full_name:'Wondrej89/JetLagPrague'}]});
     expect(String(input)).toBe('https://api.github.com/graphql');const inputBody=JSON.parse(String(options?.body));expect(inputBody.variables.input).toMatchObject({branch:{repositoryNameWithOwner:'Wondrej89/JetLagPrague',branchName:'main'},expectedHeadOid:head});return Response.json({data:{createCommitOnBranch:{commit:{oid:nextHead}}}});
-  });vi.stubGlobal('fetch',api);const github=new GitHubClient(env);expect(await github.commit(head,[{path:'data/releases/current.json',text:'{}'}],'Test')).toBe(nextHead);
+  });vi.stubGlobal('fetch',api);const github=new GitHubClient(env);expect(await github.commit(head,[{path:'data/releases/current.json',text:'{}'}],'Test')).toBe(nextHead);expect(api.mock.calls.every(([,options])=>options?.redirect==='manual')).toBe(true);
   await expect(github.commit(head,[{path:'../unsafe',text:'x'}],'Test')).rejects.toThrow('zakázán');
   api.mockImplementation(async()=>Response.json({token:'bad',repositories:[{id:1,full_name:'evil/repo'}]}));await expect(new GitHubClient(env).installationToken()).rejects.toThrow('přesně');
 });
