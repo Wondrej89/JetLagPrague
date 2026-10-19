@@ -25,7 +25,7 @@ export class GitHubClient {
   private token: string | null = null;
   constructor(private environment: GitHubEnvironment) {}
   private async call(path: string, token: string, method = 'GET', body?: unknown, raw = false): Promise<unknown> {
-    const response = await fetch(`https://api.github.com${path}`, { method, redirect: 'error', signal: AbortSignal.timeout(15000), headers: { Accept: raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json', Authorization: `Bearer ${token}`, 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'JetLagPrague-publisher', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
+    const response = await fetch(`https://api.github.com${path}`, { method, redirect: 'manual', signal: AbortSignal.timeout(15000), headers: { Accept: raw ? 'application/vnd.github.raw+json' : 'application/vnd.github+json', Authorization: `Bearer ${token}`, 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'JetLagPrague-publisher', ...(body === undefined ? {} : { 'Content-Type': 'application/json' }) }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
     if (response.status === 404) throw new ApiFailure(404, 'Soubor nebo oprávnění GitHub není dostupné.');
     if (!response.ok) throw new ApiFailure(response.status === 409 || response.status === 422 ? 409 : 502, `GitHub API odmítlo operaci (HTTP ${response.status}); veřejná publikace nebyla potvrzena.`);
     return response.status === 204 ? null : raw ? new TextDecoder('utf-8', { fatal: true }).decode(await response.arrayBuffer()) : response.json();
