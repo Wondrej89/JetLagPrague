@@ -3,9 +3,14 @@ main = "src/worker.ts"
 compatibility_date = "2026-10-18"
 workers_dev = true
 
-[observability]
+[observability.logs]
 enabled = true
 head_sampling_rate = 1
+invocation_logs = true
+persist = true
+
+[observability.traces]
+enabled = false
 
 [limits]
 #cpu_ms = 30000  ##commented out for cloudflare worker compatibility
