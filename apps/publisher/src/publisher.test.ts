@@ -1,11 +1,13 @@
+import catalog from '../../editor/src/data/poi-catalog.json' with { type: 'json' };
+import { withPublishedZoos, decidePoi, poiSchema } from '../../../packages/geo-core/src/index';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { generateKeyPairSync } from 'node:crypto';
 import worker, { MAX_PUBLISH_BYTES, PublisherCoordinator, type Storage, type PublisherEnvironment } from './index';
 import { ApiFailure, base64, GitHubClient, githubAppJwt } from './github';
 import { canonicalJson } from '../../../packages/geo-core/src/administrative';
 import { sha256 } from '../../../packages/geo-core/src/pid-snapshot';
-import { createGameDataRelease, releaseEntry, type GameDataRelease, type GameReleaseIndex } from '../../../packages/geo-core/src/game-release';
-import { releaseTestFixture, releaseTestDate } from '../../../packages/geo-core/src/game-release-test-fixtures';
+import { buildGameDataRelease, createGameDataRelease, releaseEntry, type GameDataRelease, type GameReleaseIndex } from '../../../packages/geo-core/src/game-release';
+import { releaseTestFixture, releaseTestDate, releaseTestInput, releaseTestAirports } from '../../../packages/geo-core/src/game-release-test-fixtures';
 
 class MemoryStorage implements Storage {
   data=new Map<string,unknown>(); alarm:number|null=null; pending:Promise<unknown>=Promise.resolve();
@@ -58,6 +60,16 @@ describe('Server authorization and immutable publication',()=>{
   it('writes exactly one release and its pointer in an atomic CAS; never sends private world or arbitrary files',async()=>{
     const response=await send('/publish',{expectedCommit:head,release});expect(response.status).toBe(202);expect(await response.json()).toMatchObject({status:'pending-deployment',commit:nextHead});
     const [expected,changes]=vi.mocked(GitHubClient.prototype.commit).mock.calls[0];expect(expected).toBe(head);expect(changes.map(file=>file.path)).toEqual([`data/releases/release-${release.checksums.content}.json`,'data/releases/current.json']);expect(changes[0].text).not.toContain('PRIVATE NOTE');expect(JSON.parse(changes[1].text).current.releaseId).toBe(release.releaseId);
+  });
+  it('accepts approved zoo through the protected publisher and advertises both supported schema versions',async()=>{
+    expect(await (await send('/status')).json()).toMatchObject({configured:true,releaseSchemaVersions:[1,2]});
+    const {world,snapshot}=await releaseTestInput(),zoos=catalog.zoos.map(poi=>poiSchema.parse(poi));
+    world.poi=withPublishedZoos(world.poi!,zoos);world.poi=decidePoi(world.poi,zoos[0],{status:'excluded'});
+    release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    expect((await send('/publish',{expectedCommit:head,release})).status).toBe(202);
+    const changes=vi.mocked(GitHubClient.prototype.commit).mock.calls[0][1];const artifact=JSON.parse(changes[0].text);
+    expect(artifact.schemaVersion).toBe(2);expect(artifact.data.pois.filter((poi:{category:string})=>poi.category==='zoo')).toHaveLength(9);
+    expect(artifact.data.pois.find((poi:{id:string})=>poi.id==='krokodyli-zoo')).toMatchObject({address:'Tusarova 1548/39, Praha 7 – Holešovice',geometry:{type:'Point',coordinates:[14.4511431,50.1022558]}});
   });
   it('rejects duplicate content, immutable file collision, stale SHA, unverified PID and historical releases',async()=>{
     await seedIndex(release);expect((await send('/publish',{expectedCommit:head,release})).status).toBe(409);

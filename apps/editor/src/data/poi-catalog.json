@@ -144,5 +144,367 @@
       14.425556,
       49.985278
     ]
+  ],
+  "zoos": [
+    {
+      "id": "zoo-praha",
+      "category": "zoo",
+      "name": "ZOO Praha",
+      "address": "U trojského zámku 120/3, Praha-Troja",
+      "point": [
+        14.4066639,
+        50.1171758
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4066639,
+          50.1171758
+        ]
+      },
+      "sourceId": "zoo-praha",
+      "source": {
+        "id": "prague-curated-zoo-v1",
+        "provider": "Mapy.com – ruční převzetí bodů",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých souřadnic samostatně nedoložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T08:02:26.838Z",
+        "rawChecksum": "0a18de215c334c45febaaaadd6ba11ca082f9167a1d89050698b55364a593da5",
+        "verification": "curated",
+        "note": "Deset lokalit ručně vybraných správcem; přesné body dodány v zadání. Nejde o oficiální dataset zoo ani o nezávisle ověřené geodetické souřadnice. Body nejsou hranicemi areálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T08:02:26.838Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "zookoutek-prokopske-udoli",
+      "category": "zoo",
+      "name": "Zookoutek Prokopské údolí",
+      "address": "Prokopské údolí 748/6, Praha 5 – Jinonice",
+      "point": [
+        14.3810517,
+        50.0415233
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.3810517,
+          50.0415233
+        ]
+      },
+      "sourceId": "zookoutek-prokopske-udoli",
+      "source": {
+        "id": "prague-curated-zoo-v1",
+        "provider": "Mapy.com – ruční převzetí bodů",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých souřadnic samostatně nedoložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T08:02:26.838Z",
+        "rawChecksum": "0a18de215c334c45febaaaadd6ba11ca082f9167a1d89050698b55364a593da5",
+        "verification": "curated",
+        "note": "Deset lokalit ručně vybraných správcem; přesné body dodány v zadání. Nejde o oficiální dataset zoo ani o nezávisle ověřené geodetické souřadnice. Body nejsou hranicemi areálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T08:02:26.838Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "zookoutek-mala-chuchle",
+      "category": "zoo",
+      "name": "Zookoutek Malá Chuchle",
+      "address": "Praha – Malá Chuchle",
+      "point": [
+        14.3880225,
+        50.0230156
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.3880225,
+          50.0230156
+        ]
+      },
+      "sourceId": "zookoutek-mala-chuchle",
+      "source": {
+        "id": "prague-curated-zoo-v1",
+        "provider": "Mapy.com – ruční převzetí bodů",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých souřadnic samostatně nedoložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T08:02:26.838Z",
+        "rawChecksum": "0a18de215c334c45febaaaadd6ba11ca082f9167a1d89050698b55364a593da5",
+        "verification": "curated",
+        "note": "Deset lokalit ručně vybraných správcem; přesné body dodány v zadání. Nejde o oficiální dataset zoo ani o nezávisle ověřené geodetické souřadnice. Body nejsou hranicemi areálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T08:02:26.838Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "zookoutek-kamyk",
+      "category": "zoo",
+      "name": "Zookoutek Kamýk",
+      "address": "Praha – Kamýk",
+      "point": [
+        14.4408694,
+        50.0112667
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4408694,
+          50.0112667
+        ]
+      },
+      "sourceId": "zookoutek-kamyk",
+      "source": {
+        "id": "prague-curated-zoo-v1",
+        "provider": "Mapy.com – ruční převzetí bodů",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých souřadnic samostatně nedoložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T08:02:26.838Z",
+        "rawChecksum": "0a18de215c334c45febaaaadd6ba11ca082f9167a1d89050698b55364a593da5",
+        "verification": "curated",
+        "note": "Deset lokalit ručně vybraných správcem; přesné body dodány v zadání. Nejde o oficiální dataset zoo ani o nezávisle ověřené geodetické souřadnice. Body nejsou hranicemi areálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T08:02:26.838Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "zookoutek-kunraticky-les",
+      "category": "zoo",
+      "name": "Zookoutek Kunratický les",
+      "address": "Praha – Kunratice",
+      "point": [
+        14.4733786,
+        50.0215753
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4733786,
+          50.0215753
+        ]
+      },
+      "sourceId": "zookoutek-kunraticky-les",
+      "source": {
+        "id": "prague-curated-zoo-v1",
+        "provider": "Mapy.com – ruční převzetí bodů",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých souřadnic samostatně nedoložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T08:02:26.838Z",
+        "rawChecksum": "0a18de215c334c45febaaaadd6ba11ca082f9167a1d89050698b55364a593da5",
+        "verification": "curated",
+        "note": "Deset lokalit ručně vybraných správcem; přesné body dodány v zadání. Nejde o oficiální dataset zoo ani o nezávisle ověřené geodetické souřadnice. Body nejsou hranicemi areálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T08:02:26.838Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "zoopark-milicov",
+      "category": "zoo",
+      "name": "Zoopark Milíčov",
+      "address": "K Milíčovu 1036/6, Praha 11 – Háje",
+      "point": [
+        14.5398583,
+        50.0280586
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.5398583,
+          50.0280586
+        ]
+      },
+      "sourceId": "zoopark-milicov",
+      "source": {
+        "id": "prague-curated-zoo-v1",
+        "provider": "Mapy.com – ruční převzetí bodů",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých souřadnic samostatně nedoložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T08:02:26.838Z",
+        "rawChecksum": "0a18de215c334c45febaaaadd6ba11ca082f9167a1d89050698b55364a593da5",
+        "verification": "curated",
+        "note": "Deset lokalit ručně vybraných správcem; přesné body dodány v zadání. Nejde o oficiální dataset zoo ani o nezávisle ověřené geodetické souřadnice. Body nejsou hranicemi areálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T08:02:26.838Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "mestska-farma-kbely",
+      "category": "zoo",
+      "name": "Městská farma",
+      "address": "Praha – Kbely",
+      "point": [
+        14.5603561,
+        50.1333508
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.5603561,
+          50.1333508
+        ]
+      },
+      "sourceId": "mestska-farma-kbely",
+      "source": {
+        "id": "prague-curated-zoo-v1",
+        "provider": "Mapy.com – ruční převzetí bodů",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých souřadnic samostatně nedoložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T08:02:26.838Z",
+        "rawChecksum": "0a18de215c334c45febaaaadd6ba11ca082f9167a1d89050698b55364a593da5",
+        "verification": "curated",
+        "note": "Deset lokalit ručně vybraných správcem; přesné body dodány v zadání. Nejde o oficiální dataset zoo ani o nezávisle ověřené geodetické souřadnice. Body nejsou hranicemi areálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T08:02:26.838Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "divoka-zahrada-hostivar",
+      "category": "zoo",
+      "name": "Divoká zahrada Hostivař",
+      "address": "Praha – Hostivař",
+      "point": [
+        14.5177714,
+        50.0396019
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.5177714,
+          50.0396019
+        ]
+      },
+      "sourceId": "divoka-zahrada-hostivar",
+      "source": {
+        "id": "prague-curated-zoo-v1",
+        "provider": "Mapy.com – ruční převzetí bodů",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých souřadnic samostatně nedoložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T08:02:26.838Z",
+        "rawChecksum": "0a18de215c334c45febaaaadd6ba11ca082f9167a1d89050698b55364a593da5",
+        "verification": "curated",
+        "note": "Deset lokalit ručně vybraných správcem; přesné body dodány v zadání. Nejde o oficiální dataset zoo ani o nezávisle ověřené geodetické souřadnice. Body nejsou hranicemi areálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T08:02:26.838Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "stanice-prirodovedcu-ddm",
+      "category": "zoo",
+      "name": "Stanice přírodovědců DDM",
+      "address": "Drtinova 199/1a, Praha 5 – Smíchov",
+      "point": [
+        14.4001247,
+        50.0752728
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4001247,
+          50.0752728
+        ]
+      },
+      "sourceId": "stanice-prirodovedcu-ddm",
+      "source": {
+        "id": "prague-curated-zoo-v1",
+        "provider": "Mapy.com – ruční převzetí bodů",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých souřadnic samostatně nedoložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T08:02:26.838Z",
+        "rawChecksum": "0a18de215c334c45febaaaadd6ba11ca082f9167a1d89050698b55364a593da5",
+        "verification": "curated",
+        "note": "Deset lokalit ručně vybraných správcem; přesné body dodány v zadání. Nejde o oficiální dataset zoo ani o nezávisle ověřené geodetické souřadnice. Body nejsou hranicemi areálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T08:02:26.838Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "krokodyli-zoo",
+      "category": "zoo",
+      "name": "Krokodýlí zoo",
+      "address": "Tusarova 1548/39, Praha 7 – Holešovice",
+      "point": [
+        14.4511431,
+        50.1022558
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4511431,
+          50.1022558
+        ]
+      },
+      "sourceId": "krokodyli-zoo",
+      "source": {
+        "id": "prague-curated-zoo-v1",
+        "provider": "Mapy.com – ruční převzetí bodů",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých souřadnic samostatně nedoložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T08:02:26.838Z",
+        "rawChecksum": "0a18de215c334c45febaaaadd6ba11ca082f9167a1d89050698b55364a593da5",
+        "verification": "curated",
+        "note": "Deset lokalit ručně vybraných správcem; přesné body dodány v zadání. Nejde o oficiální dataset zoo ani o nezávisle ověřené geodetické souřadnice. Body nejsou hranicemi areálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T08:02:26.838Z",
+      "note": "",
+      "attributes": {}
+    }
   ]
 }

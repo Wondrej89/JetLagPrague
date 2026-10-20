@@ -11,3 +11,6 @@ export const parkSourceStatus = catalog.parkSourceStatus;
 // sources above remain available for review and future source updates.
 export const publishedGameParks = catalog.gameParks.map(value => poiSchema.parse(value));
 if (publishedGameParks.some(park => park.category !== 'park' || park.status !== 'approved')) throw new Error('Herní katalog smí obsahovat pouze schválené parky.');
+
+export const publishedZoos = catalog.zoos.map(value => poiSchema.parse(value));
+if (new Set(publishedZoos.map(poi => poi.id)).size !== publishedZoos.length || publishedZoos.some(poi => poi.category !== 'zoo')) throw new Error('Katalog zoo musí obsahovat bodové lokality s jedinečnými ID.');

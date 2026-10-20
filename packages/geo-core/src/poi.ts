@@ -25,12 +25,16 @@ const geometrySchema = z.unknown().transform((value, ctx): Point | AreaGeometry 
   } catch (error) { ctx.addIssue({ code: 'custom', message: (error as Error).message }); return z.NEVER; }
 });
 export const poiSchema = z.object({
-  id, category: id, name: text, point: pointSchema, geometry: geometrySchema,
+  id, category: id, name: text, address: text.optional(), point: pointSchema, geometry: geometrySchema,
   sourceId: id, source: poiSourceSchema, status: poiStatusSchema,
   reviewedAt: z.iso.datetime().nullable(), note: text,
   sourceIdentity: z.object({ key: id, fingerprint: z.string(), method: z.enum(['attribute-derived', 'manual']), reviewRequired: z.boolean() }).optional(),
   importAudit: z.object({ sourceRows: z.array(z.number().int().positive()), sourceNames: z.array(text), sourceRecords: z.array(z.object({ row: z.number().int().positive(), attributes: z.record(z.string(), z.json()) })), repairedRows: z.array(z.number().int().positive()), merged: z.boolean() }).optional(),
   attributes: z.record(z.string(), z.json()), memberIds: z.array(id).optional(),
+}).superRefine((poi, ctx) => {
+  if (poi.category !== 'zoo') return;
+  if (poi.geometry.type !== 'Point' || canonicalJson(poi.geometry.coordinates) !== canonicalJson(poi.point)) ctx.addIssue({ code: 'custom', message: 'Zoo musí mít geometrii Point shodnou s referenčním bodem.' });
+  if (poi.address === undefined) ctx.addIssue({ code: 'custom', message: 'Zoo musí obsahovat adresu.' });
 });
 export type Poi = z.infer<typeof poiSchema>;
 export type PoiSource = z.infer<typeof poiSourceSchema>;
@@ -38,7 +42,7 @@ export const parkDatasetSchema = z.object({
   source: poiSourceSchema, records: z.array(poiSchema).max(10000), importRecord: z.json().optional(), checksum: z.string().regex(/^[a-f0-9]{64}$/),
 });
 export type ParkDataset = z.infer<typeof parkDatasetSchema>;
-const decisionSchema = z.object({ id, name: text.optional(), point: pointSchema.optional(), status: poiStatusSchema.optional(), reviewedAt: z.iso.datetime().nullable(), note: text.optional() });
+const decisionSchema = z.object({ id, name: text.optional(), address: text.optional(), point: pointSchema.optional(), status: poiStatusSchema.optional(), reviewedAt: z.iso.datetime().nullable(), note: text.optional() });
 export type PoiDecision = z.infer<typeof decisionSchema>;
 export const parkHierarchySchema = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal('unknown')]);
 export type ParkHierarchy = z.infer<typeof parkHierarchySchema>;
@@ -49,8 +53,9 @@ export const parkFiltersSchema = z.object({
 export type ParkFilters = z.infer<typeof parkFiltersSchema>;
 export const poiConfigurationSchema = z.object({
   version: z.literal(1), sources: z.array(parkDatasetSchema).max(50),
+  pointCatalog: z.array(poiSchema).max(10000).optional(),
   manual: z.array(poiSchema).max(10000), decisions: z.array(decisionSchema).max(20000),
-  visibility: z.object({ airports: z.boolean(), parks: z.boolean(), referencePoints: z.boolean() }),
+  visibility: z.object({ airports: z.boolean(), parks: z.boolean(), referencePoints: z.boolean(), zoos: z.boolean().optional() }),
   parkFilters: parkFiltersSchema.optional(),
 });
 export type PoiConfiguration = z.infer<typeof poiConfigurationSchema>;
@@ -60,13 +65,18 @@ export function defaultPoiConfiguration(): PoiConfiguration {
 function unique(ids: string[]) { if (new Set(ids).size !== ids.length) throw new Error('Duplicitní stabilní ID POI.'); }
 export function validatePoiConfiguration(input: PoiConfiguration): void {
   unique(input.sources.map(s => s.source.id));
-  const records = [...input.sources.flatMap(s => s.records), ...input.manual];
+  const records = [...input.sources.flatMap(s => s.records), ...(input.pointCatalog ?? []), ...input.manual];
   unique(records.map(p => p.id)); unique(input.decisions.map(d => d.id));
   for (const dataset of input.sources) for (const record of dataset.records) {
-    if (record.source.id !== dataset.source.id || record.id !== parkId(dataset.source.id, record.sourceIdentity?.key ?? record.sourceId)) throw new Error('Nesouhlasí identita zdrojového parku.');
+    if (record.category !== 'park' || record.source.id !== dataset.source.id || record.id !== parkId(dataset.source.id, record.sourceIdentity?.key ?? record.sourceId)) throw new Error('Nesouhlasí identita zdrojového parku.');
     if (record.status !== 'review' || record.reviewedAt !== null) throw new Error('Zdrojoví kandidáti se schvalují odděleným rozhodnutím.');
   }
+  if (input.pointCatalog?.some(record => record.category !== 'zoo')) throw new Error('Bodový katalog této iterace obsahuje pouze zoo.');
   for (const record of records) {
+    if (record.category === 'zoo') {
+      if (record.geometry.type !== 'Point' || canonicalJson(record.geometry.coordinates) !== canonicalJson(record.point) || record.address === undefined) throw new Error('Zoo musí mít adresu a shodný referenční bod a geometrii Point.');
+      continue;
+    }
     if (record.category !== 'park' || !isArea(record.geometry)) throw new Error('Vlastní a importované POI této iterace musí být polygonové parky.');
     if (!booleanPointInPolygon(record.point, record.geometry, { ignoreBoundary: true })) throw new Error('Výchozí referenční bod parku musí být uvnitř polygonu.');
   }
@@ -175,25 +185,31 @@ export function applyParkUpdate(configuration: PoiConfiguration, next: ParkDatas
 }
 export function resolvePois(airports: Poi[], configuration: PoiConfiguration): Poi[] {
   // A previously missing source record may reappear; prefer the actual source.
-  const sources = configuration.sources.flatMap(s => s.records), sourceIds = new Set(sources.map(p => p.id));
+  const sources = [...configuration.sources.flatMap(s => s.records), ...(configuration.pointCatalog ?? [])], sourceIds = new Set(sources.map(p => p.id));
   const decisions = new Map(configuration.decisions.map(d => [d.id, d]));
   return [...airports, ...sources, ...configuration.manual.filter(p => !sourceIds.has(p.id))].map(record => {
     const decision = record.category === 'airport' ? undefined : decisions.get(record.id);
     const result = { ...record, ...decision, id: record.id };
+    if (record.category === 'zoo') result.geometry = { type: 'Point', coordinates: result.point };
     if (record.attributes.sourceMergedInto) return { ...result, status: 'excluded' as const, note: `${result.note} Historická identita sjednocena do ${record.attributes.sourceMergedInto}.` };
-    if (record.sourceIdentity?.reviewRequired || (record.category === 'park' && !result.name.trim()) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
+    if (record.sourceIdentity?.reviewRequired || (['park', 'zoo'].includes(record.category) && !result.name.trim()) || (record.category === 'zoo' && !result.address?.trim()) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
       return { ...result, status: result.status === 'excluded' ? 'excluded' as const : 'review' as const, note: `${result.note} Referenční bod nebo dostupnost zdroje vyžaduje revizi.` };
     }
     return result;
   });
 }
 export function preparePoiDecision(poi: Poi, previous: PoiDecision | undefined, change: Partial<Omit<PoiDecision, 'id'>>, reviewedAt = new Date().toISOString()): PoiDecision {
-  if (poi.category !== 'park') throw new Error('Schválená letiště této lokální kategorie se automaticky nemění.');
+  if (poi.category !== 'park' && poi.category !== 'zoo') throw new Error('Schválená letiště této lokální kategorie se automaticky nemění.');
   if (change.point) {
     pointSchema.parse(change.point);
-    if (!isArea(poi.geometry) || !booleanPointInPolygon(change.point, poi.geometry, { ignoreBoundary: true })) throw new Error('Referenční bod musí ležet uvnitř parku, mimo otvory a hranici.');
+    if (poi.category === 'park' && (!isArea(poi.geometry) || !booleanPointInPolygon(change.point, poi.geometry, { ignoreBoundary: true }))) throw new Error('Referenční bod musí ležet uvnitř parku, mimo otvory a hranici.');
   }
   const decision = decisionSchema.parse({ ...previous, ...change, id: poi.id, reviewedAt });
+  if (poi.category === 'zoo') {
+    if (poi.geometry.type !== 'Point') throw new Error('Zoo musí mít bodovou geometrii.');
+    if (decision.status === 'approved' && (!(decision.name ?? poi.name).trim() || !(decision.address ?? poi.address)?.trim())) throw new Error('Před schválením zoo doplňte název a adresu.');
+    return decision;
+  }
   if (decision.status === 'approved') {
     const geometry = validateGeometry(poi.geometry);
     if (!isArea(geometry)) throw new Error('Park musí mít platnou polygonovou geometrii.');
@@ -228,10 +244,11 @@ export function mergeParks(configuration: PoiConfiguration, parks: Poi[], name: 
 }
 export function distanceToPoiMeters(point: Position, poi: Pick<Poi, 'point'>): number { return distanceMeters(point, poi.point); }
 export const POI_DISTANCE_TOLERANCE_METERS = 0.000001;
-export type NearestPoiResult = { state: 'known'; poi: Poi; distanceMeters: number; tiedIds: string[] } | { state: 'unknown'; reason: string };
+export type GeographicPoi = Pick<Poi, 'id' | 'category' | 'point' | 'status'>;
+export type NearestPoiResult<T extends GeographicPoi = Poi> = { state: 'known'; poi: T; distanceMeters: number; tiedIds: string[] } | { state: 'unknown'; reason: string };
 /** Haversine metres, tie within 1 μm: lexicographically smallest stable ID.
  * Eligibility is independent of visibility. Invalid points never yield a guess. */
-export function nearestApprovedPoi(point: Position, category: string, pois: Poi[]): NearestPoiResult {
+export function nearestApprovedPoi<T extends GeographicPoi>(point: Position, category: string, pois: readonly T[]): NearestPoiResult<T> {
   if (!pointSchema.safeParse(point).success) return { state: 'unknown', reason: 'Neplatná poloha; nelze určit.' };
   const candidates = pois.filter(p => p.category === category && p.status === 'approved' && pointSchema.safeParse(p.point).success)
     .map(poi => ({ poi, distanceMeters: distanceToPoiMeters(point, poi) }));
@@ -240,12 +257,12 @@ export function nearestApprovedPoi(point: Position, category: string, pois: Poi[
   const ties = candidates.filter(p => p.distanceMeters - minimum <= POI_DISTANCE_TOLERANCE_METERS).sort((a, b) => a.poi.id < b.poi.id ? -1 : a.poi.id > b.poi.id ? 1 : 0);
   return { state: 'known', ...ties[0], tiedIds: ties.map(p => p.poi.id) };
 }
-export function matchingPois(a: Position, b: Position, category: string, pois: Poi[]) {
+export function matchingPois<T extends GeographicPoi>(a: Position, b: Position, category: string, pois: readonly T[]) {
   const first = nearestApprovedPoi(a, category, pois), second = nearestApprovedPoi(b, category, pois);
   if (first.state === 'unknown' || second.state === 'unknown') return { state: 'unknown' as const, reason: 'Nejbližší POI nelze určit.' };
   return { state: 'known' as const, matches: first.poi.id === second.poi.id, first, second };
 }
-export function measuringPois(a: Position, b: Position, category: string, pois: Poi[]) {
+export function measuringPois<T extends GeographicPoi>(a: Position, b: Position, category: string, pois: readonly T[]) {
   const first = nearestApprovedPoi(a, category, pois), second = nearestApprovedPoi(b, category, pois);
   if (first.state === 'unknown' || second.state === 'unknown') return { state: 'unknown' as const, reason: 'Vzdálenost k POI nelze určit.' };
   const deltaMeters = first.distanceMeters - second.distanceMeters;
@@ -263,4 +280,23 @@ export function withPublishedParks(saved: PoiConfiguration | undefined, publishe
   return { ...saved, sources: [...saved.sources, ...published.sources.filter(s => !sourceIds.has(s.source.id))],
     manual: [...saved.manual, ...published.manual.filter(p => !savedRecordIds.has(p.id))],
     decisions: [...saved.decisions, ...published.decisions.filter(d => !decisionIds.has(d.id))] };
+}
+
+/** Preserve saved catalog rows and all decision overlays. New releases only add
+ * previously unknown IDs; reloading or deploying cannot replace personal edits. */
+export function withPublishedZoos(configuration: PoiConfiguration, published: readonly Poi[]): PoiConfiguration {
+  if (published.some(poi => poi.category !== 'zoo')) throw new Error('Katalog zoo obsahuje jinou kategorii.');
+  const known = new Set([...(configuration.pointCatalog ?? []), ...configuration.manual, ...configuration.sources.flatMap(source => source.records)].map(poi => poi.id));
+  const added = published.filter(poi => !known.has(poi.id));
+  return added.length ? { ...configuration, pointCatalog: [...(configuration.pointCatalog ?? []), ...added] } : configuration;
+}
+export function createManualZoo(point: [number, number], name = '', address = ''): Poi {
+  const checked = pointSchema.parse(point), id = `manual-zoo:${crypto.randomUUID()}`;
+  return { id, category: 'zoo', name, address, point: checked, geometry: { type: 'Point', coordinates: checked }, sourceId: id,
+    source: { id: 'manual', provider: 'Vlastní bod', url: null, license: { name: 'Vlastní data – licenci určuje autor', url: null }, dataDate: null, retrievedAt: new Date().toISOString(), rawChecksum: null, verification: 'user_supplied', note: 'Ručně vložený referenční bod místa se zvířaty; nejde o hranici areálu.' },
+    status: 'review', reviewedAt: null, note: '', attributes: {} };
+}
+export function removeManualZoo(configuration: PoiConfiguration, id: string): PoiConfiguration {
+  if (!configuration.manual.some(poi => poi.id === id && poi.category === 'zoo')) throw new Error('Odstranit lze pouze ručně vytvořenou zoo; katalogovou lokalitu vyřaďte ze hry.');
+  return { ...configuration, manual: configuration.manual.filter(poi => poi.id !== id), decisions: configuration.decisions.filter(decision => decision.id !== id) };
 }

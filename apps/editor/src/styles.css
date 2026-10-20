@@ -261,3 +261,7 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .publication-dialog th, .publication-dialog td { padding: 8px; border-bottom: 1px solid var(--border, #ddd); }
 .publication-dialog .message { display: block; }
 .header-actions { flex-wrap: wrap; justify-content: flex-end; }
+.zoo-marker { background: #f4e7d0; border-color: #9b6e38; color: #795023; }
+.zoo-marker svg { width: 22px; height: 22px; display: block; margin: 3px; }
+.zoo-marker.review { opacity: .7; }
+.zoo-marker.excluded { background: #eee; border-color: #999; color: #777; }

@@ -17,14 +17,14 @@ import { type TerritoryMembership, type HidingCoverage } from '@jetlag/geo-core'
 import { territoryTask } from './territory-task';
 import { TerritoryControls } from './TerritoryControls';
 import { PidDataNotice } from './PidDataNotice';
-import { defaultParkFilters, filterParkPois, decideParkHierarchies, undoParkBulk, parkMatchesHierarchy, withPublishedParks, applyParkUpdate, decidePoi, createManualPark, mergeParks, resolvePois, verifyPoiSources, type Poi, type PoiDecision, type ParkDecisionChange } from '@jetlag/geo-core';
-import { publishedAirports, publishedParks } from './poi-data';
+import { defaultParkFilters, filterParkPois, decideParkHierarchies, undoParkBulk, parkMatchesHierarchy, withPublishedParks, withPublishedZoos, createManualZoo, removeManualZoo, applyParkUpdate, decidePoi, createManualPark, mergeParks, resolvePois, verifyPoiSources, type Poi, type PoiDecision, type ParkDecisionChange } from '@jetlag/geo-core';
+import { publishedAirports, publishedParks, publishedZoos } from './poi-data';
 import { PoiControls, PoiProperties, ParkImportDialog } from './PoiPanel';
 import { loadDefaultGameArea } from './default-game-area';
 import { DefaultAreaLoadError, initializeEditorWorld, recordGameAreaChoice, withDefaultGameArea } from './world-initialization';
 
 interface History { past: WorldDraft[]; present: WorldDraft; future: WorldDraft[] }
-const toolNames: Record<Tool, string> = { select: 'Výběr', point: 'Bod', line: 'Linie', polygon: 'Polygon', hole: 'Otvor', circle: 'Kruh', measure: 'Měření', edit: 'Úprava vrcholů', inspect: 'Ověřit polohu', park: 'Kreslení parku' };
+const toolNames: Record<Tool, string> = { select: 'Výběr', point: 'Bod', line: 'Linie', polygon: 'Polygon', hole: 'Otvor', circle: 'Kruh', measure: 'Měření', edit: 'Úprava vrcholů', inspect: 'Ověřit polohu', park: 'Kreslení parku', zoo: 'Vložení zoo' };
 function CursorIcon() { return <svg className="cursor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 3 19 13 11 14 8 21Z" /></svg>; }
 function errorText(error: unknown) { return error instanceof Error ? error.message : 'Operace se nezdařila.'; }
 function download(contents: string, filename: string) {
@@ -64,7 +64,7 @@ export function App() {
   const selectedLayer = world.layers.find(l => l.id === selected?.layerId);
   const selectedFeature = selectedLayer?.features.find(f => f.id === selected?.featureId);
   const editing = tool === 'edit';
-  const poiConfiguration = useMemo(() => withPublishedParks(world.poi, publishedParks), [world.poi]);
+  const poiConfiguration = useMemo(() => withPublishedZoos(withPublishedParks(world.poi, publishedParks), publishedZoos), [world.poi]);
   const pois = useMemo(() => resolvePois(publishedAirports, poiConfiguration), [poiConfiguration]);
   const parkFilters = useMemo(() => poiConfiguration.parkFilters ?? defaultParkFilters(), [poiConfiguration.parkFilters]);
   const mapPois = useMemo(() => filterParkPois(pois, parkFilters, 'map'), [pois, parkFilters]);
@@ -73,7 +73,7 @@ export function App() {
   const [parkBulkNotice, setParkBulkNotice] = useState<{ message: string; skipped: { id: string; name: string; reason: string }[] } | null>(null);
   async function bulkParkStatus(status: 'approved' | 'excluded') {
     const before = latestWorld.current;
-    const configuration = withPublishedParks(before.poi, publishedParks);
+    const configuration = withPublishedZoos(withPublishedParks(before.poi, publishedParks), publishedZoos);
     const selectedHierarchies = (configuration.parkFilters ?? defaultParkFilters()).hierarchies;
     const count = resolvePois([], configuration).filter(poi => parkMatchesHierarchy(poi, selectedHierarchies)).length;
     if (!count || !confirm(`${status === 'approved' ? 'Schválit' : 'Vyloučit'} všechny parky vybraných hierarchií (${count})? Hledání, stav a mapový výřez nemají na výběr vliv.`)) return;
@@ -92,7 +92,7 @@ export function App() {
   function undoParkStatus() {
     if (!parkBulkUndo || parkBulkUndo.worldId !== latestWorld.current.id) return;
     const before = latestWorld.current;
-    const result = undoParkBulk(withPublishedParks(before.poi, publishedParks), parkBulkUndo.changes);
+    const result = undoParkBulk(withPublishedZoos(withPublishedParks(before.poi, publishedParks), publishedZoos), parkBulkUndo.changes);
     if (result.restored) commit({ ...before, poi: result.configuration });
     setParkBulkUndo(null);
     setParkBulkNotice({ message: `Vráceno rozhodnutí: ${result.restored}. Zachováno pozdějších individuálních změn: ${result.preserved}.`, skipped: [] });
@@ -108,7 +108,7 @@ export function App() {
   }
   function updatePoi(change: Partial<PoiDecision>): boolean {
     if (!selectedPoi) return false;
-    try { commit({ ...latestWorld.current, poi: decidePoi(withPublishedParks(latestWorld.current.poi, publishedParks), selectedPoi, change) }); return true; }
+    try { commit({ ...latestWorld.current, poi: decidePoi(withPublishedZoos(withPublishedParks(latestWorld.current.poi, publishedParks), publishedZoos), selectedPoi, change) }); return true; }
     catch (error) { setError(errorText(error)); return false; }
   }
   const pidConfiguration = useMemo(() => world.gameStops ?? defaultGameStopConfiguration(), [world.gameStops]);
@@ -226,8 +226,10 @@ export function App() {
 
   useEffect(() => {
     const controller = new AbortController();
-    initializeEditorWorld({ placeholder: initial, readIndexed: readIndexedDraft, readLegacy: () => loadDraft(localStorage), loadDefault: () => loadDefaultGameArea(controller.signal) }).then(saved => {
+    initializeEditorWorld({ placeholder: initial, readIndexed: readIndexedDraft, readLegacy: () => loadDraft(localStorage), loadDefault: () => loadDefaultGameArea(controller.signal) }).then(loaded => {
       if (controller.signal.aborted) return;
+      // Complete the additive POI initialization before enabling autosave.
+      const saved = { ...loaded, poi: withPublishedZoos(withPublishedParks(loaded.poi, publishedParks), publishedZoos) };
       setHistory({ past: [], present: saved, future: [] });
       setActiveId(saved.layers.find(l => l.kind === 'custom')?.id ?? saved.layers[0].id);
       setStorageBlocked(false); setError('');
@@ -268,8 +270,8 @@ export function App() {
 
   useEffect(() => {
     if (hydrating || storageBlocked || !['select', 'inspect'].includes(tool)) return;
-    if (!publishedParks.sources.length && !publishedParks.manual.length) return;
-    const effective = withPublishedParks(world.poi, publishedParks);
+    if (!publishedParks.sources.length && !publishedParks.manual.length && !publishedZoos.length) return;
+    const effective = withPublishedZoos(withPublishedParks(world.poi, publishedParks), publishedZoos);
     if (JSON.stringify(effective) === JSON.stringify(world.poi)) return;
     setHistory(h => ({ ...h, present: { ...h.present, poi: effective } }));
   }, [hydrating, storageBlocked, tool, world.poi]);
@@ -292,6 +294,12 @@ export function App() {
   }
   function addGeometry(geometry: Geometry, circle?: { center: Position; radiusMeters: number }) {
     setPidSelected(null);
+    if (tool === 'zoo') {
+      if (geometry.type !== 'Point') throw new Error('Zoo musí být bod.');
+      const zoo = createManualZoo([geometry.coordinates[0], geometry.coordinates[1]]);
+      commit({ ...world, poi: { ...poiConfiguration, manual: [...poiConfiguration.manual, zoo] } });
+      selectPoi(zoo); return;
+    }
     if (tool === 'park') {
       if (!isArea(geometry)) throw new Error('Park musí být polygon.');
       const park = createManualPark(geometry);
@@ -361,7 +369,7 @@ export function App() {
         {world.gameAreaInitialization?.state === 'legacy-empty' && <p className="source-load-error" role="status" data-testid="legacy-empty-area">Uložený svět nemá herní oblast. Nelze zjistit, zda byla dříve smazaná, proto ji automaticky nedoplňujeme. Obnovit ji můžete tlačítkem níže; vlastní data zůstanou zachovaná.</p>}
         <TerritoryControls hasArea={!!pidArea} busy={pragueBusy} disabled={editing} onPrague={() => void restorePragueArea()} onFit={() => { if (pidArea) map.current?.fitArea(pidArea); }} territoryOnly={pidFilters.territoryOnly} onFilter={territoryOnly => setPidFilters(filters => ({ ...filters, territoryOnly }))} filterError={!!membershipFailure} membershipStatus={!pidArea ? 'Herní oblast není definovaná; polohu nelze určit.' : membershipError || (membership ? `${membership.stopIds.length} zastávek a ${membership.routeIds.length} linek v oblasti · ${membership.unknownStops} neurčených bodů` : 'Ověřuji polohu zastávek a průnik tras…')} showCoverage={showCoverage} onCoverage={setShowCoverage} radius={pidConfiguration.radiusMeters} coverage={coverage} coverageStatus={!pidArea ? 'Chybí herní oblast.' : coverageError || (coverage ? coverage.geometry ? 'Společná úkrytová plocha zobrazena.' : 'Žádná společná úkrytová plocha.' : 'Počítám sjednocení všech úkrytových zón…')} />
         <PidControls disabled={editing} view={filteredPidView} sourceView={pid.view} filterPending={membershipPending} filterError={membershipFailure} loadError={pid.loadError} updateError={pid.updateError} warning={[pid.warning, pidPreferencesWarning].filter(Boolean).join(" ")} filters={pidFilters} onChange={setPidFilters} onSelect={stop => selectPid(stop, true)} selected={pidSelected} onSources={() => setPidSources(true)} onRetry={() => void pid.refresh()} busy={pid.busy} radius={pidConfiguration.radiusMeters} onRadius={radiusMeters => attempt(() => commit({ ...world, gameStops: { ...pidConfiguration, radiusMeters } }))} />
-        <PoiControls onFilters={parkFilters => attempt(() => commit({ ...world, poi: { ...poiConfiguration, parkFilters } }))} onBulk={status => void bulkParkStatus(status)} onUndoBulk={() => attempt(undoParkStatus)} canUndoBulk={!!parkBulkUndo && parkBulkUndo.worldId === world.id} bulkBusy={parkBulkBusy} bulkNotice={parkBulkNotice} pois={pois} configuration={poiConfiguration} selected={poiSelected} disabled={editing || hydrating} drawing={tool === 'park'} onVisibility={visibility => attempt(() => commit({ ...world, poi: { ...poiConfiguration, visibility } }))} onSelect={selectPoi} onAdd={() => { setTool(value => value === 'park' ? 'select' : 'park'); setSelected(null); setPidSelected(null); setPoiSelected(null); setPoiMoving(false); }} onImport={() => setParkImporting(true)} onMerge={(ids, name) => attempt(() => { const result = mergeParks(poiConfiguration, pois.filter(p => ids.includes(p.id)), name); commit({ ...world, poi: result.configuration }); selectPoi(result.park); })} />
+        <PoiControls onFilters={parkFilters => attempt(() => commit({ ...world, poi: { ...poiConfiguration, parkFilters } }))} onBulk={status => void bulkParkStatus(status)} onUndoBulk={() => attempt(undoParkStatus)} canUndoBulk={!!parkBulkUndo && parkBulkUndo.worldId === world.id} bulkBusy={parkBulkBusy} bulkNotice={parkBulkNotice} pois={pois} configuration={poiConfiguration} selected={poiSelected} disabled={editing || hydrating} drawing={tool === 'park'} onVisibility={visibility => attempt(() => commit({ ...world, poi: { ...poiConfiguration, visibility } }))} onSelect={selectPoi} onAdd={() => { setTool(value => value === 'park' ? 'select' : 'park'); setSelected(null); setPidSelected(null); setPoiSelected(null); setPoiMoving(false); }} onImport={() => setParkImporting(true)} onAddZoo={() => { setTool(value => value === 'zoo' ? 'select' : 'zoo'); setPoiSelected(null); setPoiMoving(false); setSelected(null); setPidSelected(null); }} addingZoo={tool === 'zoo'} onMerge={(ids, name) => attempt(() => { const result = mergeParks(poiConfiguration, pois.filter(p => ids.includes(p.id)), name); commit({ ...world, poi: result.configuration }); selectPoi(result.park); })} />
         <div className="objects-heading"><h3>Objekty <span>{active.features.length}</span></h3><button onClick={() => map.current?.fit()}>Zobrazit vše</button></div>
         <label className="search-label"><input aria-label="Hledat objekty aktivní vrstvy" placeholder="Vyhledat oblast nebo objekt…" value={filter} onChange={e => setFilter(e.target.value)} /></label>
         <div className="object-list">{active.features.filter(f => f.name.toLocaleLowerCase('cs').includes(filter.toLocaleLowerCase('cs'))).map(f => <button disabled={editing} key={f.id} className={selected?.featureId === f.id && selected.layerId === active.id ? 'chosen' : ''} onClick={() => { setPoiSelected(null); setPoiMoving(false); setPidSelected(null); setSelected({ layerId: active.id, featureId: f.id }); setTool('select'); }}><span aria-hidden="true">{f.geometry.type === 'Point' ? '●' : f.geometry.type === 'LineString' ? '╱' : '⬡'}</span><span>{f.name}<small>{f.circle ? 'Metrický kruh' : f.geometry.type}</small></span></button>)}
@@ -380,7 +388,7 @@ export function App() {
           {(membershipPending || membershipFailure) && <div className="pid-map-status" role="status" data-testid="pid-filter-map-status">{membershipFailure || 'Ověřuji polohu PID v herní oblasti… Poslední zobrazení může čekat na přepočet.'}{membershipFailure && <button onClick={() => setPidFilters(filters => ({ ...filters, territoryOnly: false }))}>Vypnout prostorový filtr</button>}</div>}
           {tileStatus !== 'ready' && <div className={`map-notice ${tileStatus === 'error' ? 'warning' : ''}`} role="status"><strong>{tileStatus === 'missing' ? 'Chybí API klíč Mapy.com' : tileStatus === 'error' ? 'Mapový podklad se nepodařilo načíst' : 'Načítám mapový podklad…'}</strong><span>{tileStatus === 'missing' ? 'Přidejte klientský klíč v Nastavení mapy nebo do .env.local. Geometrie lze editovat i bez podkladu.' : tileStatus === 'error' ? 'Ověřte klíč, povolený HTTP referer, službu maptiles, limit a síťové připojení. Vaše geometrie zůstávají zachované.' : 'Mapy.com REST API'}</span></div>}
           <button className="prague-button" onClick={() => map.current?.prague()}>⌖ Zpět na Prahu</button>
-          <div className="map-help" aria-live="polite"><strong>{toolNames[tool]}</strong><span>{tool === 'select' ? 'Kliknutím vyberte objekt. Pro kreslení zvolte nástroj.' : tool === 'inspect' ? 'Klikněte na mapu nebo přetáhněte testovací špendlík. Výsledky jsou vpravo.' : tool === 'point' ? 'Klikněte na mapu a vložte bod.' : tool === 'circle' ? 'Kliknutím určete střed kruhu.' : tool === 'measure' ? measurement === null ? 'Klikněte na dva body. Měří se vzdálenost po povrchu Země.' : `${measurement.toLocaleString('cs', { maximumFractionDigits: 1 })} m · ${(measurement / 1000).toLocaleString('cs', { maximumFractionDigits: 3 })} km. Další kliknutí začne nové měření.` : tool === 'edit' ? 'Přetáhněte vrcholy. Klik na hranu přidá vrchol, pravé tlačítko vrchol odstraní. Potom změny uložte.' : tool === 'hole' ? 'Nakreslete otvor uvnitř vybraného polygonu. Kliknutím na první vrchol jej uzavřete.' : 'Klikáním přidávejte vrcholy. Polygon dokončíte prvním, linii posledním vrcholem.'}</span>
+          <div className="map-help" aria-live="polite"><strong>{toolNames[tool]}</strong><span>{tool === 'select' ? 'Kliknutím vyberte objekt. Pro kreslení zvolte nástroj.' : tool === 'inspect' ? 'Klikněte na mapu nebo přetáhněte testovací špendlík. Výsledky jsou vpravo.' : tool === 'zoo' ? 'Klikněte do mapy pro vložení zoo. Potom doplňte název, adresu a bod schvalte.' : tool === 'point' ? 'Klikněte na mapu a vložte bod.' : tool === 'circle' ? 'Kliknutím určete střed kruhu.' : tool === 'measure' ? measurement === null ? 'Klikněte na dva body. Měří se vzdálenost po povrchu Země.' : `${measurement.toLocaleString('cs', { maximumFractionDigits: 1 })} m · ${(measurement / 1000).toLocaleString('cs', { maximumFractionDigits: 3 })} km. Další kliknutí začne nové měření.` : tool === 'edit' ? 'Přetáhněte vrcholy. Klik na hranu přidá vrchol, pravé tlačítko vrchol odstraní. Potom změny uložte.' : tool === 'hole' ? 'Nakreslete otvor uvnitř vybraného polygonu. Kliknutím na první vrchol jej uzavřete.' : 'Klikáním přidávejte vrcholy. Polygon dokončíte prvním, linii posledním vrcholem.'}</span>
             {tool === 'circle' && <label>Poloměr (m)<input aria-label="Poloměr nového kruhu (m)" type="number" min="1" max="100000" value={radius} onChange={e => setRadius(e.target.value)} /></label>}
             {tool !== 'select' && <button onClick={() => { setTool('select'); if (editing) setHistory(h => ({ ...h, present: structuredClone(h.present) })); }}>Zrušit nástroj</button>}
           </div>
@@ -390,7 +398,7 @@ export function App() {
       </main>
       <aside className="right-panel panel">
         <div className="panel-heading"><div><span className="eyebrow">VYBRANÝ OBJEKT</span><h2>Vlastnosti</h2></div><span className="draft-chip">draft</span></div>
-        {tool !== 'inspect' && selectedPoi ? <PoiProperties key={selectedPoi.id + ':' + world.updatedAt} poi={selectedPoi} dataset={poiConfiguration.sources.find(source => source.source.id === selectedPoi.source.id)} moving={poiMoving} onMove={() => { setPoiMoving(value => !value); setTool('select'); }} onDecision={updatePoi} /> : tool !== 'inspect' && pidStop ? <PidStopProperties key={pidStop.id + ':' + (pidConfiguration.overrides.find(value => value.stopId === pidStop.id)?.approvedAt ?? '')} stop={pidStop} configuration={pidConfiguration} allStops={pid.view?.stops ?? []} platforms={pidPlatforms} point={pidPreview} moving={pidMoving} showPlatforms={pidShowPlatforms} showZone={pidShowZone} disabled={editing} onPoint={setPidPreview} onMove={value => { setPidMoving(value); setTool('select'); }} onPlatforms={setPidShowPlatforms} onZone={setPidShowZone} onConfiguration={value => attempt(() => commit({ ...world, gameStops: value }))} /> : tool === 'inspect' ? <><PositionInspector point={testPoint} world={world} stop={pidPreviewStop} radius={pidConfiguration.radiusMeters} />{pidStop && <button className="wide" aria-pressed={pidShowZone} onClick={() => setPidShowZone(value => !value)}>{pidShowZone ? "Skrýt úkrytovou zónu" : "Zobrazit úkrytovou zónu"}</button>}</> : selectedFeature && selectedLayer?.dataset ? <div className="managed-properties"><h3>{selectedFeature.name}</h3><p>Oficiální kód: <code>{String(selectedFeature.attributes.code)}</code><br />{selectedFeature.geometry.type}</p><SourceMetadata layer={selectedLayer} /><details><summary>Zdrojové atributy</summary><pre>{JSON.stringify(selectedFeature.attributes, null, 2)}</pre></details><p>Oficiální geometrii lze nahradit ověřenou aktualizací zdroje.</p><button onClick={() => setSourcesOpen(true)}>Porovnat / aktualizovat zdroj</button></div> : selectedFeature ? <FeatureProperties key={`${selectedLayer!.id}/${selectedFeature.id}/${world.updatedAt}`} feature={selectedFeature} editing={editing} onChange={change => attempt(() => updateFeature(change))} onEdit={() => { if (!selectedLayer?.visible) { setError('Vybraná vrstva je skrytá. Před úpravou vrcholů ji zobrazte.'); return; } setTool('edit'); }} onSaveEdit={() => map.current?.saveEdit()} onDelete={() => { attempt(() => updateLayer(selectedLayer!.id, { features: selectedLayer!.features.filter(f => f.id !== selectedFeature.id) })); setSelected(null); setTool('select'); }} /> : <div className="selection-empty"><div aria-hidden="true"><CursorIcon /></div><h3>Prostor pro vaše data</h3><p>Vyberte objekt v mapě nebo v seznamu. Zde uvidíte jeho geometrii, původ a vlastnosti.</p><hr /><span className="eyebrow">JAK ZAČÍT</span><ol><li>Vyberte vrstvu Herní oblast.</li><li>Praha je přednastavená; hranici můžete upravit nebo obnovit.</li><li>Do vlastní vrstvy přidejte další objekty.</li><li>Exportujte zálohu svého světa.</li></ol></div>}
+        {tool !== 'inspect' && selectedPoi ? <PoiProperties key={selectedPoi.id + ':' + world.updatedAt} poi={selectedPoi} dataset={poiConfiguration.sources.find(source => source.source.id === selectedPoi.source.id)} moving={poiMoving} onDelete={poiConfiguration.manual.some(poi => poi.id === selectedPoi.id && poi.category === 'zoo') ? () => attempt(() => { if (!confirm('Odstranit ručně vytvořenou zoo? Změnu lze vrátit tlačítkem Zpět.')) return; commit({ ...world, poi: removeManualZoo(poiConfiguration, selectedPoi.id) }); setPoiSelected(null); setPoiMoving(false); }) : undefined} onMove={() => { setPoiMoving(value => !value); setTool('select'); }} onDecision={updatePoi} /> : tool !== 'inspect' && pidStop ? <PidStopProperties key={pidStop.id + ':' + (pidConfiguration.overrides.find(value => value.stopId === pidStop.id)?.approvedAt ?? '')} stop={pidStop} configuration={pidConfiguration} allStops={pid.view?.stops ?? []} platforms={pidPlatforms} point={pidPreview} moving={pidMoving} showPlatforms={pidShowPlatforms} showZone={pidShowZone} disabled={editing} onPoint={setPidPreview} onMove={value => { setPidMoving(value); setTool('select'); }} onPlatforms={setPidShowPlatforms} onZone={setPidShowZone} onConfiguration={value => attempt(() => commit({ ...world, gameStops: value }))} /> : tool === 'inspect' ? <><PositionInspector point={testPoint} world={world} stop={pidPreviewStop} radius={pidConfiguration.radiusMeters} />{pidStop && <button className="wide" aria-pressed={pidShowZone} onClick={() => setPidShowZone(value => !value)}>{pidShowZone ? "Skrýt úkrytovou zónu" : "Zobrazit úkrytovou zónu"}</button>}</> : selectedFeature && selectedLayer?.dataset ? <div className="managed-properties"><h3>{selectedFeature.name}</h3><p>Oficiální kód: <code>{String(selectedFeature.attributes.code)}</code><br />{selectedFeature.geometry.type}</p><SourceMetadata layer={selectedLayer} /><details><summary>Zdrojové atributy</summary><pre>{JSON.stringify(selectedFeature.attributes, null, 2)}</pre></details><p>Oficiální geometrii lze nahradit ověřenou aktualizací zdroje.</p><button onClick={() => setSourcesOpen(true)}>Porovnat / aktualizovat zdroj</button></div> : selectedFeature ? <FeatureProperties key={`${selectedLayer!.id}/${selectedFeature.id}/${world.updatedAt}`} feature={selectedFeature} editing={editing} onChange={change => attempt(() => updateFeature(change))} onEdit={() => { if (!selectedLayer?.visible) { setError('Vybraná vrstva je skrytá. Před úpravou vrcholů ji zobrazte.'); return; } setTool('edit'); }} onSaveEdit={() => map.current?.saveEdit()} onDelete={() => { attempt(() => updateLayer(selectedLayer!.id, { features: selectedLayer!.features.filter(f => f.id !== selectedFeature.id) })); setSelected(null); setTool('select'); }} /> : <div className="selection-empty"><div aria-hidden="true"><CursorIcon /></div><h3>Prostor pro vaše data</h3><p>Vyberte objekt v mapě nebo v seznamu. Zde uvidíte jeho geometrii, původ a vlastnosti.</p><hr /><span className="eyebrow">JAK ZAČÍT</span><ol><li>Vyberte vrstvu Herní oblast.</li><li>Praha je přednastavená; hranici můžete upravit nebo obnovit.</li><li>Do vlastní vrstvy přidejte další objekty.</li><li>Exportujte zálohu svého světa.</li></ol></div>}
         <div className="export-section"><h3>Přenosná data</h3><p>JSON obsahuje celý draft. GeoJSON navíc otevřete v běžných GIS nástrojích; metadata editoru jsou v rozšířených polích.</p><button disabled={editing} onClick={() => attempt(() => download(exportWorld(world, 'geojson'), 'jetlag-praha-draft.geojson'))}>Exportovat GeoJSON</button></div>
       </aside>
     </div>

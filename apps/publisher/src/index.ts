@@ -157,7 +157,7 @@ export class PublisherCoordinator {
     if (release) {
       const issues = gamePublicationErrors(release); if (issues.length) throw new ApiFailure(422, issues.slice(0, 10).join(' '));
       // Timestamp comes from the server; content ID is independent of time.
-      release = await createGameDataRelease(release.data, { publishedAt: new Date().toISOString(), kind: 'approved' });
+      release = await createGameDataRelease(release.data, { publishedAt: new Date().toISOString(), kind: 'approved', schemaVersion: release.schemaVersion });
     }
     const lease = randomToken();
     await this.storage.transaction(async tx => { const lock = await tx.get<{ expiresAt: number }>('publish-lock'); if (lock && lock.expiresAt > Date.now()) throw new ApiFailure(409, 'Jiná publikace právě probíhá.'); await tx.put('publish-lock', { lease, expiresAt: Date.now() + 180000 }); });
@@ -193,7 +193,7 @@ export class PublisherCoordinator {
   async fetch(request: Request): Promise<Response> {
     const path = new URL(request.url).pathname;
     try {
-      if (path === '/status' && request.method === 'GET') return json({ configured: configured(this.env), repository: 'Wondrej89/JetLagPrague' });
+      if (path === '/status' && request.method === 'GET') return json({ configured: configured(this.env), releaseSchemaVersions: [1, 2], repository: 'Wondrej89/JetLagPrague' });
       if (!configured(this.env)) throw new ApiFailure(503, 'Publikace není nakonfigurována.');
       await this.rate(request, 'api', 120, 60000);
       if (path === '/auth/start' && request.method === 'GET') return await this.login(request);

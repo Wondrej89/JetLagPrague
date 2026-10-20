@@ -40,7 +40,7 @@ test('shodné ID se automaticky sloučí, zachovají názvy i původní data a n
   expect((await storedWorld(page)).layers).toEqual(original.layers); expect((await storedWorld(page)).poi).toEqual(original.poi);
   await page.getByRole('button', { name: 'Zpět k náhledu importu', exact: true }).click();
   await dialog(page).getByRole('button', { name: 'Použít parkový zdroj', exact: true }).click();
-  await expect.poll(async () => (await storedWorld(page)).poi?.sources[0].records.length).toBe(1);
+  await expect.poll(async () => (await storedWorld(page)).poi?.sources[0]?.records.length).toBe(1);
   const park = (await storedWorld(page)).poi!.sources[0].records[0];
   expect(park.sourceId).toBe('2773'); expect(park.id).toBe('park:ipr-mpp-100-parky:2773');
   expect(park.importAudit?.sourceNames).toEqual(['Park u OC Letňany', 'Park u OC Letňany II.']);

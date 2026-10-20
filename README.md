@@ -2,9 +2,9 @@
 
 Veřejný klient je na **[JetLagPrague/](https://wondrej89.github.io/JetLagPrague/)**, geografický editor na **[JetLagPrague/editor/](https://wondrej89.github.io/JetLagPrague/editor/)**. Lokální světy, parky, PID rozhodnutí a zálohy editoru zůstávají zachované na stejném originu; veřejná stránka jejich IndexedDB nečte ani nemění. Před dalšími úpravami si v editoru stáhněte úplnou zálohu.
 
-Nový panel **Publikace herních podkladů** kontroluje a porovnává samostatný verzovaný herní katalog. Bez nastavené GitHub App a Cloudflare Workeru zobrazuje **„Publikace není nakonfigurována“** a zápis zůstává zakázaný. Kompletní český [postup aktivace, publikace, ověření nasazení a rollbacku](docs/PUBLISHING.md) odděluje hotovou infrastrukturu od kroků vyžadujících přihlášení vlastníka účtů. **Živá publikace dosud není ověřená; vyžaduje ruční konfiguraci a skutečný E2E test.**
+Panel **Publikace herních podkladů** kontroluje a porovnává samostatný verzovaný herní katalog. Publikace používá autorizovanou GitHub App a Cloudflare Worker; stávající konfigurace a ochrany se zachovávají. V novém prostředí bez konfigurace zůstává zápis zakázaný. Český [postup nastavení, publikace, ověření nasazení a rollbacku](docs/PUBLISHING.md) obsahuje také kompatibilitu verzí a aktualizaci Workeru.
 
-Statický počáteční release obsahuje 3 letiště, 169 administrativních oblastí a 1 465 referenčních zastávek uvnitř Prahy (PID 2026-10-16), zatím 0 centrálně schválených parků. Je označený jako reference, nikoli platný podklad ostré hry. Schválení ve vašem prohlížeči zůstávají soukromá, dokud je výslovně nepublikujete. Multiplayer a herní místnosti zatím nejsou dostupné.
+Herní podklady se načítají z neměnných publikací. Vydání této iterace navazuje na schválenou publikaci z 20. 10. 2026: zachovává **117 parků, 3 letiště, administrativní hranice a stejný PID snapshot** a přidává **10 zoo a míst se zvířaty**. Starší publikace zůstávají dostupné. Soukromé úpravy v prohlížeči se projeví ve hře až po publikaci; multiplayer zatím není dostupný.
 
 
 Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny. [Iterace 03B](CODEX_UKOL_03B_GTFS.md) používá aktuální obsluhu z GTFS a ruční serverovou publikaci. **Iterace 04A** přidává letiště, správu parků a geografické funkce POI pro Matching a Measuring.
@@ -12,6 +12,20 @@ Statický počáteční release obsahuje 3 letiště, 169 administrativních obl
 Iterace 02 používá dodané soubory `data/raw/mestskecasti.geojson` (**57 městských částí**) a `data/raw/katastralni-uzemi-praha.geojson` (**112 katastrálních území Prahy**). Zachovává všechny souřadnice a atributy, podporuje samostatné zobrazení vrstev, zvýraznění území, přesouvatelný testovací bod a kontrolovanou aktualizaci zdrojů. Mapy.com poskytuje pouze mapový podklad.
 
 Původ je zaznamenán v `data/source-metadata/`: městské části mají v dodaných datech poskytovatele HMP-IPR a katalogový odkaz IPR, katalogový odkaz ČSÚ pro katastry doložil uživatel. **Licence a datum platnosti celé sady nejsou v dodaných souborech uvedeny a zůstávají výslovně nedoložené.** Datum převzetí do repozitáře se za datum platnosti nevydává. MIT licence kódu automaticky neurčuje licenci zdrojových geodat.
+
+## Zoo a místa se zvířaty
+
+V **Body zájmu** je samostatný přepínač, počty schválených lokalit a deset bodů s ikonou tlapky. Hledání funguje podle názvu i ID. Výchozí katalog je součástí aplikace, nikoli pouze IndexedDB autora. Obsahuje přesně deset lokalit ze zadání, včetně původních stabilních ID, adres a souřadnic uložených v pořadí `[longitude, latitude]`.
+
+Zdroj je **Mapy.com – ruční převzetí bodů** z výběru správce. Nejde o oficiální dataset zoo ani nezávisle ověřené geodetické souřadnice; bod nevymezuje areál. Žádné další body se nestahují ani nedohledávají geokódováním. Licence převzatých souřadnic zůstává výslovně nedoložená.
+
+Výběr bodem nebo seznamem umožní upravit název, adresu, pracovní poznámku a GPS, přesunout bod přetažením v mapě, vyřadit lokalitu, vrátit ji k revizi nebo znovu schválit. **Přidat zoo nebo místo se zvířaty** vloží vlastní bod kliknutím do mapy. Nový bod vyžaduje název, adresu a schválení; odstranit lze pouze ručně vytvořenou lokalitu. Katalogové lokality se vyřazují ze hry. Změny podporují běžné undo/redo a kompletní JSON/GeoJSON zálohy.
+
+Zdrojové body jsou v nepovinném `poi.pointCatalog`, uživatelské zásahy odděleně v `poi.decisions`; vlastní zoo jsou v `poi.manual`. Aktualizace katalogu přidá neznámá ID a nepřepíše uložené záznamy, rozhodnutí ani viditelnost. Starší drafty ve schématu světa 2 a parkové zdroje zůstávají kompatibilní. Výchozí zoo se bezpečně doplní při inicializaci editoru.
+
+`nearestApprovedPoi`, `matchingPois` a `measuringPois` pracují i přímo s veřejnými DTO zoo: používají geografickou vzdálenost k referenčnímu bodu, ignorují `excluded` a `review` a při shodné vzdálenosti zachovávají pravidlo stabilního ID. Viditelnost vrstvy nemění herní způsobilost.
+
+Nové herní katalogy používají **GameDataRelease 2**, který podporuje kategorii `zoo` a adresu. Čtení a kontrolní součty historického schématu 1 zůstávají zachované; staré soubory se nepřepisují. Publikují se pouze schválené zoo. Pracovní poznámky a importní audit se do veřejného katalogu neposílají. Aktuální Worker v `/status` oznamuje podporu obou verzí; starší server publikaci zoo bezpečně zablokuje do aktualizace. V tomto repozitáři je také připojen automatický **Workers Builds** pro publikační server; jeho výsledek se ověřuje odděleně od Pages.
 
 ## Iterace 04A – letiště a parky
 
