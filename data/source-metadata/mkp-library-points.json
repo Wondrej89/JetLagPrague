@@ -1,0 +1,821 @@
+{
+  "catalogUrl": "https://www.mlp.cz/cz/pobocky",
+  "catalogChecksum": "7c0780f7a4b45c3588e4c5f81bbe6477c63fe940b1464808ee6a2d7be2debd54",
+  "branches": [
+    {
+      "id": "library-pending:mkp-selection:barrandov",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/barrandov",
+      "officialAddress": "Wassermannova 926/16, Praha 5",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.36824000,50.02840200&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.02840200,14.36824000&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "279ab7ab1db71f9a541dbf6b83e981e7ee73a59bb370775e84a38ee2a30c6366",
+      "checkedAt": "2026-10-20T11:38:06.386Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:bohnice",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/bohnice",
+      "officialAddress": "Těšínská 600/4, Praha 8",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.41865100,50.12887900&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.12887900,14.41865100&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "9480c6fd005b85c0c145fca0518a5a8528e799f4abf4814d36a74f074fc8d9e5",
+      "checkedAt": "2026-10-20T11:38:06.380Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:brusnice-vzacne-tisky",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/brusnice-vzacne-tisky",
+      "officialAddress": "U Brusnice 324/9, Praha 6",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.39221100,50.09400800&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.09400800,14.39221100&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "4b4b9c8e5451c5ad47d2bbce4d2b6648195e3ed2002819106ad306e714a60b2f",
+      "checkedAt": "2026-10-20T11:38:06.390Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:brevnov",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/brevnov",
+      "officialAddress": "Bělohorská 1666/56, Praha 6",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.37403800,50.08442600&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.08442600,14.37403800&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "2cfbe29204c1da3772a1fb22b7cc22414aa7f75117219a187dd53d4c79b608b0",
+      "checkedAt": "2026-10-20T11:38:06.390Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:cibulka",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/cibulka",
+      "officialAddress": "Musílkova 335/62, Praha 5",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.36651220,50.06766330&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.06766330,14.36651220&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "c7a8c6ea1850f2d9ff47d08236e9c51a77e7ff0f811ecec947f5b78bc8cdd91d",
+      "checkedAt": "2026-10-20T11:38:06.399Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:cerny-most",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/cerny-most",
+      "officialAddress": "Bobkova 534/47, Praha 14",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.57669640,50.10848780&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.10848780,14.57669640&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "64191e4ff08ffb210b9a37bd776437f749e6ede6eb07bbc415fd483cea57ba56",
+      "checkedAt": "2026-10-20T11:38:06.400Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:dedina",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/dedina",
+      "officialAddress": "Žukovského 888/2, Praha 6",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.30893700,50.09072800&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.09072800,14.30893700&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "bb15025414ff11b07f7eacfb359a5dbb470e60d35572d9c477ec00043a2785c5",
+      "checkedAt": "2026-10-20T11:38:06.396Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:dejvice",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/dejvice",
+      "officialAddress": "Technická 2710/6, Praha 6",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.39060000,50.10390000&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.10390000,14.39060000&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "173426a356f6f399aaffa165166f0f041ded819abe7c19697c42cfaf00861870",
+      "checkedAt": "2026-10-20T11:38:06.410Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:dittrichova",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/dittrichova",
+      "officialAddress": "Dittrichova 1543/2, Praha 2",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.41650200,50.07371900&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.07371900,14.41650200&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "f1cd51d5ba14cf145b5b3d78bc60f69abb1f4f53749d002cb6fbe359eb9b6dec",
+      "checkedAt": "2026-10-20T11:38:06.416Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:dum-cteni-ruska",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/dum-cteni-ruska",
+      "officialAddress": "Ruská 1455/192, Praha 10",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.48336200,50.07270300&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.07270300,14.48336200&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "cb4850401bc1e935968167ec1acd01242ed476579b1e42b130ff0ff26241dd11",
+      "checkedAt": "2026-10-20T11:38:06.403Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:hloubetin",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/hloubetin",
+      "officialAddress": "Hloubětínská 1138/5, Praha 14",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.53457670,50.10391750&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.10391750,14.53457670&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "5fb4ab35dd0166caaedc9641f886836dc091c7b8391068f214f84449e065534d",
+      "checkedAt": "2026-10-20T11:38:06.413Z",
+      "notices": [
+        "Pobočka Hloubětín uzavřena 19. 10. 2026",
+        ". Můžete se zdarma připojit k Wi-Fi nebo použít počítače s přístupem na internet a s možností černobílého tisku. Pořádáme kulturní a vzdělávací akce pro veřejnost. V pobočce je možné platit kartou. Vypůjčené knihy můžete v době uzavření pobočky odkládat do návratového boxu, který se nachází v prostorách kavárny"
+      ]
+    },
+    {
+      "id": "library-pending:mkp-selection:hostivar",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/hostivar",
+      "officialAddress": "Golfová 910/10, Praha 15",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.54700600,50.04900200&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.04900200,14.54700600&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "73d86a8db463c3b8bd2b40878b37bc102541e253b65f509a8cbadf55f09dbaeb",
+      "checkedAt": "2026-10-20T11:38:06.426Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:hradcany",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/hradcany",
+      "officialAddress": "Pohořelec 111/25, Praha 1",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.38978800,50.08811400&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.08811400,14.38978800&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "0415db52902e807c8755c3ebfb20a07ed51aed0b644a587a1d4e1463e5d864b6",
+      "checkedAt": "2026-10-20T11:38:06.419Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:chodov",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/chodov",
+      "officialAddress": "Jírovcovo náměstí 1782/1, Praha 11",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.49192400,50.02419100&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.02419100,14.49192400&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "b17a04309b3df842e40b18db956f1a7bfdf0f68a91d71ce0a91b1f94c54b8655",
+      "checkedAt": "2026-10-20T11:38:06.420Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:jezerka",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/jezerka",
+      "officialAddress": "Nuselská 603/94, Praha 4",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.44998140,50.05792530&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.05792530,14.44998140&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "fbd59e4bc5382196c429033102c9501a07a6defd382ad9211f1bfe9254d7b480",
+      "checkedAt": "2026-10-20T11:38:06.430Z",
+      "notices": [
+        "Pobočka Jezerka uzavřena 19. a 20. 10. 2026"
+      ]
+    },
+    {
+      "id": "library-pending:mkp-selection:kobylisy",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/kobylisy",
+      "officialAddress": "Klapkova 26/3, Praha 8",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.45611500,50.12407800&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.12407800,14.45611500&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "f23accc56088764a0fbe060bda42c9f5033dc049363990cf7af9ca2e677c44f2",
+      "checkedAt": "2026-10-20T11:38:06.426Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:korunni",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/korunni",
+      "officialAddress": "Korunní 2160/68, Praha 10",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.45015300,50.07522600&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.07522600,14.45015300&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "7a2343434351acb7209b59f7af66ac84732c2da49fe6457699a442080f60ae34",
+      "checkedAt": "2026-10-20T11:38:06.459Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:krc",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/krc",
+      "officialAddress": "Štúrova 1282/12, Praha 4",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.45178900,50.02397200&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.02397200,14.45178900&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "a4f5b89112e38cda2b4d197008caaec9ea8524edd69c6f7cce12a9ce38f1df3b",
+      "checkedAt": "2026-10-20T11:38:06.436Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:ladvi",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/ladvi",
+      "officialAddress": "Burešova 1661/2, Praha 8",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.47027900,50.12747100&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.12747100,14.47027900&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "b845699e95f3e32fdaeadf07476f1161456a17b6a8550726bf7293215212f546",
+      "checkedAt": "2026-10-20T11:38:06.443Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:letna",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/letna",
+      "officialAddress": "Milady Horákové 387/56, Praha 7",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.42552100,50.10015700&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.10015700,14.42552100&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "3206737a35a4e2fcdb1f5f241aa9d2f0db9eef36f649ce9fe6f59eb1099827ff",
+      "checkedAt": "2026-10-20T11:38:06.435Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:luziny",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/luziny",
+      "officialAddress": "Archeologická 2256/1, Praha 13",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.33154600,50.04423500&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.04423500,14.33154600&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "c32fdacdf535c27f54d32ba5e550daa3436f73c7cff877bd2f579a8789b85697",
+      "checkedAt": "2026-10-20T11:38:06.442Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:malesice",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/malesice",
+      "officialAddress": "Počernická 524/64, Praha 10",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.50049470,50.08157360&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.08157360,14.50049470&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "8d67cccf2be925668d2f92fc4ca4eeba91da6149e7cf5165304becf68f2c6b90",
+      "checkedAt": "2026-10-20T11:38:06.453Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:novodvorska",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/novodvorska",
+      "officialAddress": "Novodvorská 1013/151, Praha 4",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.43290500,50.02484400&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.02484400,14.43290500&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "630a10a16d033b157571c5f3d67c941536f28013831857d6566a86021c23eed1",
+      "checkedAt": "2026-10-20T11:38:06.449Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:opatov",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/opatov",
+      "officialAddress": "Opatovská 1754/14, Praha 11",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.51843400,50.02559900&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.02559900,14.51843400&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "44e96fe049eacbcf578584b468395cc587df9a53f0d5516e0f8636695ca89545",
+      "checkedAt": "2026-10-20T11:38:06.449Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:ostrcilovo-namesti",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/ostrcilovo-namesti",
+      "officialAddress": "Ostrčilovo nám. 518/1, Praha 2",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.42476400,50.06581100&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.06581100,14.42476400&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "d04f32283d211d78ba517ee15becdb21e94d80eb879353d7163326628be0592f",
+      "checkedAt": "2026-10-20T11:38:06.476Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:ostrovskeho",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/ostrovskeho",
+      "officialAddress": "Na Skalce 972/29, Praha 5",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.40016400,50.06835900&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.06835900,14.40016400&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "ffc49ffbe8b596a8c66b91b200c814029313b6abbc20016b25f27629e98d1623",
+      "checkedAt": "2026-10-20T11:38:06.462Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:pankrac",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/pankrac",
+      "officialAddress": "Na Veselí 542/5, Praha 4",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.43805300,50.05439100&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.05439100,14.43805300&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "659995a9cdbd91018e93f2a6b4b73a84a0431e87dffdc9bd3ec68efcc61a51de",
+      "checkedAt": "2026-10-20T11:38:06.462Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:petriny",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/petriny",
+      "officialAddress": "U Petřin 2511/1, Praha 6",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.34177930,50.08571360&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.08571360,14.34177930&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "a7f46d358002946b67f39dbe2b1a51cd83ae98a7512bf101b69b55e67f3a6045",
+      "checkedAt": "2026-10-20T11:38:06.472Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:prosek",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/prosek",
+      "officialAddress": "Měšická 806/3, Praha 9",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.50026800,50.12300600&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.12300600,14.50026800&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "e54f0ebbb07c7e72c5346ac107beda407f8b22cdba704eb5df180d6af3739191",
+      "checkedAt": "2026-10-20T11:38:06.468Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:rajska-zahrada",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/rajska-zahrada",
+      "officialAddress": "Generála Janouška 1060/2, Praha 14",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.56527200,50.10307800&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.10307800,14.56527200&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "f02a2f6e5116d24e3fb5cec796ed1b19259d05084e475e83d1f365fbbbc967b9",
+      "checkedAt": "2026-10-20T11:38:06.482Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:sedmicka",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/sedmicka",
+      "officialAddress": "Tusarova 429/35, Praha 7",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.45036111,50.10196222&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.10196222,14.45036111&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "e90cab4c3afebe5946372ef1e19ed7e084d8154e0a713ed509d94764e4d14d7f",
+      "checkedAt": "2026-10-20T11:38:06.476Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:skalka",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/skalka",
+      "officialAddress": "Rubensova 2237/2, Praha 10",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.50959900,50.06851300&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.06851300,14.50959900&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "14fc8005f57513e93ab8592eeed27b1e7d5c98ff2a309563623af421879a1c49",
+      "checkedAt": "2026-10-20T11:38:06.483Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:smichov",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/smichov",
+      "officialAddress": "Náměstí 14. října 83/15, Praha 5",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.40667300,50.07391900&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.07391900,14.40667300&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "97b0fcbda4a04bf66a87a5c6e579ba53661ee8f1fdf639567b6d09e65e10f4ca",
+      "checkedAt": "2026-10-20T11:38:06.492Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:sporilov",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/sporilov",
+      "officialAddress": "Postupická 2932/7, Praha 4",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.49165400,50.04521300&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.04521300,14.49165400&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "b2f8d87a1d4c553b1fa0f6eddeca3e35c270a65d48710761f345581c8da9dabb",
+      "checkedAt": "2026-10-20T11:38:06.489Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:stodulky",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/stodulky",
+      "officialAddress": "Kovářova 1615/4, Praha 13",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.31701700,50.04905100&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.04905100,14.31701700&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "c9af3b054b0461a47d67b002f9e91aaaa95f65c12487091ca0b26e108910d532",
+      "checkedAt": "2026-10-20T11:38:06.507Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:skolska",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/skolska",
+      "officialAddress": "Školská 1267/30, Praha 1",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.42451100,50.07964900&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.07964900,14.42451100&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "cb9d9387387f4c4b1743e8ac17162ba8eac8bbc4635a612ce779f94c0498492d",
+      "checkedAt": "2026-10-20T11:38:06.492Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:ustredni-knihovna",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/ustredni-knihovna",
+      "officialAddress": "Mariánské náměstí 98/1, Praha 1",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.41738980,50.08736550&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.08736550,14.41738980&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "46c3768a9672ac47034f37ac76c10186a2c7bcb29964e2575e9fb257b38e6170",
+      "checkedAt": "2026-10-20T11:38:06.507Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:velka-chuchle",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/velka-chuchle",
+      "officialAddress": "Starochuchelská 20/7, Praha 16",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.38513200,50.01170500&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.01170500,14.38513200&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "95c136e7bedd5893dfa16b768567af1d761e3871000fb1e03cd95391722f4944",
+      "checkedAt": "2026-10-20T11:38:06.499Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:velky-mlyn",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/velky-mlyn",
+      "officialAddress": "U Českých loděnic 40/6, Praha 8",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.46918720,50.10751220&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.10751220,14.46918720&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "ee912ac339d37047ac204ff2e1d19524a6273f0363177f4eeb503d6a7b832473",
+      "checkedAt": "2026-10-20T11:38:06.506Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:vikova",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/vikova",
+      "officialAddress": "Vikova 1223/4, Praha 4",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.43753600,50.04123500&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.04123500,14.43753600&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "e94b2ad414410dfa2fa2398679d871277313982d493009a1ee7290c2bd5e73b2",
+      "checkedAt": "2026-10-20T11:38:06.514Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:vozovna",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/vozovna",
+      "officialAddress": "Za Žižkovskou vozovnou 2687/18, Praha 3",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.47838670,50.09172750&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.09172750,14.47838670&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "0a24421d75b7f961c6a718d9cfd74d62125e9c01eb8c93bd382ebecdc230ed78",
+      "checkedAt": "2026-10-20T11:38:06.521Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:vysocany",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/vysocany",
+      "officialAddress": "Zbuzkova 285/34, Praha 9",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.50103900,50.11128800&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.11128800,14.50103900&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "82b7de1048d1ea8628ffc31e81e92cf904bc9880750677c7dc1f23d9e08102a6",
+      "checkedAt": "2026-10-20T11:38:06.518Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:zahradni-mesto",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/zahradni-mesto",
+      "officialAddress": "Topolová 2961/12a, Praha 10",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.50817500,50.05636400&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.05636400,14.50817500&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "4436c9fa9f253c0ce06f883fcb9bebf7ea3b976efc08c4b51b90915f6d02ed26",
+      "checkedAt": "2026-10-20T11:38:06.514Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:zahrebska",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/zahrebska",
+      "officialAddress": "Záhřebská 158/20, Praha 2",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.43704700,50.07188900&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.07188900,14.43704700&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "0930db1732bf14947fb3f7b931814c401e4c7fa45783e26c1f54b7fe21554487",
+      "checkedAt": "2026-10-20T11:38:06.528Z",
+      "notices": []
+    },
+    {
+      "id": "library-pending:mkp-selection:zizkov",
+      "officialUrl": "https://www.mlp.cz/cz/pobocky/zizkov",
+      "officialAddress": "Husitská 110/70, Praha 3",
+      "mapLinks": [
+        {
+          "url": "https://mapy.com/fnc/v1/showmap?center=14.44990000,50.08670000&zoom=17&marker=true",
+          "label": "Zobrazit na Mapy.com"
+        },
+        {
+          "url": "https://www.google.com/maps?q=50.08670000,14.44990000&marker=true",
+          "label": "Zobrazit na Google Maps"
+        }
+      ],
+      "detailChecksum": "bc612768e17c44754be47bd3de03e0d861b50dd5b06e72aa50f82a31e1fb91dd",
+      "checkedAt": "2026-10-20T11:38:06.528Z",
+      "notices": []
+    }
+  ]
+}

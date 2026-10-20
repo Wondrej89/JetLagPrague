@@ -4,12 +4,15 @@ import type { Point, Position } from 'geojson';
 import { distanceMeters, isArea, validateGeometry, type AreaGeometry } from './index';
 import { canonicalJson } from './administrative';
 import { sha256 } from './pid-snapshot';
+import { agreedLibraryMapPoint } from './library-map-links';
 
 const id = z.string().min(1).max(200);
 const text = z.string().max(10000);
 const httpUrl = z.url().refine(url => ['http:', 'https:'].includes(new URL(url).protocol));
 const pointSchema = z.tuple([z.number().finite().min(-180).max(180), z.number().finite().min(-90).max(90)]);
-export const libraryVerificationSchema = z.object({ point: pointSchema, method: z.enum(['official_map_link', 'manual_review']), checkedAt: z.iso.datetime(), url: httpUrl });
+export const libraryVerificationSchema = z.object({ point: pointSchema, method: z.enum(['official_map_link', 'manual_review']), checkedAt: z.iso.datetime(), url: httpUrl,
+  mapUrls: z.array(httpUrl).min(1).max(10).optional(), detailChecksum: z.string().regex(/^[a-f0-9]{64}$/).optional(), officialAddress: text.optional(),
+});
 export const libraryMetadataSchema = z.object({ officialUrl: httpUrl, selectionKey: id.optional(), verification: libraryVerificationSchema.optional() });
 export const poiStatusSchema = z.enum(['review', 'approved', 'excluded']);
 export const poiSourceSchema = z.object({
@@ -78,6 +81,7 @@ export function validatePoiConfiguration(input: PoiConfiguration): void {
   unique([...records.map(p => p.id), ...(input.unlocatedLibraries ?? []).map(p => p.id)]); unique(input.decisions.map(d => d.id));
   unique((input.unlocatedLibraries ?? []).map(p => p.selectionKey));
   unique(records.filter(p => p.category === 'library' && p.library?.selectionKey).map(p => p.library!.selectionKey!));
+  unique(records.filter(p => p.category === 'library' && p.library).map(p => libraryId(p.library!.officialUrl)));
   for (const dataset of input.sources) for (const record of dataset.records) {
     if (record.category !== 'park' || record.source.id !== dataset.source.id || record.id !== parkId(dataset.source.id, record.sourceIdentity?.key ?? record.sourceId)) throw new Error('Nesouhlasí identita zdrojového parku.');
     if (record.status !== 'review' || record.reviewedAt !== null) throw new Error('Zdrojoví kandidáti se schvalují odděleným rozhodnutím.');
@@ -87,7 +91,7 @@ export function validatePoiConfiguration(input: PoiConfiguration): void {
     if (['zoo', 'hospital', 'library'].includes(record.category)) {
       if (record.geometry.type !== 'Point' || canonicalJson(record.geometry.coordinates) !== canonicalJson(record.point)) throw new Error('Bodový POI musí mít shodný referenční bod a geometrii Point.');
       if (record.category === 'zoo' && record.address === undefined) throw new Error('Zoo musí mít adresu.');
-      if (record.category === 'library' && (!record.library || record.id !== libraryId(record.library.officialUrl) || !record.address?.trim())) throw new Error('Nesouhlasí identita nebo adresa knihovny.');
+      if (record.category === 'library' && (!hasLibraryIdentity(record) || !record.address?.trim())) throw new Error('Nesouhlasí identita nebo adresa knihovny.');
       continue;
     }
     if (record.category !== 'park' || !isArea(record.geometry)) throw new Error('Vlastní a importované POI této iterace musí být polygonové parky.');
@@ -220,7 +224,7 @@ export function preparePoiDecision(poi: Poi, previous: PoiDecision | undefined, 
   }
   const decision = decisionSchema.parse({ ...previous, ...change, id: poi.id, reviewedAt });
   if (poi.category === 'library') {
-    if (!poi.library || poi.id !== libraryId(poi.library.officialUrl) || poi.geometry.type !== 'Point') throw new Error('Knihovna vyžaduje bod a stabilní identitu oficiální pobočky.');
+    if (!poi.library || !hasLibraryIdentity(poi) || poi.geometry.type !== 'Point') throw new Error('Knihovna vyžaduje bod a stabilní identitu oficiální pobočky.');
     const point = decision.point ?? poi.point;
     const verification = decision.libraryVerification === undefined ? poi.library.verification : decision.libraryVerification ?? undefined;
     const verified = isLibraryLocationVerified({ ...poi, point, library: { ...poi.library, verification } });
@@ -327,12 +331,11 @@ export function withPublishedLibraries(configuration: PoiConfiguration, publishe
   // A locally positioned candidate remains authoritative for this draft, even
   // if a new source uses another URL alias. Never create a second branch.
   const accepted = published.filter(poi => !poi.library?.selectionKey || !locatedKeys.has(poi.library.selectionKey) || savedIds.has(poi.id));
-  const next = withPublishedPointPois(configuration, accepted), known = new Set((next.unlocatedLibraries ?? []).map(row => row.selectionKey));
-  const added = unlocated.filter(row => !known.has(row.selectionKey));
-  const result = added.length ? { ...next, unlocatedLibraries: [...(next.unlocatedLibraries ?? []), ...added] } : next;
-  const decisions = new Map(result.decisions.map(decision => [decision.id, decision]));
+  const next = withPublishedPointPois(configuration, accepted);
+  const candidates = [...(configuration.unlocatedLibraries ?? []), ...unlocated];
+  const decisions = new Map(next.decisions.map(decision => [decision.id, decision]));
   for (const poi of accepted) {
-    const candidate = result.unlocatedLibraries?.find(row => row.selectionKey === poi.library?.selectionKey);
+    const candidate = candidates.find(row => row.selectionKey === poi.library?.selectionKey);
     const previous = candidate && decisions.get(candidate.id);
     if (previous && !decisions.has(poi.id)) {
       const inherited = { ...previous, id: poi.id };
@@ -341,6 +344,14 @@ export function withPublishedLibraries(configuration: PoiConfiguration, publishe
       decisions.set(poi.id, inherited);
     }
   }
+  // A promoted candidate retains its original ID. Archive the source candidate
+  // in the bundled POI, rather than keeping two operational records with one ID.
+  const located = [...(next.pointCatalog ?? []), ...next.manual].filter(poi => poi.category === 'library');
+  const keys = new Set(located.map(poi => poi.library?.selectionKey)), ids = new Set(located.map(poi => poi.id));
+  const remaining = new Map<string, UnlocatedLibrary>();
+  for (const row of candidates) if (!keys.has(row.selectionKey) && !ids.has(row.id) && !remaining.has(row.selectionKey)) remaining.set(row.selectionKey, row);
+  const rows = [...remaining.values()];
+  const result = canonicalJson(rows) === canonicalJson(next.unlocatedLibraries ?? []) ? next : { ...next, unlocatedLibraries: rows };
   return decisions.size === result.decisions.length ? result : { ...result, decisions: [...decisions.values()] };
 }
 /** A branch ID comes only from a supplied official detail URL, never a guessed
@@ -355,7 +366,17 @@ export function libraryId(input: string): string {
 export function isLibraryLocationVerified(poi: Pick<Poi, 'id' | 'point' | 'library'>): boolean {
   try {
     const metadata = poi.library, verification = metadata?.verification;
-    return !!metadata && !!verification && poi.id === libraryId(metadata.officialUrl) && libraryId(verification.url) === poi.id && canonicalJson(verification.point) === canonicalJson(poi.point);
+    return !!metadata && !!verification && hasLibraryIdentity(poi) && libraryId(verification.url) === libraryId(metadata.officialUrl) && canonicalJson(verification.point) === canonicalJson(poi.point)
+      && (!verification.mapUrls || canonicalJson(agreedLibraryMapPoint(verification.mapUrls)) === canonicalJson(poi.point));
+  } catch { return false; }
+}
+/** Selection IDs were already saved in users' drafts before GPS was available.
+ * Keep them permanently; the official URL is a separate provider identity.
+ * Previously created URL-based identities remain valid as well. */
+export function hasLibraryIdentity(poi: Pick<Poi, 'id' | 'library'>): boolean {
+  try {
+    const metadata = poi.library;
+    return !!metadata && (poi.id === libraryId(metadata.officialUrl) || (!!metadata.selectionKey && poi.id === `library-pending:mkp-selection:${metadata.selectionKey}`));
   } catch { return false; }
 }
 function withPublishedPointPois(configuration: PoiConfiguration, published: readonly Poi[]): PoiConfiguration {

@@ -4,7 +4,7 @@ Veřejný klient je na **[JetLagPrague/](https://wondrej89.github.io/JetLagPragu
 
 Panel **Publikace herních podkladů** kontroluje a porovnává samostatný verzovaný herní katalog. Publikace používá autorizovanou GitHub App a Cloudflare Worker; stávající konfigurace a ochrany se zachovávají. V novém prostředí bez konfigurace zůstává zápis zakázaný. Český [postup nastavení, publikace, ověření nasazení a rollbacku](docs/PUBLISHING.md) obsahuje také kompatibilitu verzí a aktualizaci Workeru.
 
-Herní podklady se načítají z neměnných publikací. Poslední zveřejněný katalog navazuje na schválenou publikaci z 20. 10. 2026: zachovává **117 parků, 3 letiště, 10 zoo a míst se zvířaty, administrativní hranice a stejný PID snapshot** a přidává **10 nemocnic**. Starší publikace zůstávají dostupné. Soukromé úpravy v prohlížeči se projeví ve hře až po publikaci; multiplayer zatím není dostupný.
+Herní podklady se načítají z neměnných publikací. Poslední zveřejněný katalog navazuje na schválenou publikaci z 20. 10. 2026: zachovává **117 parků, 3 letiště, 10 zoo a míst se zvířaty, 10 nemocnic, administrativní hranice a stejný PID snapshot** a přidává **45 knihoven s ověřenými referenčními body**. Starší publikace zůstávají dostupné. Soukromé úpravy v prohlížeči se projeví ve hře až po publikaci; multiplayer zatím není dostupný.
 
 
 Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny. [Iterace 03B](CODEX_UKOL_03B_GTFS.md) používá aktuální obsluhu z GTFS a ruční serverovou publikaci. **Iterace 04A** přidává letiště, správu parků a geografické funkce POI pro Matching a Measuring.
@@ -15,19 +15,33 @@ Původ je zaznamenán v `data/source-metadata/`: městské části mají v dodan
 
 ## Knihovny Městské knihovny v Praze
 
-Vrstva **Body zájmu → Knihovny** obsahuje přesně 45 názvů a adres ze zadání. **Oficiální katalog `www.mlp.cz` blokuje síť cloudového prostředí (403), takže zatím není ověřena ani jedna poloha ani URL detailu. Všech 45 poboček proto zůstává `review`, bez geometrie a bez značek v mapě; do veřejné herní vrstvy vstupuje 0 knihoven.** Souřadnice ani oficiální identifikátory nebyly odhadnuté. [Úplný seznam nedořešených lokalit, adresy a audit](data/source-metadata/mkp-libraries.md).
+Vrstva **Body zájmu → Knihovny** obsahuje **45 schválených poboček s GPS**, dostupných i při prvním otevření a ve veřejné publikaci schématu 4. Dne **20. 10. 2026** se podařilo načíst oficiální katalog i všech 45 detailů. U každé pobočky přesně souhlasí původní adresa a souřadnice odkazů **Zobrazit na Mapy.com** a **Zobrazit na Google Maps**. Všechny body leží uvnitř skutečného polygonu Prahy. **Nedořešené pobočky: 0.** [Úplný audit a souřadnice](data/source-metadata/mkp-libraries.md).
 
-Nezahrnují se Modřany, DOK16, kiosky, doplňkové služby Ústřední knihovny, duplicitní dětské oddělení ani bibliobusy. Brusnice a Velký mlýn ve výběru zůstávají a lze je individuálně vyřadit. Otevírací doba, víkendy a svátky se nepoužívají k filtrování.
+Souřadnice jsou převzaté z odkazů oficiálního webu MLP, bez dotazování na mapová API a bez geokódování. Mapy.com `center=longitude,latitude` se přijímá jen s `marker=true`; Google Maps musí obsahovat výslovný souřadnicový cíl. Střed výřezu, Street View kamera a textové hledání adresy se nepřijímají. Neshodné odkazy nezpůsobí průměrování ani schválení. Barrandov má GeoJSON bod `[14.36824, 50.028402]`.
 
-Přepínač **Knihovny** má vlastní viditelnost a počty schválených, vyřazených a neověřených objektů. Hledání funguje podle názvu, ID a adresy. Neověřenou pobočku lze vybrat, přejmenovat, opatřit poznámkou, vyřadit nebo vrátit k revizi. Pro doplnění polohy vložte **skutečný odkaz na oficiální detail** a buď GPS, nebo zvolte **Umístit bod knihovny v mapě**. Pracovní ID `library-pending:mkp-selection:…` označuje pouze dodaný výběr; po určení detailu vznikne stabilní `library:mkp:…` podle oficiálního identifikátoru nebo URL slugu.
+**Původní stabilní ID, názvy a adresy zůstávají zachované.** Prefix `library-pending:mkp-selection:…` zůstává kvůli kompatibilitě uložených draftů; status už není odvozován z jeho názvu. Oficiální detail a oba zdrojové mapové odkazy jsou evidované samostatně, spolu s časem kontroly, adresou a SHA-256 HTML detailu. Původní neověřený záznam je archivován v metadatech objektu.
 
-Knihovna s bodem má ikonu knihy, úpravu názvu, adresy, poznámky, GPS i tažení v mapě. Před schválením je nutné výslovně potvrdit ověření přesné polohy podle oficiálního detailu. **Každá změna bodu zruší ověření a vrátí schválenou knihovnu k revizi.** Střed mapy ani geokódovaný návrh nejsou dokladem polohy. **Přidat knihovnu** umožní doplnit například znovu otevřenou pobočku; opakované oficiální ID se odmítne a existující objekt se znovu aktivuje ve vlastnostech.
+Nezahrnují se Modřany, DOK16, kiosky, doplňkové služby Ústřední knihovny, duplicitní dětské oddělení ani bibliobusy. Brusnice a Velký mlýn zůstávají ve výběru. Krátké uzavření Hloubětína dne 19. 10. a Jezerky dne 19.–20. 10. 2026 je zaznamenané v auditu; běžná otevírací doba a dočasné uzavření nemění herní kategorii. Dlouhodobá technická uzávěra brání automatickému schválení.
 
-Úpravy i chybějící polohy se uchovávají v IndexedDB a úplných JSON/GeoJSON zálohách. Pozdější zdroj doplní dosud neznámé pobočky a převede rozhodnutí na původně neověřených kandidátech k odpovídajícím oficiálním ID. Názvy, vyloučení, body, poznámky a pozdější individuální rozhodnutí nepřepisuje. Schvalování knihoven nezasahuje do parků, zoo, nemocnic, letišť nebo PID.
+Přepínač **Knihovny** má vlastní viditelnost a počty schválených, vyřazených a neověřených objektů. Hledání funguje podle názvu, ID a adresy. Detail zobrazuje zdroje a dovolí měnit název, adresu, poznámku, GPS i tažení v mapě. **Každá změna bodu zruší ověření a vrátí schválenou knihovnu k revizi**, dokud správce novou polohu výslovně nepotvrdí. Vlastní knihovnu lze doplnit přes **Přidat knihovnu**; duplicitní oficiální identita se odmítne.
 
-`nearestApprovedPoi`, Matching a Measuring používají jen schválené knihovny s doloženým bodem, geografickou vzdálenost v metrech a stávající pravidlo shod podle ID. Bez schválené knihovny vracejí „nelze určit“. Veřejná aplikace i Worker podporují **GameDataRelease 4** a historická schémata 1–3, kontrolní součty i dosavadní autorizaci. Do publikace se dostane pouze schválený bod, adresa, oficiální URL a doklad ověření; pracovní kandidáti ani poznámky se neposílají. Dosavadní neměnné publikace nebyly přegenerované.
+Při otevření starého draftu se doplní body dosud neumístěných kandidátů ještě před automatickým ukládáním. **Ruční názvy, adresy, poznámky, vyloučení, stav k revizi a již upravené body se nepřepisují.** Dříve ručně umístěné pobočky s URL identitou zůstávají funkční bez duplicit. IndexedDB a JSON/GeoJSON zálohy zachovávají data i rozhodnutí. Ostatní POI, PID a herní oblast se nemění.
 
-Pro dokončení automatického ověření je potřeba aktivovat uložený návrh povolení `www.mlp.cz` v nastavení cloudového prostředí (uložit a publikovat prostředí). Uložení návrhu samo síť nemění. Lze také dodat oficiální detaily a jejich přímé mapové odkazy k ověření; samotný mapový výřez nestačí.
+`nearestApprovedPoi`, Matching a Measuring používají jen schválené knihovny s doloženým bodem, geografickou vzdálenost v metrech a stávající pravidlo shod podle ID. Veřejná hra a autorizovaný Worker podporují **GameDataRelease 4** i historická schémata 1–3. Starší neměnné publikace zůstaly beze změny. Do publikace se neposílá archiv původního kandidáta ani soukromé poznámky.
+
+Opakovatelný sběr a kontrola (nejprve zkontrolujte hlášení a audit, teprve pak zapište statický katalog):
+
+```sh
+python scripts/collect-mlp-library-evidence.py
+npx tsx scripts/prepare-library-points.ts
+npx tsx scripts/prepare-library-points.ts --write
+```
+
+Sběrač získává skutečné URL detailů z katalogu a uloží podklady do `data/source-metadata/mkp-library-points.json`. Kontrola bez `--write` nic nepřepisuje; rozpor, chybějící doklad, odlišná adresa nebo bod mimo Prahu ponechají pobočku k revizi. Síťový přístup při běžném otevření aplikace není potřeba. Další změny do veřejné hry patří přes stávající autorizovanou publikaci v editoru.
+
+Ověření doplnění GPS: lint, typecheck, produkční build, 204 jednotkových a 48 E2E testů (včetně samostatného opakování opraveného migračního testu), kontrola všech pěti neměnných publikací a sestavení Workeru prošly. Dva jednotkové a dva E2E audity původních archivů byly přeskočené: chybí plný GTFS a původní parkový ZIP.
+
+**Omezení:** jde o referenční body zveřejněné knihovnou, nikoliv nezávisle zaměřené geodetické souřadnice. Licence katalogu a bodů zůstává nedoložená; MIT licence aplikace ji nenahrazuje. Otevírací doba ani budoucí přestěhování se automaticky nesledují.
 
 ## Nemocnice
 

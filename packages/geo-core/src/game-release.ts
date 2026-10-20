@@ -5,7 +5,7 @@ import { validateGeometry, isArea, validateWorld, type AreaGeometry, type WorldD
 import { sha256, pragueDate, snapshotReference, type PidSnapshot } from './pid-snapshot';
 import { buildGameStops, referenceZoneGeometry } from './game-stops';
 import { defaultGameStopConfiguration } from './game-stop-configuration';
-import { poiSourceSchema, libraryMetadataSchema, isLibraryLocationVerified, resolvePois, verifyPoiSources, type Poi } from './poi';
+import { poiSourceSchema, libraryMetadataSchema, libraryId, isLibraryLocationVerified, resolvePois, verifyPoiSources, type Poi } from './poi';
 import { transportModes, transportModeSchema, wgs84PointSchema } from './pid-model';
 
 const id = z.string().min(1).max(500), text = z.string().max(10000), digest = z.string().regex(/^[a-f0-9]{64}$/);
@@ -70,6 +70,7 @@ export async function verifyGameDataRelease(input: unknown): Promise<GameDataRel
   const release = gameDataReleaseSchema.parse(input), { data } = release;
   if (release.schemaVersion < 4 && data.pois.some(poi => poi.category === 'library' || poi.library !== undefined)) throw new Error('Knihovny vyžadují herní schéma 4; historické publikace zůstávají beze změny.');
   for (const poi of data.pois.filter(poi => poi.category === 'library')) if (!poi.address?.trim() || poi.geometry.type !== 'Point' || canonicalJson(poi.point) !== canonicalJson(poi.geometry.coordinates) || !isLibraryLocationVerified(poi)) throw new Error('Knihovna musí mít adresu, stabilní oficiální identitu a ověřený referenční bod.');
+  unique(data.pois.filter(poi => poi.category === 'library').map(poi => libraryId(poi.library!.officialUrl)));
   if (release.schemaVersion < 3 && data.pois.some(poi => poi.category === 'hospital')) throw new Error('Nemocnice vyžadují herní schéma 3; historická schémata zůstávají beze změny.');
   if (release.schemaVersion === 1 && data.pois.some(poi => poi.category === 'zoo' || poi.address !== undefined)) throw new Error('Zoo a adresy POI vyžadují herní schéma 2; historické schéma 1 zůstává beze změny.');
   for (const poi of data.pois.filter(poi => poi.category === 'zoo')) if (!poi.address?.trim() || poi.geometry.type !== 'Point' || canonicalJson(poi.point) !== canonicalJson(poi.geometry.coordinates)) throw new Error('Zoo musí mít adresu a bodovou geometrii shodnou s referenčním bodem.');

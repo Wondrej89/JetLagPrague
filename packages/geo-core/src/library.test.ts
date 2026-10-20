@@ -1,13 +1,15 @@
 import { describe, expect, it } from 'vitest';
 import { readFile } from 'node:fs/promises';
 import catalog from '../../../apps/editor/src/data/poi-catalog.json' with { type: 'json' };
-import { addLibrary, decideUnlocatedLibrary, defaultPoiConfiguration, explicitLibraryMapPoint, exportWorld, filterParkPois, defaultParkFilters, importWorld, isLibraryLocationVerified, libraryId, matchingPois, measuringPois, nearestApprovedPoi, newWorld, poiSchema, removeManualLibrary, resolvePois, resolveUnlocatedLibraries, unlocatedLibrarySchema, validatePoiConfiguration, verifyLibraryDecision, withPublishedLibraries, withPublishedHospitals, withPublishedZoos } from './index';
+import { addLibrary, agreedLibraryMapPoint, decideUnlocatedLibrary, defaultPoiConfiguration, explicitLibraryMapPoint, exportWorld, filterParkPois, defaultParkFilters, importWorld, isLibraryLocationVerified, libraryId, matchingPois, measuringPois, nearestApprovedPoi, newWorld, poiSchema, readDefaultGameArea, removeManualLibrary, resolvePois, resolveUnlocatedLibraries, unlocatedLibrarySchema, validatePoiConfiguration, verifyLibraryDecision, withPublishedLibraries, withPublishedHospitals, withPublishedZoos } from './index';
+import { booleanPointInPolygon } from '@turf/turf';
 import { buildGameDataRelease, createGameDataRelease, loadGameDataRelease, readGameReleaseArtifact, readGameReleaseIndex, releaseEntry, verifyGameDataRelease } from './game-release';
 import { canonicalJson } from './administrative';
 import { sha256 } from './pid-snapshot';
 import { releaseTestAirports, releaseTestDate, releaseTestInput } from './game-release-test-fixtures';
 
-const candidates = catalog.unlocatedLibraries.map(value => unlocatedLibrarySchema.parse(value));
+const published = catalog.libraries.map(value => poiSchema.parse(value));
+const candidates = published.map(value => unlocatedLibrarySchema.parse(value.attributes.originalCandidate));
 const input = (slug: string) => ({ name: `Synthetic library ${slug}`, address: 'Synthetic address, Praha', officialUrl: `https://www.mlp.cz/cz/pobocky/${slug}/` });
 function verifiedFixture(slug: string, point: [number, number]) {
   const result = addLibrary(defaultPoiConfiguration(), point, input(slug));
@@ -15,7 +17,7 @@ function verifiedFixture(slug: string, point: [number, number]) {
 }
 
 describe('MKP catalog and coordinate evidence', () => {
-  it('retains the exact selection of 45 branches without fabricated GPS, official IDs or excluded services', async () => {
+  it('archives the original selection of 45 branches without fabricated points or excluded services', async () => {
     expect(candidates).toHaveLength(45); expect(new Set(candidates.map(row => row.id)).size).toBe(45);
     expect(new Set(candidates.map(row => row.selectionKey)).size).toBe(45);
     expect(candidates.map(row => row.name)).toEqual(['Barrandov','Bohnice','Brusnice – vzácné tisky','Břevnov','Cibulka','Černý Most','Dědina','Dejvice','Dittrichova','Dům čtení (Ruská)','Hloubětín','Hostivař','Hradčany','Chodov','Jezerka','Kobylisy','Korunní','Krč','Ládví','Letná','Lužiny','Malešice','Novodvorská','Opatov','Ostrčilovo náměstí','Ostrovského','Pankrác','Petřiny','Prosek','Rajská zahrada','Sedmička','Skalka','Smíchov','Spořilov','Stodůlky','Školská','Ústřední knihovna','Velká Chuchle','Velký mlýn','Vikova','Vozovna','Vysočany','Zahradní Město','Záhřebská','Žižkov']);
@@ -33,6 +35,14 @@ describe('MKP catalog and coordinate evidence', () => {
   });
 
   it('extracts explicit markers in WGS84 order and rejects map centers, place IDs and approximate address searches', () => {
+    const mapy = 'https://mapy.com/fnc/v1/showmap?center=14.36824000,50.02840200&marker=true&zoom=17';
+    const google = 'https://www.google.com/maps?marker=true&q=50.02840200,14.36824000';
+    expect(explicitLibraryMapPoint(mapy)).toEqual([14.36824,50.028402]);
+    expect(agreedLibraryMapPoint([mapy,google])).toEqual([14.36824,50.028402]);
+    expect(agreedLibraryMapPoint([mapy,google.replace('14.36824000','14.36825000')])).toBeNull();
+    expect(agreedLibraryMapPoint([])).toBeNull();
+    expect(agreedLibraryMapPoint([mapy,'https://maps.google.com/maps?ll=50.1,14.4&layer=c'])).toBeNull();
+    for (const url of [mapy.replace('&marker=true',''),mapy.replace('marker=true','marker=false'),mapy+'&center=14.5,50.2',mapy+'&marker=false',google+'&q=50.1,14.5','https://www.google.com/search?q=50.08,14.42']) expect(explicitLibraryMapPoint(url)).toBeNull();
     expect(explicitLibraryMapPoint('https://mapy.com/zakladni?source=coor&id=14.42%2C50.08&x=14.5&y=50.2')).toEqual([14.42,50.08]);
     expect(explicitLibraryMapPoint('https://mapy.cz/?q=50.08%2C14.42')).toEqual([14.42,50.08]);
     expect(explicitLibraryMapPoint('geo:50.08,14.42')).toEqual([14.42,50.08]);
@@ -41,6 +51,29 @@ describe('MKP catalog and coordinate evidence', () => {
     expect(libraryId(input('synthetic-branch').officialUrl)).toBe('library:mkp:synthetic-branch');
     expect(libraryId('https://www.mlp.cz/cz/pobocky/detail/?id=123')).toBe('library:mkp:123');
     expect(() => libraryId('https://www.mlp.cz/cz/pobocky')).toThrow(); expect(() => libraryId('https://evil.test/cz/pobocky/test')).toThrow();
+  });
+
+  it('fills all 45 original identities with matching official target links, exact addresses and points inside Prague', async () => {
+    expect(catalog.unlocatedLibraries).toEqual([]); expect(published).toHaveLength(45);
+    const boundary = await readDefaultGameArea(await readFile('apps/editor/public/defaults/prague-game-area.geojson','utf8'));
+    const evidenceText = await readFile('data/source-metadata/mkp-library-points.json','utf8');
+    const evidence = JSON.parse(evidenceText), checksum = await sha256(evidenceText);
+    for (const [index,poi] of published.entries()) {
+      const original = candidates[index], proof = evidence.branches.find((row: {id:string})=>row.id===poi.id);
+      expect(poi).toMatchObject({id:original.id,name:original.name,address:original.address,status:'approved',geometry:{type:'Point',coordinates:poi.point}});
+      expect(poi.library).toMatchObject({selectionKey:original.selectionKey,officialUrl:proof.officialUrl,verification:{method:'official_map_link',officialAddress:original.address,detailChecksum:proof.detailChecksum}});
+      expect(poi.library!.verification!.mapUrls).toHaveLength(2);
+      expect(agreedLibraryMapPoint(proof.mapLinks.map((link:{url:string})=>link.url))).toEqual(poi.point);
+      expect(poi.source.rawChecksum).toBe(checksum); expect(isLibraryLocationVerified(poi)).toBe(true);
+      expect(booleanPointInPolygon(poi.point,boundary.geometry,{ignoreBoundary:true})).toBe(true);
+    }
+    expect(published[0].point).toEqual([14.36824,50.028402]);
+    const alias={...published[0],id:libraryId(published[0].library!.officialUrl),library:{...published[0].library!,selectionKey:undefined}};
+    expect(()=>validatePoiConfiguration({...defaultPoiConfiguration(),pointCatalog:[published[0],alias]})).toThrow('Duplicitní');
+    expect(matchingPois(published[0].point,published[1].point,'library',published)).toMatchObject({state:'known',matches:false});
+    expect(measuringPois(published[0].point,[14.37,50.029],'library',published)).toMatchObject({state:'known',comparison:'first-closer'});
+    const broken=structuredClone(published[0]);broken.library!.verification!.mapUrls![1]=broken.library!.verification!.mapUrls![1].replace('14.36824000','14.36825000');
+    expect(isLibraryLocationVerified(broken)).toBe(false);
   });
 });
 
@@ -51,6 +84,7 @@ describe('Library decisions and stable identities', () => {
     const row = resolveUnlocatedLibraries(config)[0]; expect(row.status).toBe('excluded');
     const result = addLibrary(config, [14.42,50.08], { ...input('synthetic-candidate'), name: row.name, address: row.address, note: row.note }, row);
     config = result.configuration; expect(resolveUnlocatedLibraries(config)).toHaveLength(44); expect(result.poi.attributes.originalCandidate).toEqual(row);
+    expect(result.poi.id).toBe(row.id); validatePoiConfiguration(config);
     expect(result.poi).toMatchObject({ status: 'excluded', name: row.name, address: row.address, note: row.note, library: { selectionKey: row.selectionKey } });
     expect(() => addLibrary(config, [14.43,50.09], input('synthetic-candidate'))).toThrow('již existuje');
     expect(() => addLibrary(config, [14.43,50.09], input('synthetic-other-id'), row)).toThrow('už má bod');
@@ -59,6 +93,27 @@ describe('Library decisions and stable identities', () => {
     expect(resolvePois([], config)[0]).toMatchObject({ status: 'approved' });
     const world = newWorld(); world.poi = config;
     for (const format of ['json','geojson'] as const) expect(importWorld(exportWorld(world, format))).toEqual(world);
+  });
+
+  it('upgrades old unlocated drafts using the same IDs before saving, preserving decisions, custom data and legacy aliases', () => {
+    let old = withPublishedLibraries(defaultPoiConfiguration(),[],candidates);
+    old = decideUnlocatedLibrary(old,candidates[0],{name:'Moje knihovna',address:'Moje adresa',status:'excluded',note:'Zachovat'});
+    old = decideUnlocatedLibrary(old,candidates[1],{status:'review'});
+    const manual = addLibrary(old,[14.4,50.1],input('synthetic-own')); old = manual.configuration;
+    const migrated=withPublishedLibraries(old,published);
+    validatePoiConfiguration(migrated); expect(migrated.unlocatedLibraries).toEqual([]);
+    expect(migrated.manual).toEqual(old.manual); expect(migrated.visibility).toEqual(old.visibility);
+    expect(resolvePois([],migrated).find(poi=>poi.id===candidates[0].id)).toMatchObject({name:'Moje knihovna',address:'Moje adresa',note:'Zachovat',status:'excluded',point:published[0].point});
+    expect(resolvePois([],migrated).find(poi=>poi.id===candidates[1].id)!.status).toBe('review');
+    expect(resolvePois([],migrated).filter(poi=>poi.category==='library'&&poi.status==='approved')).toHaveLength(43);
+    expect(withPublishedLibraries(migrated,published,candidates)).toEqual(migrated);
+    const world=newWorld();world.poi=migrated;
+    for(const format of ['json','geojson'] as const) expect(importWorld(exportWorld(world,format))).toEqual(world);
+    const alias={...published[0],id:libraryId(published[0].library!.officialUrl)};
+    const legacy=withPublishedLibraries(defaultPoiConfiguration(),[alias]);
+    const updated=withPublishedLibraries(legacy,published,candidates);
+    expect(resolvePois([],updated).filter(poi=>poi.library?.selectionKey===candidates[0].selectionKey)).toHaveLength(1);
+    expect(resolvePois([],updated)[0].id).toBe(alias.id);validatePoiConfiguration(updated);
   });
 
   it('invalidates verification on point movement and preserves explicit manual review through reload, catalog updates and exclusion', () => {
@@ -138,4 +193,22 @@ it('verifies the unchanged artifacts and checksums of all historical schema 1–
   const schemas=new Set<number>();
   for(const prior of history.versions) { const release=await readGameReleaseArtifact(await readFile(`data/releases/${prior.file}`,'utf8'),prior);schemas.add(release.schemaVersion); }
   expect([...schemas]).toEqual(expect.arrayContaining([1,2,3]));
+});
+
+it('adds all 45 verified default points to an immutable schema 4 release without changing any prior data', { timeout: 15000 }, async () => {
+  const history=readGameReleaseIndex(JSON.parse(await readFile('data/releases/current.json','utf8')));
+  const old=history.versions.find(entry=>entry.releaseId==='release:2a63e4db546a77e616eb0a46d5fb0a15a5defd6f6f28a80e51c185280fe553c5')!;
+  const added=history.versions.find(entry=>entry.releaseId==='release:1df560d4f22e6e38ec4df73df52bd34d58b831988ef73f0812753750ae7cff39')!;
+  const previous=await readGameReleaseArtifact(await readFile(`data/releases/${old.file}`,'utf8'),old);
+  const release=await readGameReleaseArtifact(await readFile(`data/releases/${added.file}`,'utf8'),added);
+  expect(release.schemaVersion).toBe(4);expect(release.data.pois.filter(poi=>poi.category==='library')).toHaveLength(45);
+  expect(release.data.pois.filter(poi=>poi.category!=='library')).toEqual(previous.data.pois);
+  for(const key of ['gameArea','administrativeAreas','pidSnapshot','rulesConfig'] as const) {
+    expect(release.data[key]).toEqual(previous.data[key]);expect(release.checksums[key]).toBe(previous.checksums[key]);
+  }
+  expect(release.data.sourceVersions.filter(source=>!source.key.startsWith('poi:mkp-official-branch-points-'))).toEqual(previous.data.sourceVersions);
+  for(const library of release.data.pois.filter(poi=>poi.category==='library')) {
+    expect(isLibraryLocationVerified(library)).toBe(true);expect(library.id).toMatch(/^library-pending:mkp-selection:/);
+    expect(library.library!.verification!.mapUrls).toHaveLength(2);expect(library).not.toHaveProperty('attributes');
+  }
 });

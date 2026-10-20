@@ -1,5 +1,5 @@
 import catalog from '../../editor/src/data/poi-catalog.json' with { type: 'json' };
-import { addLibrary, verifyLibraryDecision, resolvePois, withPublishedHospitals, withPublishedZoos, decidePoi, poiSchema } from '../../../packages/geo-core/src/index';
+import { addLibrary, verifyLibraryDecision, resolvePois, withPublishedHospitals, withPublishedLibraries, withPublishedZoos, decidePoi, poiSchema } from '../../../packages/geo-core/src/index';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { generateKeyPairSync } from 'node:crypto';
 import worker, { MAX_PUBLISH_BYTES, PublisherCoordinator, type Storage, type PublisherEnvironment } from './index';
@@ -88,15 +88,20 @@ describe('Server authorization and immutable publication',()=>{
   });
   it('publishes only verified approved libraries through the protected schema 4 publisher',async()=>{
     const {world,snapshot}=await releaseTestInput();
+    const libraries=catalog.libraries.map(poi=>poiSchema.parse(poi));
+    world.poi=withPublishedLibraries(world.poi!,libraries);
+    world.poi=decidePoi(world.poi,libraries[0],{status:'excluded'});
     const result=addLibrary(world.poi!,[14.4,50.1],{name:'Synthetic verified branch',address:'Synthetic address',officialUrl:'https://www.mlp.cz/cz/pobocky/synthetic-publisher/'});
     world.poi=verifyLibraryDecision(result.configuration,result.poi,{status:'approved'},true);
     const unverified=addLibrary(world.poi,[14.41,50.11],{name:'Synthetic unverified branch',address:'Synthetic address',officialUrl:'https://www.mlp.cz/cz/pobocky/synthetic-unverified/'});world.poi=unverified.configuration;
-    expect(resolvePois([],world.poi).filter(poi=>poi.category==='library'&&poi.status==='approved')).toHaveLength(1);
+    expect(resolvePois([],world.poi).filter(poi=>poi.category==='library'&&poi.status==='approved')).toHaveLength(45);
     release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
     expect((await send('/publish',{expectedCommit:head,release})).status).toBe(202);
     const changes=vi.mocked(GitHubClient.prototype.commit).mock.calls[0][1],artifact=JSON.parse(changes[0].text);
-    expect(artifact.schemaVersion).toBe(4);expect(artifact.data.pois.filter((poi:{category:string})=>poi.category==='library')).toHaveLength(1);
+    expect(artifact.schemaVersion).toBe(4);expect(artifact.data.pois.filter((poi:{category:string})=>poi.category==='library')).toHaveLength(45);
     expect(artifact.data.pois.find((poi:{id:string})=>poi.id===result.poi.id)).toMatchObject({address:'Synthetic address',library:{officialUrl:result.poi.library!.officialUrl,verification:{point:[14.4,50.1],method:'manual_review'}}});
+    expect(artifact.data.pois.some((poi:{id:string})=>poi.id===libraries[0].id)).toBe(false);
+    expect(artifact.data.pois.find((poi:{id:string})=>poi.id===libraries[1].id)).toMatchObject({library:{verification:{method:'official_map_link',mapUrls:libraries[1].library!.verification!.mapUrls}}});
   });
   it('rejects duplicate content, immutable file collision, stale SHA, unverified PID and historical releases',async()=>{
     await seedIndex(release);expect((await send('/publish',{expectedCommit:head,release})).status).toBe(409);
