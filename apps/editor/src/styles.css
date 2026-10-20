@@ -275,3 +275,8 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .library-marker svg { width: 22px; height: 22px; display: block; margin: 3px; }
 .library-marker.review { opacity: .7; }
 .library-marker.excluded { background: #eee; border-color: #999; color: #777; }
+
+.cinema-marker { background: #e8f0ff; border-color: #47629e; color: #294980; }
+.cinema-marker svg { width: 22px; height: 22px; display: block; margin: 3px; }
+.cinema-marker.review { opacity: .7; }
+.cinema-marker.excluded { background: #eee; border-color: #999; color: #777; }

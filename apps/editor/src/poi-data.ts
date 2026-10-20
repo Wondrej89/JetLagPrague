@@ -21,3 +21,6 @@ if (new Set(publishedHospitals.map(poi => poi.id)).size !== publishedHospitals.l
 export const publishedLibraries = (catalog.libraries as unknown[]).map(value => poiSchema.parse(value));
 export const publishedUnlocatedLibraries = catalog.unlocatedLibraries.map(value => unlocatedLibrarySchema.parse(value));
 if (publishedLibraries.some(poi => poi.category !== 'library') || new Set(publishedUnlocatedLibraries.map(row => row.selectionKey)).size !== publishedUnlocatedLibraries.length) throw new Error('Neplatný katalog knihoven.');
+
+export const publishedCinemas = catalog.cinemas.map(value => poiSchema.parse(value));
+if (new Set(publishedCinemas.map(poi => poi.id)).size !== publishedCinemas.length || publishedCinemas.some(poi => poi.category !== 'cinema')) throw new Error('Katalog kin musí obsahovat bodové lokality s jedinečnými ID.');

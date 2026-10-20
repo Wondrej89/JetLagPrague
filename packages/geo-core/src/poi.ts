@@ -37,8 +37,9 @@ export const poiSchema = z.object({
   importAudit: z.object({ sourceRows: z.array(z.number().int().positive()), sourceNames: z.array(text), sourceRecords: z.array(z.object({ row: z.number().int().positive(), attributes: z.record(z.string(), z.json()) })), repairedRows: z.array(z.number().int().positive()), merged: z.boolean() }).optional(),
   attributes: z.record(z.string(), z.json()), memberIds: z.array(id).optional(),
 }).superRefine((poi, ctx) => {
-  if (!['zoo', 'hospital', 'library'].includes(poi.category)) return;
-  if (poi.geometry.type !== 'Point' || canonicalJson(poi.geometry.coordinates) !== canonicalJson(poi.point)) ctx.addIssue({ code: 'custom', message: `${poi.category === 'zoo' ? 'Zoo' : poi.category === 'library' ? 'Knihovna' : 'Nemocnice'} musí mít geometrii Point shodnou s referenčním bodem.` });
+  if (!['zoo', 'hospital', 'library', 'cinema'].includes(poi.category)) return;
+  if (poi.geometry.type !== 'Point' || canonicalJson(poi.geometry.coordinates) !== canonicalJson(poi.point)) ctx.addIssue({ code: 'custom', message: `${poi.category === 'zoo' ? 'Zoo' : poi.category === 'library' ? 'Knihovna' : poi.category === 'cinema' ? 'Kino' : 'Nemocnice'} musí mít geometrii Point shodnou s referenčním bodem.` });
+  if (poi.category === 'cinema' && (poi.address === undefined || (poi.status === 'approved' && (!poi.name.trim() || !poi.address.trim())))) ctx.addIssue({ code: 'custom', message: 'Schválené kino musí mít název a adresu.' });
   if (poi.category === 'zoo' && poi.address === undefined) ctx.addIssue({ code: 'custom', message: 'Zoo musí obsahovat adresu.' });
   if (poi.category === 'library' && (!poi.library || !poi.address?.trim())) ctx.addIssue({ code: 'custom', message: 'Knihovna musí mít adresu a metadata oficiálního detailu.' });
   if (poi.category === 'library' && poi.status === 'approved' && (!poi.library?.verification || canonicalJson(poi.library.verification.point) !== canonicalJson(poi.point))) ctx.addIssue({ code: 'custom', message: 'Schválená knihovna musí mít doloženou polohu pro tento referenční bod.' });
@@ -67,7 +68,7 @@ export const poiConfigurationSchema = z.object({
   pointCatalog: z.array(poiSchema).max(10000).optional(),
   unlocatedLibraries: z.array(unlocatedLibrarySchema).max(10000).optional(),
   manual: z.array(poiSchema).max(10000), decisions: z.array(decisionSchema).max(20000),
-  visibility: z.object({ airports: z.boolean(), parks: z.boolean(), referencePoints: z.boolean(), zoos: z.boolean().optional(), hospitals: z.boolean().optional(), libraries: z.boolean().optional() }),
+  visibility: z.object({ airports: z.boolean(), parks: z.boolean(), referencePoints: z.boolean(), zoos: z.boolean().optional(), hospitals: z.boolean().optional(), libraries: z.boolean().optional(), cinemas: z.boolean().optional() }),
   parkFilters: parkFiltersSchema.optional(),
 });
 export type PoiConfiguration = z.infer<typeof poiConfigurationSchema>;
@@ -86,11 +87,12 @@ export function validatePoiConfiguration(input: PoiConfiguration): void {
     if (record.category !== 'park' || record.source.id !== dataset.source.id || record.id !== parkId(dataset.source.id, record.sourceIdentity?.key ?? record.sourceId)) throw new Error('Nesouhlasí identita zdrojového parku.');
     if (record.status !== 'review' || record.reviewedAt !== null) throw new Error('Zdrojoví kandidáti se schvalují odděleným rozhodnutím.');
   }
-  if (input.pointCatalog?.some(record => !['zoo', 'hospital', 'library'].includes(record.category))) throw new Error('Bodový katalog této iterace obsahuje pouze zoo, nemocnice a knihovny.');
+  if (input.pointCatalog?.some(record => !['zoo', 'hospital', 'library', 'cinema'].includes(record.category))) throw new Error('Bodový katalog této iterace obsahuje pouze zoo, nemocnice, knihovny a kina.');
   for (const record of records) {
-    if (['zoo', 'hospital', 'library'].includes(record.category)) {
+    if (['zoo', 'hospital', 'library', 'cinema'].includes(record.category)) {
       if (record.geometry.type !== 'Point' || canonicalJson(record.geometry.coordinates) !== canonicalJson(record.point)) throw new Error('Bodový POI musí mít shodný referenční bod a geometrii Point.');
       if (record.category === 'zoo' && record.address === undefined) throw new Error('Zoo musí mít adresu.');
+      if (record.category === 'cinema' && record.address === undefined) throw new Error('Kino musí mít adresu.');
       if (record.category === 'library' && (!hasLibraryIdentity(record) || !record.address?.trim())) throw new Error('Nesouhlasí identita nebo adresa knihovny.');
       continue;
     }
@@ -207,17 +209,17 @@ export function resolvePois(airports: Poi[], configuration: PoiConfiguration): P
   return [...airports, ...sources, ...configuration.manual.filter(p => !sourceIds.has(p.id))].map(record => {
     const decision = record.category === 'airport' ? undefined : decisions.get(record.id);
     const result = { ...record, ...decision, id: record.id };
-    if (['zoo', 'hospital', 'library'].includes(record.category)) result.geometry = { type: 'Point', coordinates: result.point };
+    if (['zoo', 'hospital', 'library', 'cinema'].includes(record.category)) result.geometry = { type: 'Point', coordinates: result.point };
     if (record.category === 'library' && record.library) result.library = { ...record.library, verification: decision?.libraryVerification === undefined ? record.library.verification : decision.libraryVerification ?? undefined };
     if (record.attributes.sourceMergedInto) return { ...result, status: 'excluded' as const, note: `${result.note} Historická identita sjednocena do ${record.attributes.sourceMergedInto}.` };
-    if (record.sourceIdentity?.reviewRequired || (['park', 'zoo', 'hospital', 'library'].includes(record.category) && !result.name.trim()) || (record.category === 'zoo' && !result.address?.trim()) || (record.category === 'library' && (!result.address?.trim() || !isLibraryLocationVerified(result))) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
+    if (record.sourceIdentity?.reviewRequired || (['park', 'zoo', 'hospital', 'library', 'cinema'].includes(record.category) && !result.name.trim()) || (['zoo', 'cinema'].includes(record.category) && !result.address?.trim()) || (record.category === 'library' && (!result.address?.trim() || !isLibraryLocationVerified(result))) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
       return { ...result, status: result.status === 'excluded' ? 'excluded' as const : 'review' as const, note: `${result.note} Referenční bod nebo dostupnost zdroje vyžaduje revizi.` };
     }
     return result;
   });
 }
 export function preparePoiDecision(poi: Poi, previous: PoiDecision | undefined, change: Partial<Omit<PoiDecision, 'id'>>, reviewedAt = new Date().toISOString()): PoiDecision {
-  if (!['park', 'zoo', 'hospital', 'library'].includes(poi.category)) throw new Error('Schválená letiště této lokální kategorie se automaticky nemění.');
+  if (!['park', 'zoo', 'hospital', 'library', 'cinema'].includes(poi.category)) throw new Error('Schválená letiště této lokální kategorie se automaticky nemění.');
   if (change.point) {
     pointSchema.parse(change.point);
     if (poi.category === 'park' && (!isArea(poi.geometry) || !booleanPointInPolygon(change.point, poi.geometry, { ignoreBoundary: true }))) throw new Error('Referenční bod musí ležet uvnitř parku, mimo otvory a hranici.');
@@ -240,6 +242,11 @@ export function preparePoiDecision(poi: Poi, previous: PoiDecision | undefined, 
   if (poi.category === 'hospital') {
     if (poi.geometry.type !== 'Point') throw new Error('Nemocnice musí mít bodovou geometrii.');
     if (decision.status === 'approved' && !(decision.name ?? poi.name).trim()) throw new Error('Před schválením nemocnice doplňte název.');
+    return decision;
+  }
+  if (poi.category === 'cinema') {
+    if (poi.geometry.type !== 'Point') throw new Error('Kino musí mít bodovou geometrii.');
+    if ((change.status ?? decision.status ?? poi.status) === 'approved' && (!(decision.name ?? poi.name).trim() || !(decision.address ?? poi.address)?.trim())) throw new Error('Před schválením kina doplňte název a adresu.');
     return decision;
   }
   if (decision.status === 'approved') {
@@ -324,6 +331,10 @@ export function withPublishedHospitals(configuration: PoiConfiguration, publishe
   if (published.some(poi => poi.category !== 'hospital')) throw new Error('Katalog nemocnic obsahuje jinou kategorii.');
   return withPublishedPointPois(configuration, published);
 }
+export function withPublishedCinemas(configuration: PoiConfiguration, published: readonly Poi[]): PoiConfiguration {
+  if (published.some(poi => poi.category !== 'cinema')) throw new Error('Katalog kin obsahuje jinou kategorii.');
+  return withPublishedPointPois(configuration, published);
+}
 export function withPublishedLibraries(configuration: PoiConfiguration, published: readonly Poi[], unlocated: readonly UnlocatedLibrary[] = []): PoiConfiguration {
   if (published.some(poi => poi.category !== 'library')) throw new Error('Katalog knihoven obsahuje jinou kategorii.');
   const saved = [...(configuration.pointCatalog ?? []), ...configuration.manual], savedIds = new Set(saved.map(poi => poi.id));
@@ -402,5 +413,15 @@ export function createManualHospital(point: [number, number], name = '', address
 }
 export function removeManualHospital(configuration: PoiConfiguration, id: string): PoiConfiguration {
   if (!configuration.manual.some(poi => poi.id === id && poi.category === 'hospital')) throw new Error('Odstranit lze pouze ručně vytvořenou nemocnici; katalogovou lokalitu vyřaďte ze hry.');
+  return { ...configuration, manual: configuration.manual.filter(poi => poi.id !== id), decisions: configuration.decisions.filter(decision => decision.id !== id) };
+}
+export function createManualCinema(point: [number, number], name = '', address = ''): Poi {
+  const checked = pointSchema.parse(point), id = `manual-cinema:${crypto.randomUUID()}`;
+  return { id, category: 'cinema', name, address, point: checked, geometry: { type: 'Point', coordinates: checked }, sourceId: id,
+    source: { id: 'manual', provider: 'Vlastní bod', url: null, license: { name: 'Vlastní data – licenci určuje autor', url: null }, dataDate: null, retrievedAt: new Date().toISOString(), rawChecksum: null, verification: 'user_supplied', note: 'Ručně vložený referenční bod kina. Multiplex je jeden objekt bez ohledu na počet sálů; nejde o hranici budovy.' },
+    status: 'review', reviewedAt: null, note: '', attributes: {} };
+}
+export function removeManualCinema(configuration: PoiConfiguration, id: string): PoiConfiguration {
+  if (!configuration.manual.some(poi => poi.id === id && poi.category === 'cinema')) throw new Error('Odstranit lze pouze ručně vytvořené kino; katalogové kino vyřaďte ze hry.');
   return { ...configuration, manual: configuration.manual.filter(poi => poi.id !== id), decisions: configuration.decisions.filter(decision => decision.id !== id) };
 }

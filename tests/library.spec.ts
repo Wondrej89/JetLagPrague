@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { storedWorld } from './draft-helper';
 import catalog from '../apps/editor/src/data/poi-catalog.json' with { type: 'json' };
-import { addLibrary, buildGameDataRelease, canonicalJson, readGameReleaseIndex, releaseEntry, verifyLibraryDecision, defaultPoiConfiguration, unlocatedLibrarySchema, withPublishedLibraries, decideUnlocatedLibrary } from '../packages/geo-core/src/index';
+import { addLibrary, buildGameDataRelease, createGameDataRelease, canonicalJson, readGameReleaseIndex, releaseEntry, verifyLibraryDecision, defaultPoiConfiguration, unlocatedLibrarySchema, withPublishedLibraries, decideUnlocatedLibrary } from '../packages/geo-core/src/index';
 import { releaseTestAirports, releaseTestDate, releaseTestInput } from '../packages/geo-core/src/game-release-test-fixtures';
 
 const base = 'http://127.0.0.1:4175/JetLagPrague/';
@@ -103,7 +103,8 @@ test('veřejný klient načte ověřené knihovny schématu 4 i historickou publ
   const { world, snapshot } = await releaseTestInput();
   const added = addLibrary(world.poi!, [14.42, 50.08], { name: 'Syntetická publikovaná knihovna', address: 'Testovací adresa, Praha', officialUrl: 'https://www.mlp.cz/cz/pobocky/synthetic-public/' });
   world.poi = verifyLibraryDecision(added.configuration, added.poi, { status: 'approved' }, true);
-  const release = await buildGameDataRelease(world, releaseTestAirports, snapshot, releaseTestDate), entry = await releaseEntry(release);
+  const built = await buildGameDataRelease(world, releaseTestAirports, snapshot, releaseTestDate);
+  const release = await createGameDataRelease(built.data,{publishedAt:releaseTestDate,kind:built.kind,schemaVersion:4}), entry = await releaseEntry(release);
   await page.route('**/releases/current.json', route => route.fulfill({ json: { format: 'jetlag-prague-game-catalog', schemaVersion: 1, current: entry, versions: [entry] } }));
   await page.route('**/releases/' + entry.file, route => route.fulfill({ contentType: 'application/json', body: canonicalJson(release) }));
   await page.goto(base); await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible();

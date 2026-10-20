@@ -173,7 +173,8 @@ it('publishes only verified approved library points in schema 4; all prior categ
   const before = await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
   world.poi = withPublishedLibraries(world.poi!,[verifiedFixture('synthetic-published',[14.42,50.08]),{...verifiedFixture('synthetic-excluded',[14.43,50.09]),status:'excluded' as const}],candidates);
   const added = addLibrary(world.poi,[14.44,50.1],input('synthetic-unverified')); world.poi = added.configuration;
-  const release = await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+  const built = await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+  const release = await createGameDataRelease(built.data,{publishedAt:releaseTestDate,kind:built.kind,schemaVersion:4});
   expect(release.schemaVersion).toBe(4); expect(release.data.pois.filter(poi=>poi.category==='library')).toHaveLength(1);
   expect(release.data.pois.filter(poi=>poi.category!=='library')).toEqual(before.data.pois);
   expect(release.data.pois.find(poi=>poi.category==='library')).toMatchObject({ address:'Synthetic address, Praha',library:{officialUrl:input('synthetic-published').officialUrl,verification:{point:[14.42,50.08],method:'manual_review'}} });

@@ -1,0 +1,184 @@
+[
+  {
+    "id": "bio-oko",
+    "name": "Bio Oko",
+    "address": "Františka Křížka 460/15, Praha 7 – Holešovice",
+    "latitude": 50.1000567,
+    "longitude": 14.4301697
+  },
+  {
+    "id": "kino-dlabacov",
+    "name": "Kino Dlabačov",
+    "address": "Bělohorská 125/24, Praha 6 – Břevnov",
+    "latitude": 50.0858464,
+    "longitude": 14.3802353
+  },
+  {
+    "id": "kino-atlas",
+    "name": "Kino Atlas",
+    "address": "Ke Štvanici 371/4, Praha 8 – Karlín",
+    "latitude": 50.0915856,
+    "longitude": 14.4383706
+  },
+  {
+    "id": "kino-lucerna",
+    "name": "Kino Lucerna",
+    "address": "Vodičkova 1935/38, Praha 1 – Nové Město",
+    "latitude": 50.0815567,
+    "longitude": 14.4255711
+  },
+  {
+    "id": "kino-svetozor",
+    "name": "Kino Světozor",
+    "address": "Vodičkova 791/41, Praha 1 – Nové Město",
+    "latitude": 50.0819742,
+    "longitude": 14.4255328
+  },
+  {
+    "id": "kino-pilotu",
+    "name": "Kino Pilotů",
+    "address": "Donská 168/19, Praha 10 – Vršovice",
+    "latitude": 50.0714064,
+    "longitude": 14.4468981
+  },
+  {
+    "id": "kino-aero",
+    "name": "Kino Aero",
+    "address": "Biskupcova 87/31a, Praha 3 – Žižkov",
+    "latitude": 50.0903361,
+    "longitude": 14.4719042
+  },
+  {
+    "id": "edison-filmhub",
+    "name": "Edison Filmhub",
+    "address": "Jeruzalémská 1321/2, Praha 1 – Nové Město",
+    "latitude": 50.0848642,
+    "longitude": 14.4314144
+  },
+  {
+    "id": "kino-evald",
+    "name": "Kino Evald",
+    "address": "Národní 60/28, Praha 1 – Nové Město",
+    "latitude": 50.0824489,
+    "longitude": 14.4200992
+  },
+  {
+    "id": "kino-ponrepo",
+    "name": "Kino Ponrepo",
+    "address": "Bartolomějská 291/11, Praha 1 – Staré Město",
+    "latitude": 50.0830725,
+    "longitude": 14.4175569
+  },
+  {
+    "id": "cinema-city-slovansky-dum",
+    "name": "Cinema City Slovanský dům",
+    "address": "Na Příkopě 859/22, Praha 1 – Nové Město",
+    "latitude": 50.0864125,
+    "longitude": 14.4273172
+  },
+  {
+    "id": "kino-balt",
+    "name": "Kino Balt",
+    "address": "Blahníkova 575/1, Praha 3 – Žižkov",
+    "latitude": 50.0848936,
+    "longitude": 14.4469761
+  },
+  {
+    "id": "pritomnost",
+    "name": "Přítomnost",
+    "address": "Siwiecova 1800/1, Praha 3 – Žižkov",
+    "latitude": 50.0844917,
+    "longitude": 14.4431447
+  },
+  {
+    "id": "cinema-city-flora",
+    "name": "Cinema City Flora",
+    "address": "Vinohradská 2828/151, Praha 3 – Žižkov",
+    "latitude": 50.0794036,
+    "longitude": 14.4609867
+  },
+  {
+    "id": "priemere-citenas-hostivar",
+    "name": "Priemere Citenas Praha Hostivař",
+    "address": "Švehlova 1391/32, Praha 15 – Hostivař",
+    "latitude": 50.0529997,
+    "longitude": 14.5172589
+  },
+  {
+    "id": "cinema-city-chodov",
+    "name": "Cinema City Chodov",
+    "address": "Roztylská 2321/19, Praha 11 – Chodov",
+    "latitude": 50.0303447,
+    "longitude": 14.4904822
+  },
+  {
+    "id": "modransky-biograf",
+    "name": "Modřanský Biograf",
+    "address": "U Kina 44/1, Praha 12 – Modřany",
+    "latitude": 50.0035578,
+    "longitude": 14.4045469
+  },
+  {
+    "id": "kino-radotin",
+    "name": "Kino Radotín",
+    "address": "Na Výšince 875/4, Praha 16 – Radotín",
+    "latitude": 49.9841428,
+    "longitude": 14.356355
+  },
+  {
+    "id": "cinema-city-zlicin",
+    "name": "Cinema City Zličín",
+    "address": "Řevnická 121/1, Praha-Zličín – Třebonice",
+    "latitude": 50.0543953,
+    "longitude": 14.2877942
+  },
+  {
+    "id": "kino-kavalirka",
+    "name": "Kino Kavalírka",
+    "address": "Plzeňská 2576/210, Praha 5 – Smíchov",
+    "latitude": 50.0700725,
+    "longitude": 14.3679311
+  },
+  {
+    "id": "cinema-city-letnany",
+    "name": "Cinema City Letňany",
+    "address": "Veselská 663, Praha 18 – Letňany",
+    "latitude": 50.1368472,
+    "longitude": 14.5028497
+  },
+  {
+    "id": "cinestar-cerny-most",
+    "name": "CineStar Černý Most",
+    "address": "Chlumecká 765/6, Praha 14 – Černý Most",
+    "latitude": 50.1090125,
+    "longitude": 14.5852778
+  },
+  {
+    "id": "ucko-kino",
+    "name": "Účko Kino",
+    "address": "K Sokolovně 201/8, Praha 22 – Uhříněves",
+    "latitude": 50.0287886,
+    "longitude": 14.6058964
+  },
+  {
+    "id": "cinestar-andel",
+    "name": "CineStar Anděl",
+    "address": "Radlická 3179/1e, Praha 5 – Smíchov",
+    "latitude": 50.0713056,
+    "longitude": 14.4015656
+  },
+  {
+    "id": "cinema-city-novy-smichov",
+    "name": "Cinema City Nový Smíchov",
+    "address": "Plzeňská 233/8, Praha 5 – Smíchov",
+    "latitude": 50.0741017,
+    "longitude": 14.4027925
+  },
+  {
+    "id": "kino-mat",
+    "name": "Kino MAT",
+    "address": "Karlovo náměstí 285/19, Praha 2 – Nové Město",
+    "latitude": 50.07782,
+    "longitude": 14.4192894
+  }
+]

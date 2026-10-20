@@ -4611,5 +4611,1151 @@
       }
     }
   ],
-  "unlocatedLibraries": []
+  "unlocatedLibraries": [],
+  "cinemas": [
+    {
+      "id": "bio-oko",
+      "category": "cinema",
+      "name": "Bio Oko",
+      "address": "Františka Křížka 460/15, Praha 7 – Holešovice",
+      "point": [
+        14.4301697,
+        50.1000567
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4301697,
+          50.1000567
+        ]
+      },
+      "sourceId": "bio-oko",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "bio-oko",
+        "originalName": "Bio Oko",
+        "originalAddress": "Františka Křížka 460/15, Praha 7 – Holešovice",
+        "originalPoint": [
+          14.4301697,
+          50.1000567
+        ]
+      }
+    },
+    {
+      "id": "kino-dlabacov",
+      "category": "cinema",
+      "name": "Kino Dlabačov",
+      "address": "Bělohorská 125/24, Praha 6 – Břevnov",
+      "point": [
+        14.3802353,
+        50.0858464
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.3802353,
+          50.0858464
+        ]
+      },
+      "sourceId": "kino-dlabacov",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-dlabacov",
+        "originalName": "Kino Dlabačov",
+        "originalAddress": "Bělohorská 125/24, Praha 6 – Břevnov",
+        "originalPoint": [
+          14.3802353,
+          50.0858464
+        ]
+      }
+    },
+    {
+      "id": "kino-atlas",
+      "category": "cinema",
+      "name": "Kino Atlas",
+      "address": "Ke Štvanici 371/4, Praha 8 – Karlín",
+      "point": [
+        14.4383706,
+        50.0915856
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4383706,
+          50.0915856
+        ]
+      },
+      "sourceId": "kino-atlas",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-atlas",
+        "originalName": "Kino Atlas",
+        "originalAddress": "Ke Štvanici 371/4, Praha 8 – Karlín",
+        "originalPoint": [
+          14.4383706,
+          50.0915856
+        ]
+      }
+    },
+    {
+      "id": "kino-lucerna",
+      "category": "cinema",
+      "name": "Kino Lucerna",
+      "address": "Vodičkova 1935/38, Praha 1 – Nové Město",
+      "point": [
+        14.4255711,
+        50.0815567
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4255711,
+          50.0815567
+        ]
+      },
+      "sourceId": "kino-lucerna",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-lucerna",
+        "originalName": "Kino Lucerna",
+        "originalAddress": "Vodičkova 1935/38, Praha 1 – Nové Město",
+        "originalPoint": [
+          14.4255711,
+          50.0815567
+        ]
+      }
+    },
+    {
+      "id": "kino-svetozor",
+      "category": "cinema",
+      "name": "Kino Světozor",
+      "address": "Vodičkova 791/41, Praha 1 – Nové Město",
+      "point": [
+        14.4255328,
+        50.0819742
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4255328,
+          50.0819742
+        ]
+      },
+      "sourceId": "kino-svetozor",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-svetozor",
+        "originalName": "Kino Světozor",
+        "originalAddress": "Vodičkova 791/41, Praha 1 – Nové Město",
+        "originalPoint": [
+          14.4255328,
+          50.0819742
+        ]
+      }
+    },
+    {
+      "id": "kino-pilotu",
+      "category": "cinema",
+      "name": "Kino Pilotů",
+      "address": "Donská 168/19, Praha 10 – Vršovice",
+      "point": [
+        14.4468981,
+        50.0714064
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4468981,
+          50.0714064
+        ]
+      },
+      "sourceId": "kino-pilotu",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-pilotu",
+        "originalName": "Kino Pilotů",
+        "originalAddress": "Donská 168/19, Praha 10 – Vršovice",
+        "originalPoint": [
+          14.4468981,
+          50.0714064
+        ]
+      }
+    },
+    {
+      "id": "kino-aero",
+      "category": "cinema",
+      "name": "Kino Aero",
+      "address": "Biskupcova 87/31a, Praha 3 – Žižkov",
+      "point": [
+        14.4719042,
+        50.0903361
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4719042,
+          50.0903361
+        ]
+      },
+      "sourceId": "kino-aero",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-aero",
+        "originalName": "Kino Aero",
+        "originalAddress": "Biskupcova 87/31a, Praha 3 – Žižkov",
+        "originalPoint": [
+          14.4719042,
+          50.0903361
+        ]
+      }
+    },
+    {
+      "id": "edison-filmhub",
+      "category": "cinema",
+      "name": "Edison Filmhub",
+      "address": "Jeruzalémská 1321/2, Praha 1 – Nové Město",
+      "point": [
+        14.4314144,
+        50.0848642
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4314144,
+          50.0848642
+        ]
+      },
+      "sourceId": "edison-filmhub",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "edison-filmhub",
+        "originalName": "Edison Filmhub",
+        "originalAddress": "Jeruzalémská 1321/2, Praha 1 – Nové Město",
+        "originalPoint": [
+          14.4314144,
+          50.0848642
+        ]
+      }
+    },
+    {
+      "id": "kino-evald",
+      "category": "cinema",
+      "name": "Kino Evald",
+      "address": "Národní 60/28, Praha 1 – Nové Město",
+      "point": [
+        14.4200992,
+        50.0824489
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4200992,
+          50.0824489
+        ]
+      },
+      "sourceId": "kino-evald",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-evald",
+        "originalName": "Kino Evald",
+        "originalAddress": "Národní 60/28, Praha 1 – Nové Město",
+        "originalPoint": [
+          14.4200992,
+          50.0824489
+        ]
+      }
+    },
+    {
+      "id": "kino-ponrepo",
+      "category": "cinema",
+      "name": "Kino Ponrepo",
+      "address": "Bartolomějská 291/11, Praha 1 – Staré Město",
+      "point": [
+        14.4175569,
+        50.0830725
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4175569,
+          50.0830725
+        ]
+      },
+      "sourceId": "kino-ponrepo",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-ponrepo",
+        "originalName": "Kino Ponrepo",
+        "originalAddress": "Bartolomějská 291/11, Praha 1 – Staré Město",
+        "originalPoint": [
+          14.4175569,
+          50.0830725
+        ]
+      }
+    },
+    {
+      "id": "cinema-city-slovansky-dum",
+      "category": "cinema",
+      "name": "Cinema City Slovanský dům",
+      "address": "Na Příkopě 859/22, Praha 1 – Nové Město",
+      "point": [
+        14.4273172,
+        50.0864125
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4273172,
+          50.0864125
+        ]
+      },
+      "sourceId": "cinema-city-slovansky-dum",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "cinema-city-slovansky-dum",
+        "originalName": "Cinema City Slovanský dům",
+        "originalAddress": "Na Příkopě 859/22, Praha 1 – Nové Město",
+        "originalPoint": [
+          14.4273172,
+          50.0864125
+        ]
+      }
+    },
+    {
+      "id": "kino-balt",
+      "category": "cinema",
+      "name": "Kino Balt",
+      "address": "Blahníkova 575/1, Praha 3 – Žižkov",
+      "point": [
+        14.4469761,
+        50.0848936
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4469761,
+          50.0848936
+        ]
+      },
+      "sourceId": "kino-balt",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-balt",
+        "originalName": "Kino Balt",
+        "originalAddress": "Blahníkova 575/1, Praha 3 – Žižkov",
+        "originalPoint": [
+          14.4469761,
+          50.0848936
+        ]
+      }
+    },
+    {
+      "id": "pritomnost",
+      "category": "cinema",
+      "name": "Přítomnost",
+      "address": "Siwiecova 1800/1, Praha 3 – Žižkov",
+      "point": [
+        14.4431447,
+        50.0844917
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4431447,
+          50.0844917
+        ]
+      },
+      "sourceId": "pritomnost",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "pritomnost",
+        "originalName": "Přítomnost",
+        "originalAddress": "Siwiecova 1800/1, Praha 3 – Žižkov",
+        "originalPoint": [
+          14.4431447,
+          50.0844917
+        ]
+      }
+    },
+    {
+      "id": "cinema-city-flora",
+      "category": "cinema",
+      "name": "Cinema City Flora",
+      "address": "Vinohradská 2828/151, Praha 3 – Žižkov",
+      "point": [
+        14.4609867,
+        50.0794036
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4609867,
+          50.0794036
+        ]
+      },
+      "sourceId": "cinema-city-flora",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "cinema-city-flora",
+        "originalName": "Cinema City Flora",
+        "originalAddress": "Vinohradská 2828/151, Praha 3 – Žižkov",
+        "originalPoint": [
+          14.4609867,
+          50.0794036
+        ]
+      }
+    },
+    {
+      "id": "priemere-citenas-hostivar",
+      "category": "cinema",
+      "name": "Priemere Citenas Praha Hostivař",
+      "address": "Švehlova 1391/32, Praha 15 – Hostivař",
+      "point": [
+        14.5172589,
+        50.0529997
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.5172589,
+          50.0529997
+        ]
+      },
+      "sourceId": "priemere-citenas-hostivar",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Nutno potvrdit skutečný název a existenci kina. Dodaný název „Priemere Citenas Praha Hostivař“, adresa i souřadnice jsou zachované bez odhadu.",
+      "attributes": {
+        "originalId": "priemere-citenas-hostivar",
+        "originalName": "Priemere Citenas Praha Hostivař",
+        "originalAddress": "Švehlova 1391/32, Praha 15 – Hostivař",
+        "originalPoint": [
+          14.5172589,
+          50.0529997
+        ]
+      }
+    },
+    {
+      "id": "cinema-city-chodov",
+      "category": "cinema",
+      "name": "Cinema City Chodov",
+      "address": "Roztylská 2321/19, Praha 11 – Chodov",
+      "point": [
+        14.4904822,
+        50.0303447
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4904822,
+          50.0303447
+        ]
+      },
+      "sourceId": "cinema-city-chodov",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "cinema-city-chodov",
+        "originalName": "Cinema City Chodov",
+        "originalAddress": "Roztylská 2321/19, Praha 11 – Chodov",
+        "originalPoint": [
+          14.4904822,
+          50.0303447
+        ]
+      }
+    },
+    {
+      "id": "modransky-biograf",
+      "category": "cinema",
+      "name": "Modřanský Biograf",
+      "address": "U Kina 44/1, Praha 12 – Modřany",
+      "point": [
+        14.4045469,
+        50.0035578
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4045469,
+          50.0035578
+        ]
+      },
+      "sourceId": "modransky-biograf",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "modransky-biograf",
+        "originalName": "Modřanský Biograf",
+        "originalAddress": "U Kina 44/1, Praha 12 – Modřany",
+        "originalPoint": [
+          14.4045469,
+          50.0035578
+        ]
+      }
+    },
+    {
+      "id": "kino-radotin",
+      "category": "cinema",
+      "name": "Kino Radotín",
+      "address": "Na Výšince 875/4, Praha 16 – Radotín",
+      "point": [
+        14.356355,
+        49.9841428
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.356355,
+          49.9841428
+        ]
+      },
+      "sourceId": "kino-radotin",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-radotin",
+        "originalName": "Kino Radotín",
+        "originalAddress": "Na Výšince 875/4, Praha 16 – Radotín",
+        "originalPoint": [
+          14.356355,
+          49.9841428
+        ]
+      }
+    },
+    {
+      "id": "cinema-city-zlicin",
+      "category": "cinema",
+      "name": "Cinema City Zličín",
+      "address": "Řevnická 121/1, Praha-Zličín – Třebonice",
+      "point": [
+        14.2877942,
+        50.0543953
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.2877942,
+          50.0543953
+        ]
+      },
+      "sourceId": "cinema-city-zlicin",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "cinema-city-zlicin",
+        "originalName": "Cinema City Zličín",
+        "originalAddress": "Řevnická 121/1, Praha-Zličín – Třebonice",
+        "originalPoint": [
+          14.2877942,
+          50.0543953
+        ]
+      }
+    },
+    {
+      "id": "kino-kavalirka",
+      "category": "cinema",
+      "name": "Kino Kavalírka",
+      "address": "Plzeňská 2576/210, Praha 5 – Smíchov",
+      "point": [
+        14.3679311,
+        50.0700725
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.3679311,
+          50.0700725
+        ]
+      },
+      "sourceId": "kino-kavalirka",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-kavalirka",
+        "originalName": "Kino Kavalírka",
+        "originalAddress": "Plzeňská 2576/210, Praha 5 – Smíchov",
+        "originalPoint": [
+          14.3679311,
+          50.0700725
+        ]
+      }
+    },
+    {
+      "id": "cinema-city-letnany",
+      "category": "cinema",
+      "name": "Cinema City Letňany",
+      "address": "Veselská 663, Praha 18 – Letňany",
+      "point": [
+        14.5028497,
+        50.1368472
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.5028497,
+          50.1368472
+        ]
+      },
+      "sourceId": "cinema-city-letnany",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "cinema-city-letnany",
+        "originalName": "Cinema City Letňany",
+        "originalAddress": "Veselská 663, Praha 18 – Letňany",
+        "originalPoint": [
+          14.5028497,
+          50.1368472
+        ]
+      }
+    },
+    {
+      "id": "cinestar-cerny-most",
+      "category": "cinema",
+      "name": "CineStar Černý Most",
+      "address": "Chlumecká 765/6, Praha 14 – Černý Most",
+      "point": [
+        14.5852778,
+        50.1090125
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.5852778,
+          50.1090125
+        ]
+      },
+      "sourceId": "cinestar-cerny-most",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "cinestar-cerny-most",
+        "originalName": "CineStar Černý Most",
+        "originalAddress": "Chlumecká 765/6, Praha 14 – Černý Most",
+        "originalPoint": [
+          14.5852778,
+          50.1090125
+        ]
+      }
+    },
+    {
+      "id": "ucko-kino",
+      "category": "cinema",
+      "name": "Účko Kino",
+      "address": "K Sokolovně 201/8, Praha 22 – Uhříněves",
+      "point": [
+        14.6058964,
+        50.0287886
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.6058964,
+          50.0287886
+        ]
+      },
+      "sourceId": "ucko-kino",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "ucko-kino",
+        "originalName": "Účko Kino",
+        "originalAddress": "K Sokolovně 201/8, Praha 22 – Uhříněves",
+        "originalPoint": [
+          14.6058964,
+          50.0287886
+        ]
+      }
+    },
+    {
+      "id": "cinestar-andel",
+      "category": "cinema",
+      "name": "CineStar Anděl",
+      "address": "Radlická 3179/1e, Praha 5 – Smíchov",
+      "point": [
+        14.4015656,
+        50.0713056
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4015656,
+          50.0713056
+        ]
+      },
+      "sourceId": "cinestar-andel",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "cinestar-andel",
+        "originalName": "CineStar Anděl",
+        "originalAddress": "Radlická 3179/1e, Praha 5 – Smíchov",
+        "originalPoint": [
+          14.4015656,
+          50.0713056
+        ]
+      }
+    },
+    {
+      "id": "cinema-city-novy-smichov",
+      "category": "cinema",
+      "name": "Cinema City Nový Smíchov",
+      "address": "Plzeňská 233/8, Praha 5 – Smíchov",
+      "point": [
+        14.4027925,
+        50.0741017
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4027925,
+          50.0741017
+        ]
+      },
+      "sourceId": "cinema-city-novy-smichov",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "cinema-city-novy-smichov",
+        "originalName": "Cinema City Nový Smíchov",
+        "originalAddress": "Plzeňská 233/8, Praha 5 – Smíchov",
+        "originalPoint": [
+          14.4027925,
+          50.0741017
+        ]
+      }
+    },
+    {
+      "id": "kino-mat",
+      "category": "cinema",
+      "name": "Kino MAT",
+      "address": "Karlovo náměstí 285/19, Praha 2 – Nové Město",
+      "point": [
+        14.4192894,
+        50.07782
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4192894,
+          50.07782
+        ]
+      },
+      "sourceId": "kino-mat",
+      "source": {
+        "id": "cinemas-curated-2026-10-20",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence převzatých souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T12:38:08.506Z",
+        "rawChecksum": "812a17fbcd1a42287ae1d273eb7d5f0a10f907dcc3726458658850708af8013d",
+        "verification": "user_supplied",
+        "note": "26 konkrétních kin vybraných správcem pro lokální hru. Body byly ručně převzaty z Mapy.com; nejde o oficiální dataset, nezávislé geodetické ověření ani hranice budov. Multiplex je jeden objekt bez ohledu na počet sálů."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T12:38:08.506Z",
+      "note": "",
+      "attributes": {
+        "originalId": "kino-mat",
+        "originalName": "Kino MAT",
+        "originalAddress": "Karlovo náměstí 285/19, Praha 2 – Nové Město",
+        "originalPoint": [
+          14.4192894,
+          50.07782
+        ]
+      }
+    }
+  ]
 }

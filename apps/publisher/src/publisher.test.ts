@@ -1,5 +1,5 @@
 import catalog from '../../editor/src/data/poi-catalog.json' with { type: 'json' };
-import { addLibrary, verifyLibraryDecision, resolvePois, withPublishedHospitals, withPublishedLibraries, withPublishedZoos, decidePoi, poiSchema } from '../../../packages/geo-core/src/index';
+import { addLibrary, verifyLibraryDecision, resolvePois, withPublishedCinemas, withPublishedHospitals, withPublishedLibraries, withPublishedZoos, decidePoi, poiSchema } from '../../../packages/geo-core/src/index';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { generateKeyPairSync } from 'node:crypto';
 import worker, { MAX_PUBLISH_BYTES, PublisherCoordinator, type Storage, type PublisherEnvironment } from './index';
@@ -62,7 +62,7 @@ describe('Server authorization and immutable publication',()=>{
     const [expected,changes]=vi.mocked(GitHubClient.prototype.commit).mock.calls[0];expect(expected).toBe(head);expect(changes.map(file=>file.path)).toEqual([`data/releases/release-${release.checksums.content}.json`,'data/releases/current.json']);expect(changes[0].text).not.toContain('PRIVATE NOTE');expect(JSON.parse(changes[1].text).current.releaseId).toBe(release.releaseId);
   });
   it('accepts approved zoo through the protected publisher and keeps schema 2 publication compatible',async()=>{
-    expect(await (await send('/status')).json()).toMatchObject({configured:true,releaseSchemaVersions:[1,2,3,4]});
+    expect(await (await send('/status')).json()).toMatchObject({configured:true,releaseSchemaVersions:[1,2,3,4,5]});
     const {world,snapshot}=await releaseTestInput(),zoos=catalog.zoos.map(poi=>poiSchema.parse(poi));
     world.poi=withPublishedZoos(world.poi!,zoos);world.poi=decidePoi(world.poi,zoos[0],{status:'excluded'});
     release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
@@ -95,13 +95,30 @@ describe('Server authorization and immutable publication',()=>{
     world.poi=verifyLibraryDecision(result.configuration,result.poi,{status:'approved'},true);
     const unverified=addLibrary(world.poi,[14.41,50.11],{name:'Synthetic unverified branch',address:'Synthetic address',officialUrl:'https://www.mlp.cz/cz/pobocky/synthetic-unverified/'});world.poi=unverified.configuration;
     expect(resolvePois([],world.poi).filter(poi=>poi.category==='library'&&poi.status==='approved')).toHaveLength(45);
-    release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    const built=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    release=await createGameDataRelease(built.data,{kind:built.kind,publishedAt:releaseTestDate,schemaVersion:4});
     expect((await send('/publish',{expectedCommit:head,release})).status).toBe(202);
     const changes=vi.mocked(GitHubClient.prototype.commit).mock.calls[0][1],artifact=JSON.parse(changes[0].text);
     expect(artifact.schemaVersion).toBe(4);expect(artifact.data.pois.filter((poi:{category:string})=>poi.category==='library')).toHaveLength(45);
     expect(artifact.data.pois.find((poi:{id:string})=>poi.id===result.poi.id)).toMatchObject({address:'Synthetic address',library:{officialUrl:result.poi.library!.officialUrl,verification:{point:[14.4,50.1],method:'manual_review'}}});
     expect(artifact.data.pois.some((poi:{id:string})=>poi.id===libraries[0].id)).toBe(false);
     expect(artifact.data.pois.find((poi:{id:string})=>poi.id===libraries[1].id)).toMatchObject({library:{verification:{method:'official_map_link',mapUrls:libraries[1].library!.verification!.mapUrls}}});
+  });
+  it('publishes approved cinema points in schema 5 through the same protected atomic write, preserving every prior category',async()=>{
+    const {world,snapshot}=await releaseTestInput(),cinemas=catalog.cinemas.map(poi=>poiSchema.parse(poi));
+    world.poi=withPublishedLibraries(withPublishedHospitals(withPublishedZoos(world.poi!,catalog.zoos.map(poi=>poiSchema.parse(poi))),catalog.hospitals.map(poi=>poiSchema.parse(poi))),catalog.libraries.map(poi=>poiSchema.parse(poi)));
+    const before=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    world.poi=withPublishedCinemas(world.poi!,cinemas);
+    world.poi=decidePoi(world.poi,cinemas[0],{status:'excluded'});
+    release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    expect((await send('/publish',{expectedCommit:head,release})).status).toBe(202);
+    const changes=vi.mocked(GitHubClient.prototype.commit).mock.calls[0][1],artifact=JSON.parse(changes[0].text);
+    expect(changes).toHaveLength(2);expect(artifact.schemaVersion).toBe(5);
+    expect(artifact.data.pois.filter((poi:{category:string})=>poi.category==='cinema')).toHaveLength(24);
+    expect(artifact.data.pois.some((poi:{id:string})=>['bio-oko','priemere-citenas-hostivar'].includes(poi.id))).toBe(false);
+    expect(artifact.data.pois.filter((poi:{category:string})=>poi.category!=='cinema')).toEqual(before.data.pois);
+    expect(artifact.data.pois.find((poi:{id:string})=>poi.id==='kino-atlas')).toMatchObject({address:'Ke Štvanici 371/4, Praha 8 – Karlín',point:[14.4383706,50.0915856],geometry:{type:'Point',coordinates:[14.4383706,50.0915856]}});
+    expect(artifact.data.pidSnapshot).toEqual(before.data.pidSnapshot);
   });
   it('rejects duplicate content, immutable file collision, stale SHA, unverified PID and historical releases',async()=>{
     await seedIndex(release);expect((await send('/publish',{expectedCommit:head,release})).status).toBe(409);
