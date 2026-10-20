@@ -100,7 +100,7 @@ Ověřeno 18. 10. 2026 na originálním ZIPu se stejným SHA-256 jako při impor
 
 ## Datový model a přenos
 
-`Poi` obsahuje `id`, rozšiřitelnou `category`, `name`, `point`, `geometry`, `sourceId`, `source`, `status`, `reviewedAt`, `note`; navíc původní `attributes` a případně `memberIds`. Statusy jsou `review`, `approved`, `excluded`. Kategorie je řetězec, proto stejné funkce mohou později používat muzea, zoo, akvária, golf, knihovny, nemocnice a konzuláty. Jejich editory ani data tato iterace nepřidává.
+`Poi` obsahuje `id`, rozšiřitelnou `category`, `name`, `point`, `geometry`, `sourceId`, `source`, `status`, `reviewedAt`, `note`; navíc původní `attributes` a případně `memberIds`. Statusy jsou `review`, `approved`, `excluded`. Kategorie je řetězec, proto stejné funkce mohou později používat muzea, zoo, akvária, golf, knihovny, nemocnice a konzuláty. Zoo a nemocnice již mají bodové katalogy a editory; ostatní uvedené kategorie nejsou implementované.
 
 Volitelné `WorldDraft.poi` (schéma světa stále 2) odděluje `sources`, `manual`, `decisions` a `visibility`. Staré světy pole nepotřebují; `newWorld()` zachovává své původní rozhraní. Drafty z IndexedDB i staršího localStorage a kompletní JSON/GeoJSON zálohy uchovávají zdrojová data, rozhodnutí a přepínače. Zdrojové SHA-256 se kontrolují při načtení a importu; chyba nesmí přepsat uložený svět. Nové přibalené parky se přidají bez přepsání již uloženého zdroje či rozhodnutí. Náhrada existujícího zdroje je výslovná aktualizace.
 
@@ -140,3 +140,9 @@ PARKS_ZIP=/tmp/MPP_CUR_MPP_100_PARKY_P.zip npm run test:e2e
 ```
 
 Bez `PARKS_ZIP` se pouze audit skutečného archivu explicitně přeskočí; syntetické regresní testy se spouštějí vždy. Živá síť není součástí běžného buildu ani importu lokálního ZIPu. Použitý GEOS/WASM je přibalen do importního workeru (přibližně 3,2 MB před gzip); nezvětšuje hlavní vstup aplikace ani nevyžaduje CDN. [Licence a zdroj knihovny](THIRD_PARTY.md).
+
+## Nemocnice – bodový katalog
+
+`hospital` navazuje na zoo, používá `poi.pointCatalog`, oddělené `poi.decisions` a vlastní body v `poi.manual`. Zdrojový katalog obsahuje deset správcem schválených nemocnic; adresy jsou volitelné. `withPublishedHospitals` doplní pouze dosud neznámé identity, nenahrazuje uložené řádky ani uživatelská rozhodnutí. `resolvePois` udržuje shodu Point geometrie s upraveným referenčním bodem. Katalogová nemocnice se vyřazuje, ručně vytvořenou lze odstranit.
+
+Herní funkce používají výhradně referenční bod, schválení a geografickou vzdálenost. Polygon ani silniční vzdálenost se nevyžadují. Vrstva má samostatný přepínač a červený kříž; parkové filtry a hromadné akce se na ni nevztahují. Publikace ve schématu 3 nese jen schválené objekty a zpětně čte schémata 1 a 2. [Původ, přesné body a omezení](../data/source-metadata/hospitals-curated.md).

@@ -193,7 +193,7 @@ export class PublisherCoordinator {
   async fetch(request: Request): Promise<Response> {
     const path = new URL(request.url).pathname;
     try {
-      if (path === '/status' && request.method === 'GET') return json({ configured: configured(this.env), releaseSchemaVersions: [1, 2], repository: 'Wondrej89/JetLagPrague' });
+      if (path === '/status' && request.method === 'GET') return json({ configured: configured(this.env), releaseSchemaVersions: [1, 2, 3], repository: 'Wondrej89/JetLagPrague' });
       if (!configured(this.env)) throw new ApiFailure(503, 'Publikace není nakonfigurována.');
       await this.rate(request, 'api', 120, 60000);
       if (path === '/auth/start' && request.method === 'GET') return await this.login(request);

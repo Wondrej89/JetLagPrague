@@ -1,5 +1,5 @@
 import catalog from '../../editor/src/data/poi-catalog.json' with { type: 'json' };
-import { withPublishedZoos, decidePoi, poiSchema } from '../../../packages/geo-core/src/index';
+import { withPublishedHospitals, withPublishedZoos, decidePoi, poiSchema } from '../../../packages/geo-core/src/index';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { generateKeyPairSync } from 'node:crypto';
 import worker, { MAX_PUBLISH_BYTES, PublisherCoordinator, type Storage, type PublisherEnvironment } from './index';
@@ -61,15 +61,29 @@ describe('Server authorization and immutable publication',()=>{
     const response=await send('/publish',{expectedCommit:head,release});expect(response.status).toBe(202);expect(await response.json()).toMatchObject({status:'pending-deployment',commit:nextHead});
     const [expected,changes]=vi.mocked(GitHubClient.prototype.commit).mock.calls[0];expect(expected).toBe(head);expect(changes.map(file=>file.path)).toEqual([`data/releases/release-${release.checksums.content}.json`,'data/releases/current.json']);expect(changes[0].text).not.toContain('PRIVATE NOTE');expect(JSON.parse(changes[1].text).current.releaseId).toBe(release.releaseId);
   });
-  it('accepts approved zoo through the protected publisher and advertises both supported schema versions',async()=>{
-    expect(await (await send('/status')).json()).toMatchObject({configured:true,releaseSchemaVersions:[1,2]});
+  it('accepts approved zoo through the protected publisher and keeps schema 2 publication compatible',async()=>{
+    expect(await (await send('/status')).json()).toMatchObject({configured:true,releaseSchemaVersions:[1,2,3]});
     const {world,snapshot}=await releaseTestInput(),zoos=catalog.zoos.map(poi=>poiSchema.parse(poi));
     world.poi=withPublishedZoos(world.poi!,zoos);world.poi=decidePoi(world.poi,zoos[0],{status:'excluded'});
     release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    release=await createGameDataRelease(release.data,{kind:release.kind,publishedAt:releaseTestDate,schemaVersion:2});
     expect((await send('/publish',{expectedCommit:head,release})).status).toBe(202);
     const changes=vi.mocked(GitHubClient.prototype.commit).mock.calls[0][1];const artifact=JSON.parse(changes[0].text);
     expect(artifact.schemaVersion).toBe(2);expect(artifact.data.pois.filter((poi:{category:string})=>poi.category==='zoo')).toHaveLength(9);
     expect(artifact.data.pois.find((poi:{id:string})=>poi.id==='krokodyli-zoo')).toMatchObject({address:'Tusarova 1548/39, Praha 7 – Holešovice',geometry:{type:'Point',coordinates:[14.4511431,50.1022558]}});
+  });
+  it('publishes approved hospitals through the same authorized atomic GitHub write, including an unknown address',async()=>{
+    const {world,snapshot}=await releaseTestInput(),hospitals=catalog.hospitals.map(poi=>poiSchema.parse(poi));
+    world.poi=withPublishedHospitals(withPublishedZoos(world.poi!,catalog.zoos.map(poi=>poiSchema.parse(poi))),hospitals);
+    world.poi=decidePoi(world.poi,hospitals[0],{status:'excluded'});
+    release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    expect((await send('/publish',{expectedCommit:head,release})).status).toBe(202);
+    const changes=vi.mocked(GitHubClient.prototype.commit).mock.calls[0][1],artifact=JSON.parse(changes[0].text);
+    expect(changes).toHaveLength(2);expect(artifact.schemaVersion).toBe(3);
+    expect(artifact.data.pois.filter((poi:{category:string})=>poi.category==='hospital')).toHaveLength(9);
+    expect(artifact.data.pois.find((poi:{id:string})=>poi.id==='hospital-sv-alzbety')).toMatchObject({address:'',point:[14.4203839,50.0692439]});
+    expect(artifact.data.pois.filter((poi:{category:string})=>poi.category==='zoo')).toHaveLength(10);
+    expect(artifact.data.pidSnapshot).toEqual(release.data.pidSnapshot);
   });
   it('rejects duplicate content, immutable file collision, stale SHA, unverified PID and historical releases',async()=>{
     await seedIndex(release);expect((await send('/publish',{expectedCommit:head,release})).status).toBe(409);

@@ -506,5 +506,367 @@
       "note": "",
       "attributes": {}
     }
+  ],
+  "hospitals": [
+    {
+      "id": "hospital-bulovka",
+      "category": "hospital",
+      "name": "Fakultní nemocnice Bulovka",
+      "address": "Budínova 67/2, Praha 8 – Libeň",
+      "point": [
+        14.4643531,
+        50.1155525
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4643531,
+          50.1155525
+        ]
+      },
+      "sourceId": "hospital-bulovka",
+      "source": {
+        "id": "prague-curated-hospitals-v1",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých bodů není doložena; podmínky Mapy.com nejsou licencí otevřeného datasetu",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T09:12:21.733Z",
+        "rawChecksum": "6474510eca8876f4e375b2324261f9d39e50f10acd0a676e781ba41df9f86530",
+        "verification": "curated",
+        "note": "Deset konkrétních nemocnic ručně vybraných správcem pro lokální herní pravidla. Nejde o úplný registr zdravotnických zařízení ani nezávisle ověřené geodetické souřadnice. Přesné dodané referenční body z Mapy.com neurčují hranice areálů; chybějící adresa nebyla doplněna geokódováním."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T09:12:21.733Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "hospital-na-frantisku",
+      "category": "hospital",
+      "name": "Nemocnice Na Františku",
+      "address": "Na Františku 847/8, Praha 1 – Staré Město",
+      "point": [
+        14.4214061,
+        50.0927786
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4214061,
+          50.0927786
+        ]
+      },
+      "sourceId": "hospital-na-frantisku",
+      "source": {
+        "id": "prague-curated-hospitals-v1",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých bodů není doložena; podmínky Mapy.com nejsou licencí otevřeného datasetu",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T09:12:21.733Z",
+        "rawChecksum": "6474510eca8876f4e375b2324261f9d39e50f10acd0a676e781ba41df9f86530",
+        "verification": "curated",
+        "note": "Deset konkrétních nemocnic ručně vybraných správcem pro lokální herní pravidla. Nejde o úplný registr zdravotnických zařízení ani nezávisle ověřené geodetické souřadnice. Přesné dodané referenční body z Mapy.com neurčují hranice areálů; chybějící adresa nebyla doplněna geokódováním."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T09:12:21.733Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "hospital-uvn",
+      "category": "hospital",
+      "name": "Ústřední vojenská nemocnice",
+      "address": "U Vojenské nemocnice 1200/1, Praha 6 – Břevnov",
+      "point": [
+        14.3625906,
+        50.0898339
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.3625906,
+          50.0898339
+        ]
+      },
+      "sourceId": "hospital-uvn",
+      "source": {
+        "id": "prague-curated-hospitals-v1",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých bodů není doložena; podmínky Mapy.com nejsou licencí otevřeného datasetu",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T09:12:21.733Z",
+        "rawChecksum": "6474510eca8876f4e375b2324261f9d39e50f10acd0a676e781ba41df9f86530",
+        "verification": "curated",
+        "note": "Deset konkrétních nemocnic ručně vybraných správcem pro lokální herní pravidla. Nejde o úplný registr zdravotnických zařízení ani nezávisle ověřené geodetické souřadnice. Přesné dodané referenční body z Mapy.com neurčují hranice areálů; chybějící adresa nebyla doplněna geokódováním."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T09:12:21.733Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "hospital-motol",
+      "category": "hospital",
+      "name": "Fakultní nemocnice v Motole",
+      "address": "V Úvalu 84/1, Praha 5 – Motol",
+      "point": [
+        14.3409883,
+        50.0740153
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.3409883,
+          50.0740153
+        ]
+      },
+      "sourceId": "hospital-motol",
+      "source": {
+        "id": "prague-curated-hospitals-v1",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých bodů není doložena; podmínky Mapy.com nejsou licencí otevřeného datasetu",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T09:12:21.733Z",
+        "rawChecksum": "6474510eca8876f4e375b2324261f9d39e50f10acd0a676e781ba41df9f86530",
+        "verification": "curated",
+        "note": "Deset konkrétních nemocnic ručně vybraných správcem pro lokální herní pravidla. Nejde o úplný registr zdravotnických zařízení ani nezávisle ověřené geodetické souřadnice. Přesné dodané referenční body z Mapy.com neurčují hranice areálů; chybějící adresa nebyla doplněna geokódováním."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T09:12:21.733Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "hospital-homolka",
+      "category": "hospital",
+      "name": "Nemocnice Na Homolce",
+      "address": "Roentgenova 37/2, Praha 5 – Motol",
+      "point": [
+        14.3541617,
+        50.0754794
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.3541617,
+          50.0754794
+        ]
+      },
+      "sourceId": "hospital-homolka",
+      "source": {
+        "id": "prague-curated-hospitals-v1",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých bodů není doložena; podmínky Mapy.com nejsou licencí otevřeného datasetu",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T09:12:21.733Z",
+        "rawChecksum": "6474510eca8876f4e375b2324261f9d39e50f10acd0a676e781ba41df9f86530",
+        "verification": "curated",
+        "note": "Deset konkrétních nemocnic ručně vybraných správcem pro lokální herní pravidla. Nejde o úplný registr zdravotnických zařízení ani nezávisle ověřené geodetické souřadnice. Přesné dodané referenční body z Mapy.com neurčují hranice areálů; chybějící adresa nebyla doplněna geokódováním."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T09:12:21.733Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "hospital-vinohrady",
+      "category": "hospital",
+      "name": "Fakultní nemocnice Královské Vinohrady",
+      "address": "Šrobárova 1150/50, Praha 10 – Vinohrady",
+      "point": [
+        14.4754242,
+        50.0757197
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4754242,
+          50.0757197
+        ]
+      },
+      "sourceId": "hospital-vinohrady",
+      "source": {
+        "id": "prague-curated-hospitals-v1",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých bodů není doložena; podmínky Mapy.com nejsou licencí otevřeného datasetu",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T09:12:21.733Z",
+        "rawChecksum": "6474510eca8876f4e375b2324261f9d39e50f10acd0a676e781ba41df9f86530",
+        "verification": "curated",
+        "note": "Deset konkrétních nemocnic ručně vybraných správcem pro lokální herní pravidla. Nejde o úplný registr zdravotnických zařízení ani nezávisle ověřené geodetické souřadnice. Přesné dodané referenční body z Mapy.com neurčují hranice areálů; chybějící adresa nebyla doplněna geokódováním."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T09:12:21.733Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "hospital-thomayer",
+      "category": "hospital",
+      "name": "Fakultní Thomayerova nemocnice",
+      "address": "Vídeňská 800, Praha 4 – Krč",
+      "point": [
+        14.4563864,
+        50.0300714
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4563864,
+          50.0300714
+        ]
+      },
+      "sourceId": "hospital-thomayer",
+      "source": {
+        "id": "prague-curated-hospitals-v1",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých bodů není doložena; podmínky Mapy.com nejsou licencí otevřeného datasetu",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T09:12:21.733Z",
+        "rawChecksum": "6474510eca8876f4e375b2324261f9d39e50f10acd0a676e781ba41df9f86530",
+        "verification": "curated",
+        "note": "Deset konkrétních nemocnic ručně vybraných správcem pro lokální herní pravidla. Nejde o úplný registr zdravotnických zařízení ani nezávisle ověřené geodetické souřadnice. Přesné dodané referenční body z Mapy.com neurčují hranice areálů; chybějící adresa nebyla doplněna geokódováním."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T09:12:21.733Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "hospital-vfn",
+      "category": "hospital",
+      "name": "Všeobecná fakultní nemocnice v Praze",
+      "address": "U Nemocnice 499/2, Praha 2 – Nové Město",
+      "point": [
+        14.4209875,
+        50.07343
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4209875,
+          50.07343
+        ]
+      },
+      "sourceId": "hospital-vfn",
+      "source": {
+        "id": "prague-curated-hospitals-v1",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých bodů není doložena; podmínky Mapy.com nejsou licencí otevřeného datasetu",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T09:12:21.733Z",
+        "rawChecksum": "6474510eca8876f4e375b2324261f9d39e50f10acd0a676e781ba41df9f86530",
+        "verification": "curated",
+        "note": "Deset konkrétních nemocnic ručně vybraných správcem pro lokální herní pravidla. Nejde o úplný registr zdravotnických zařízení ani nezávisle ověřené geodetické souřadnice. Přesné dodané referenční body z Mapy.com neurčují hranice areálů; chybějící adresa nebyla doplněna geokódováním."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T09:12:21.733Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "hospital-sv-alzbety",
+      "category": "hospital",
+      "name": "Nemocnice sv. Alžběty Na Slupi",
+      "address": "",
+      "point": [
+        14.4203839,
+        50.0692439
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.4203839,
+          50.0692439
+        ]
+      },
+      "sourceId": "hospital-sv-alzbety",
+      "source": {
+        "id": "prague-curated-hospitals-v1",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých bodů není doložena; podmínky Mapy.com nejsou licencí otevřeného datasetu",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T09:12:21.733Z",
+        "rawChecksum": "6474510eca8876f4e375b2324261f9d39e50f10acd0a676e781ba41df9f86530",
+        "verification": "curated",
+        "note": "Deset konkrétních nemocnic ručně vybraných správcem pro lokální herní pravidla. Nejde o úplný registr zdravotnických zařízení ani nezávisle ověřené geodetické souřadnice. Přesné dodané referenční body z Mapy.com neurčují hranice areálů; chybějící adresa nebyla doplněna geokódováním."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T09:12:21.733Z",
+      "note": "",
+      "attributes": {}
+    },
+    {
+      "id": "hospital-boromejky",
+      "category": "hospital",
+      "name": "Nemocnice Milosrdných sester sv. Karla Boromejského v Praze",
+      "address": "Vlašská 336/36, Praha 1 – Malá Strana",
+      "point": [
+        14.3962378,
+        50.0870408
+      ],
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          14.3962378,
+          50.0870408
+        ]
+      },
+      "sourceId": "hospital-boromejky",
+      "source": {
+        "id": "prague-curated-hospitals-v1",
+        "provider": "Ruční výběr na Mapy.com",
+        "url": "https://mapy.com/",
+        "license": {
+          "name": "Licence ručně převzatých bodů není doložena; podmínky Mapy.com nejsou licencí otevřeného datasetu",
+          "url": null
+        },
+        "dataDate": null,
+        "retrievedAt": "2026-10-20T09:12:21.733Z",
+        "rawChecksum": "6474510eca8876f4e375b2324261f9d39e50f10acd0a676e781ba41df9f86530",
+        "verification": "curated",
+        "note": "Deset konkrétních nemocnic ručně vybraných správcem pro lokální herní pravidla. Nejde o úplný registr zdravotnických zařízení ani nezávisle ověřené geodetické souřadnice. Přesné dodané referenční body z Mapy.com neurčují hranice areálů; chybějící adresa nebyla doplněna geokódováním."
+      },
+      "status": "approved",
+      "reviewedAt": "2026-10-20T09:12:21.733Z",
+      "note": "",
+      "attributes": {}
+    }
   ]
 }

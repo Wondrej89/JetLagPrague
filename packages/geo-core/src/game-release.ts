@@ -17,7 +17,7 @@ const checkedPoiGeometry = z.unknown().transform((value, ctx) => {
   try { const result = validateGeometry(value); if (result.type === 'LineString') throw new Error('POI nemůže být linie.'); return result; }
   catch (error) { ctx.addIssue({ code: 'custom', message: (error as Error).message }); return z.NEVER; }
 });
-export const releasePoiSchema = z.object({ id, category: z.enum(['airport', 'park', 'zoo']), name: text.trim().min(1), address: text.optional(), point: wgs84PointSchema, geometry: checkedPoiGeometry,
+export const releasePoiSchema = z.object({ id, category: z.enum(['airport', 'park', 'zoo', 'hospital']), name: text.trim().min(1), address: text.optional(), point: wgs84PointSchema, geometry: checkedPoiGeometry,
   sourceId: id, source: poiSourceSchema, origins: z.array(z.object({ id, sourceId: id, source: poiSourceSchema }).strict()).optional(), status: z.literal('approved'), reviewedAt: z.iso.datetime().nullable() }).strict();
 const areaSchema = z.object({ id, name: text.min(1), geometry: checkedArea, source: text }).strict();
 const adminSchema = z.object({ id, code: id, name: text.min(1), kind: z.enum(['municipal', 'cadastral']), geometry: checkedArea, sourceKey: id }).strict();
@@ -32,7 +32,7 @@ export const gameReleaseDataSchema = z.object({
 }).strict();
 export type GameReleaseData = z.infer<typeof gameReleaseDataSchema>;
 const checksumShape = { gameArea: digest, administrativeAreas: digest, pois: digest, pidSnapshot: digest, rulesConfig: digest, sourceVersions: digest, content: digest };
-export const gameDataReleaseSchema = z.object({ format: z.literal('jetlag-prague-game-release'), schemaVersion: z.union([z.literal(1), z.literal(2)]), releaseId: z.string().regex(/^release:[a-f0-9]{64}$/),
+export const gameDataReleaseSchema = z.object({ format: z.literal('jetlag-prague-game-release'), schemaVersion: z.union([z.literal(1), z.literal(2), z.literal(3)]), releaseId: z.string().regex(/^release:[a-f0-9]{64}$/),
   publishedAt: z.iso.datetime(), kind: z.enum(['approved', 'reference']), data: gameReleaseDataSchema, checksums: z.object(checksumShape).strict() }).strict();
 export type GameDataRelease = z.infer<typeof gameDataReleaseSchema>;
 export const gameReleaseEntrySchema = z.object({ releaseId: gameDataReleaseSchema.shape.releaseId, file: z.string().regex(/^release-[a-f0-9]{64}\.json$/), checksum: digest, publishedAt: z.iso.datetime(), kind: gameDataReleaseSchema.shape.kind }).strict();
@@ -56,8 +56,8 @@ export function gamePublicationErrors(release: GameDataRelease, date = pragueDat
   }
   return [...new Set(issues)];
 }
-export async function createGameDataRelease(input: GameReleaseData, options: { publishedAt: string; kind: 'approved' | 'reference'; schemaVersion?: 1 | 2 }): Promise<GameDataRelease> {
-  const data = gameReleaseDataSchema.parse(input), schemaVersion = options.schemaVersion ?? 2;
+export async function createGameDataRelease(input: GameReleaseData, options: { publishedAt: string; kind: 'approved' | 'reference'; schemaVersion?: 1 | 2 | 3 }): Promise<GameDataRelease> {
+  const data = gameReleaseDataSchema.parse(input), schemaVersion = options.schemaVersion ?? 3;
   data.rulesConfig.allowedModes.sort();
   for (const stop of data.pidSnapshot.stops) { stop.groupIds.sort(); stop.modes.sort(); stop.referenceModes.sort(); }
   data.administrativeAreas.sort(lexical); data.pois.sort(lexical); data.pidSnapshot.stops.sort(lexical); data.sourceVersions.sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
@@ -68,8 +68,10 @@ export async function createGameDataRelease(input: GameReleaseData, options: { p
 }
 export async function verifyGameDataRelease(input: unknown): Promise<GameDataRelease> {
   const release = gameDataReleaseSchema.parse(input), { data } = release;
+  if (release.schemaVersion < 3 && data.pois.some(poi => poi.category === 'hospital')) throw new Error('Nemocnice vyžadují herní schéma 3; historická schémata zůstávají beze změny.');
   if (release.schemaVersion === 1 && data.pois.some(poi => poi.category === 'zoo' || poi.address !== undefined)) throw new Error('Zoo a adresy POI vyžadují herní schéma 2; historické schéma 1 zůstává beze změny.');
   for (const poi of data.pois.filter(poi => poi.category === 'zoo')) if (!poi.address?.trim() || poi.geometry.type !== 'Point' || canonicalJson(poi.point) !== canonicalJson(poi.geometry.coordinates)) throw new Error('Zoo musí mít adresu a bodovou geometrii shodnou s referenčním bodem.');
+  for (const poi of data.pois.filter(poi => poi.category === 'hospital')) if (poi.geometry.type !== 'Point' || canonicalJson(poi.point) !== canonicalJson(poi.geometry.coordinates)) throw new Error('Nemocnice musí mít bodovou geometrii shodnou s referenčním bodem.');
   unique(data.pois.map(p => p.id)); unique(data.administrativeAreas.map(p => p.id)); unique(data.pidSnapshot.stops.map(p => p.id)); unique(data.sourceVersions.map(p => p.key));
   unique(data.rulesConfig.allowedModes);
   for (const stop of data.pidSnapshot.stops) { unique(stop.groupIds); unique(stop.modes); unique(stop.referenceModes); }
@@ -105,7 +107,7 @@ export async function buildGameDataRelease(worldInput: WorldDraft, airports: Poi
     const source = layer.dataset!; sources.push({ key: source.id, version: source.version, checksum: source.checksum, provider: source.provider, url: source.sourceUrl, dataDate: source.dataDate, license: source.license });
     for (const item of layer.features) { if (!isArea(item.geometry)) throw new Error('Administrativní hranice musí být polygonové.'); administrativeAreas.push({ id: item.id, code: String(item.attributes.code ?? item.id), name: item.name, kind: layer.kind === 'municipal' ? 'municipal' : 'cadastral', geometry: item.geometry, sourceKey: source.id }); }
   }
-  const pois = resolvePois(airports, world.poi ?? { version: 1, sources: [], manual: [], decisions: [], visibility: { airports: true, parks: true, referencePoints: false } }).filter(poi => poi.status === 'approved').map(poi => releasePoiSchema.parse({ id: poi.id, category: poi.category, name: poi.name, ...(poi.category === 'zoo' ? { address: poi.address } : {}), point: poi.point, geometry: poi.geometry, sourceId: poi.sourceId, source: { ...poi.source, note: '' }, ...(Array.isArray(poi.attributes.origins) ? { origins: poi.attributes.origins.map(origin => { const value = z.object({ id, sourceId: id, source: poiSourceSchema }).parse(origin); return { ...value, source: { ...value.source, note: '' } }; }) } : {}), status: 'approved', reviewedAt: poi.reviewedAt }));
+  const pois = resolvePois(airports, world.poi ?? { version: 1, sources: [], manual: [], decisions: [], visibility: { airports: true, parks: true, referencePoints: false } }).filter(poi => poi.status === 'approved').map(poi => releasePoiSchema.parse({ id: poi.id, category: poi.category, name: poi.name, ...(['zoo', 'hospital'].includes(poi.category) && poi.address !== undefined ? { address: poi.address } : {}), point: poi.point, geometry: poi.geometry, sourceId: poi.sourceId, source: { ...poi.source, note: '' }, ...(Array.isArray(poi.attributes.origins) ? { origins: poi.attributes.origins.map(origin => { const value = z.object({ id, sourceId: id, source: poiSourceSchema }).parse(origin); return { ...value, source: { ...value.source, note: '' } }; }) } : {}), status: 'approved', reviewedAt: poi.reviewedAt }));
   for (const source of snapshot.sources) sources.push({ key: `pid:${source.id}`, version: source.version ?? source.sha256, checksum: source.sha256, provider: 'PID', url: source.url, dataDate: snapshot.serviceDate, license: source.license ?? { name: 'Nedoložena', url: null } });
   for (const source of world.poi?.sources ?? []) sources.push({ key: `poi:${source.source.id}`, version: source.checksum, checksum: source.source.rawChecksum, provider: source.source.provider, url: source.source.url, dataDate: source.source.dataDate, license: source.source.license });
   for (const poi of pois) for (const origin of [poi.source, ...(poi.origins ?? []).map(item => item.source)]) if (!sources.some(source => source.key === `poi:${origin.id}`)) sources.push({ key: `poi:${origin.id}`, version: origin.rawChecksum ?? 'manual', checksum: origin.rawChecksum, provider: origin.provider, url: origin.url, dataDate: origin.dataDate, license: origin.license });

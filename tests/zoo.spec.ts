@@ -2,7 +2,7 @@ import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { storedWorld } from './draft-helper';
 import { readGameReleaseIndex } from '../packages/geo-core/src/index';
-async function ready(page:Page){await expect(page.locator('.app-shell')).toHaveAttribute('aria-busy','false');await expect(page.getByTestId('poi-count-zoo')).toHaveText('10 schválených · 0 neschválených');await expect.poll(async()=>(await storedWorld(page)).poi?.pointCatalog?.length).toBe(10);}
+async function ready(page:Page){await expect(page.locator('.app-shell')).toHaveAttribute('aria-busy','false');await expect(page.getByTestId('poi-count-zoo')).toHaveText('10 schválených · 0 neschválených');await expect.poll(async()=>(await storedWorld(page)).poi?.pointCatalog?.filter(poi=>poi.category==='zoo').length).toBe(10);}
 test.beforeEach(async({page})=>{await page.route('https://api.mapy.com/**',route=>route.abort());});
 
 test('nový prohlížeč zobrazí deset bodů zoo, samostatnou viditelnost, hledání a údaje s přesnými souřadnicemi',async({page})=>{

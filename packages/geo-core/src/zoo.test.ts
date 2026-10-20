@@ -44,9 +44,9 @@ describe('Zoo reference points and saved decisions',()=>{
  });
 });
 
-it('publishes only approved zoo in schema 2; public geographic functions consume the DTO directly',async()=>{
+it('publishes only approved zoo in the current schema; public geographic functions consume the DTO directly',async()=>{
  const {world,snapshot}=await releaseTestInput();world.poi=withPublishedZoos(world.poi!,zoos);world.poi=decidePoi(world.poi,zoos[0],{status:'excluded'});world.poi=decidePoi(world.poi,zoos[1],{status:'review'});world.poi=decidePoi(world.poi,zoos[2],{address:'Upravená adresa',point:[14.39,50.02],note:'PRIVATE ZOO NOTE'});
- const release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);expect(release.schemaVersion).toBe(2);expect(release.data.pois.filter(p=>p.category==='zoo')).toHaveLength(8);expect(release.data.pois.find(p=>p.id===zoos[2].id)).toMatchObject({address:'Upravená adresa',point:[14.39,50.02],geometry:{type:'Point',coordinates:[14.39,50.02]}});expect(canonicalJson(release)).not.toContain('PRIVATE ZOO NOTE');expect(release.data.pois.filter(p=>p.category==='airport')).toHaveLength(3);expect(release.data.pois.filter(p=>p.category==='park')).toHaveLength(1);
+ const release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);expect(release.schemaVersion).toBe(3);expect(release.data.pois.filter(p=>p.category==='zoo')).toHaveLength(8);expect(release.data.pois.find(p=>p.id===zoos[2].id)).toMatchObject({address:'Upravená adresa',point:[14.39,50.02],geometry:{type:'Point',coordinates:[14.39,50.02]}});expect(canonicalJson(release)).not.toContain('PRIVATE ZOO NOTE');expect(release.data.pois.filter(p=>p.category==='airport')).toHaveLength(3);expect(release.data.pois.filter(p=>p.category==='park')).toHaveLength(1);
  const entry=await releaseEntry(release),index={format:'jetlag-prague-game-catalog',schemaVersion:1,current:entry,versions:[entry]};
  const fetcher=(async(input:RequestInfo|URL)=>String(input).endsWith('current.json')?Response.json(index):new Response(canonicalJson(release))) as typeof fetch;
  const loaded=(await loadGameDataRelease('https://example.test/releases/',fetcher)).release;expect(nearestApprovedPoi([14.39,50.02],'zoo',loaded.data.pois)).toMatchObject({state:'known',poi:{id:zoos[2].id},distanceMeters:0});

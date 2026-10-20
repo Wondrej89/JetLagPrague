@@ -4,7 +4,7 @@ Veřejný klient je na **[JetLagPrague/](https://wondrej89.github.io/JetLagPragu
 
 Panel **Publikace herních podkladů** kontroluje a porovnává samostatný verzovaný herní katalog. Publikace používá autorizovanou GitHub App a Cloudflare Worker; stávající konfigurace a ochrany se zachovávají. V novém prostředí bez konfigurace zůstává zápis zakázaný. Český [postup nastavení, publikace, ověření nasazení a rollbacku](docs/PUBLISHING.md) obsahuje také kompatibilitu verzí a aktualizaci Workeru.
 
-Herní podklady se načítají z neměnných publikací. Vydání této iterace navazuje na schválenou publikaci z 20. 10. 2026: zachovává **117 parků, 3 letiště, administrativní hranice a stejný PID snapshot** a přidává **10 zoo a míst se zvířaty**. Starší publikace zůstávají dostupné. Soukromé úpravy v prohlížeči se projeví ve hře až po publikaci; multiplayer zatím není dostupný.
+Herní podklady se načítají z neměnných publikací. Vydání této iterace navazuje na schválenou publikaci z 20. 10. 2026: zachovává **117 parků, 3 letiště, 10 zoo a míst se zvířaty, administrativní hranice a stejný PID snapshot** a přidává **10 nemocnic**. Starší publikace zůstávají dostupné. Soukromé úpravy v prohlížeči se projeví ve hře až po publikaci; multiplayer zatím není dostupný.
 
 
 Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny. [Iterace 03B](CODEX_UKOL_03B_GTFS.md) používá aktuální obsluhu z GTFS a ruční serverovou publikaci. **Iterace 04A** přidává letiště, správu parků a geografické funkce POI pro Matching a Measuring.
@@ -12,6 +12,16 @@ Herní podklady se načítají z neměnných publikací. Vydání této iterace 
 Iterace 02 používá dodané soubory `data/raw/mestskecasti.geojson` (**57 městských částí**) a `data/raw/katastralni-uzemi-praha.geojson` (**112 katastrálních území Prahy**). Zachovává všechny souřadnice a atributy, podporuje samostatné zobrazení vrstev, zvýraznění území, přesouvatelný testovací bod a kontrolovanou aktualizaci zdrojů. Mapy.com poskytuje pouze mapový podklad.
 
 Původ je zaznamenán v `data/source-metadata/`: městské části mají v dodaných datech poskytovatele HMP-IPR a katalogový odkaz IPR, katalogový odkaz ČSÚ pro katastry doložil uživatel. **Licence a datum platnosti celé sady nejsou v dodaných souborech uvedeny a zůstávají výslovně nedoložené.** Datum převzetí do repozitáře se za datum platnosti nevydává. MIT licence kódu automaticky neurčuje licenci zdrojových geodat.
+
+## Nemocnice
+
+Vrstva **Body zájmu → Nemocnice** obsahuje přesně deset schválených nemocnic ze zadání. Má vlastní viditelnost, ikonu kříže, počty a hledání podle názvu i stabilního ID. Dodané GPS body jsou uložené jako GeoJSON `Point` v pořadí `[longitude, latitude]`; nemocnice sv. Alžběty má adresu prázdnou. Výchozí body jsou součástí aplikace a veřejné publikace, dostupné i na novém zařízení.
+
+Výběr v seznamu nebo mapě otevře název, volitelnou adresu, poznámku, GPS a metadata. **Přesunout bod nemocnice v mapě** dovolí přetažení; **Vyřadit ze hry / Vrátit do hry** mění herní způsobilost. **Přidat nemocnici** vloží vlastní bod, který vyžaduje název a schválení, adresa není povinná. Odstranit lze vlastní nemocnici; katalogová se vyřazuje. Úpravy, schválení i viditelnost zůstávají v IndexedDB, undo/redo a úplných JSON/GeoJSON zálohách. Doplnění katalogu při inicializaci před autosave zachovává uložené body a rozhodnutí.
+
+Kategorie `hospital` používá stejné `nearestApprovedPoi`, Matching a Measuring jako zoo: geografickou vzdálenost v metrech k bodu, jen schválené kandidáty, stabilní ID při shodě a „nelze určit“ bez schváleného kandidáta. Viditelnost nerozhoduje o účasti ve hře. Publikují se pouze schválené nemocnice přes stávající GitHub App a Cloudflare Worker; osobní poznámky zůstávají soukromé. Starší publikace jsou nadále ověřitelné.
+
+Zdroj **Ruční výběr na Mapy.com** znamená výběr správce pro lokální hru, nikoli úplný zdravotnický registr nebo nezávisle ověřené geodetické souřadnice. Body neurčují hranice areálů; geokódování se nepoužívá. Licence převzatých bodů a datum platnosti nejsou doložené. [Původ a audit nemocnic](data/source-metadata/hospitals-curated.md).
 
 ## Zoo a místa se zvířaty
 
@@ -25,7 +35,7 @@ Zdrojové body jsou v nepovinném `poi.pointCatalog`, uživatelské zásahy odd�
 
 `nearestApprovedPoi`, `matchingPois` a `measuringPois` pracují i přímo s veřejnými DTO zoo: používají geografickou vzdálenost k referenčnímu bodu, ignorují `excluded` a `review` a při shodné vzdálenosti zachovávají pravidlo stabilního ID. Viditelnost vrstvy nemění herní způsobilost.
 
-Nové herní katalogy používají **GameDataRelease 2**, který podporuje kategorii `zoo` a adresu. Čtení a kontrolní součty historického schématu 1 zůstávají zachované; staré soubory se nepřepisují. Publikují se pouze schválené zoo. Pracovní poznámky a importní audit se do veřejného katalogu neposílají. Aktuální Worker v `/status` oznamuje podporu obou verzí; starší server publikaci zoo bezpečně zablokuje do aktualizace. V tomto repozitáři je také připojen automatický **Workers Builds** pro publikační server; jeho výsledek se ověřuje odděleně od Pages.
+Nové herní katalogy používají **GameDataRelease 3**, který podporuje kategorie `zoo`, `hospital` a adresu. Čtení a kontrolní součty historických schémat 1 a 2 zůstávají zachované; staré soubory se nepřepisují. Publikují se pouze schválené zoo. Pracovní poznámky a importní audit se do veřejného katalogu neposílají. Aktuální Worker v `/status` oznamuje podporu verzí 1, 2 a 3; starší server publikaci nového schématu bezpečně zablokuje do aktualizace. V tomto repozitáři je také připojen automatický **Workers Builds** pro publikační server; jeho výsledek se ověřuje odděleně od Pages.
 
 ## Iterace 04A – letiště a parky
 
