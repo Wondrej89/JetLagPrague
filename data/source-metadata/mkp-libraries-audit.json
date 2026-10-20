@@ -1,0 +1,449 @@
+{
+  "catalogUrl": "https://www.mlp.cz/cz/pobocky",
+  "selectionDate": "2026-10-20",
+  "selectionPreparedAt": "2026-10-20T10:57:42.850Z",
+  "selectionChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+  "checkedDate": "2026-10-20",
+  "outcome": "blocked_by_environment_network",
+  "failure": "HTTPS access failed with 403 before the official catalogue could be loaded.",
+  "officialDetailsVerified": 0,
+  "verifiedLocations": 0,
+  "approvedDefaultLibraries": 0,
+  "unresolved": [
+    {
+      "selectionKey": "barrandov",
+      "name": "Barrandov",
+      "address": "Wassermannova 926/16, Praha 5",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "bohnice",
+      "name": "Bohnice",
+      "address": "Těšínská 600/4, Praha 8",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "brusnice-vzacne-tisky",
+      "name": "Brusnice – vzácné tisky",
+      "address": "U Brusnice 324/9, Praha 6",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "brevnov",
+      "name": "Břevnov",
+      "address": "Bělohorská 1666/56, Praha 6",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "cibulka",
+      "name": "Cibulka",
+      "address": "Musílkova 335/62, Praha 5",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "cerny-most",
+      "name": "Černý Most",
+      "address": "Bobkova 534/47, Praha 14",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "dedina",
+      "name": "Dědina",
+      "address": "Žukovského 888/2, Praha 6",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "dejvice",
+      "name": "Dejvice",
+      "address": "Technická 2710/6, Praha 6",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "dittrichova",
+      "name": "Dittrichova",
+      "address": "Dittrichova 1543/2, Praha 2",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "dum-cteni-ruska",
+      "name": "Dům čtení (Ruská)",
+      "address": "Ruská 1455/192, Praha 10",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "hloubetin",
+      "name": "Hloubětín",
+      "address": "Hloubětínská 1138/5, Praha 14",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "hostivar",
+      "name": "Hostivař",
+      "address": "Golfová 910/10, Praha 15",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "hradcany",
+      "name": "Hradčany",
+      "address": "Pohořelec 111/25, Praha 1",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "chodov",
+      "name": "Chodov",
+      "address": "Jírovcovo náměstí 1782/1, Praha 11",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "jezerka",
+      "name": "Jezerka",
+      "address": "Nuselská 603/94, Praha 4",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "kobylisy",
+      "name": "Kobylisy",
+      "address": "Klapkova 26/3, Praha 8",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "korunni",
+      "name": "Korunní",
+      "address": "Korunní 2160/68, Praha 10",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "krc",
+      "name": "Krč",
+      "address": "Štúrova 1282/12, Praha 4",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "ladvi",
+      "name": "Ládví",
+      "address": "Burešova 1661/2, Praha 8",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "letna",
+      "name": "Letná",
+      "address": "Milady Horákové 387/56, Praha 7",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "luziny",
+      "name": "Lužiny",
+      "address": "Archeologická 2256/1, Praha 13",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "malesice",
+      "name": "Malešice",
+      "address": "Počernická 524/64, Praha 10",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "novodvorska",
+      "name": "Novodvorská",
+      "address": "Novodvorská 1013/151, Praha 4",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "opatov",
+      "name": "Opatov",
+      "address": "Opatovská 1754/14, Praha 11",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "ostrcilovo-namesti",
+      "name": "Ostrčilovo náměstí",
+      "address": "Ostrčilovo nám. 518/1, Praha 2",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "ostrovskeho",
+      "name": "Ostrovského",
+      "address": "Na Skalce 972/29, Praha 5",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "pankrac",
+      "name": "Pankrác",
+      "address": "Na Veselí 542/5, Praha 4",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "petriny",
+      "name": "Petřiny",
+      "address": "U Petřin 2511/1, Praha 6",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "prosek",
+      "name": "Prosek",
+      "address": "Měšická 806/3, Praha 9",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "rajska-zahrada",
+      "name": "Rajská zahrada",
+      "address": "Generála Janouška 1060/2, Praha 14",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "sedmicka",
+      "name": "Sedmička",
+      "address": "Tusarova 429/35, Praha 7",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "skalka",
+      "name": "Skalka",
+      "address": "Rubensova 2237/2, Praha 10",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "smichov",
+      "name": "Smíchov",
+      "address": "Náměstí 14. října 83/15, Praha 5",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "sporilov",
+      "name": "Spořilov",
+      "address": "Postupická 2932/7, Praha 4",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "stodulky",
+      "name": "Stodůlky",
+      "address": "Kovářova 1615/4, Praha 13",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "skolska",
+      "name": "Školská",
+      "address": "Školská 1267/30, Praha 1",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "ustredni-knihovna",
+      "name": "Ústřední knihovna",
+      "address": "Mariánské náměstí 98/1, Praha 1",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "velka-chuchle",
+      "name": "Velká Chuchle",
+      "address": "Starochuchelská 20/7, Praha 16",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "velky-mlyn",
+      "name": "Velký mlýn",
+      "address": "U Českých loděnic 40/6, Praha 8",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "vikova",
+      "name": "Vikova",
+      "address": "Vikova 1223/4, Praha 4",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "vozovna",
+      "name": "Vozovna",
+      "address": "Za Žižkovskou vozovnou 2687/18, Praha 3",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "vysocany",
+      "name": "Vysočany",
+      "address": "Zbuzkova 285/34, Praha 9",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "zahradni-mesto",
+      "name": "Zahradní Město",
+      "address": "Topolová 2961/12a, Praha 10",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "zahrebska",
+      "name": "Záhřebská",
+      "address": "Záhřebská 158/20, Praha 2",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    },
+    {
+      "selectionKey": "zizkov",
+      "name": "Žižkov",
+      "address": "Husitská 110/70, Praha 3",
+      "officialId": null,
+      "officialUrl": null,
+      "point": null,
+      "status": "review"
+    }
+  ],
+  "excluded": [
+    {
+      "name": "Modřany",
+      "reason": "Technicky uzavřená pobočka podle zadání"
+    },
+    {
+      "name": "DOK16",
+      "reason": "Dlouhodobě uzavřená sousedská dílna"
+    },
+    {
+      "name": "Kiosek CČM; Kiosek DBK; Kiosek Chodov",
+      "reason": "Kiosky"
+    },
+    {
+      "name": "Kobylisy – Oddělení pro děti",
+      "reason": "Duplicitní služba pobočky Kobylisy"
+    },
+    {
+      "name": "Ústřední knihovna – Dílna; Divadlo říše loutek; Kreativní centrUM; Pokladna sálů",
+      "reason": "Doplňkové služby Ústřední knihovny"
+    },
+    {
+      "name": "Všechny bibliobusy a jejich zastávky",
+      "reason": "Mobilní služby"
+    }
+  ],
+  "license": {
+    "name": "Nedoložena",
+    "url": null
+  }
+}

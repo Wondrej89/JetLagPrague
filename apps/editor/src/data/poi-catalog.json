@@ -868,5 +868,1178 @@
       "note": "",
       "attributes": {}
     }
+  ],
+  "libraries": [],
+  "unlocatedLibraries": [
+    {
+      "id": "library-pending:mkp-selection:barrandov",
+      "selectionKey": "barrandov",
+      "name": "Barrandov",
+      "address": "Wassermannova 926/16, Praha 5",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:bohnice",
+      "selectionKey": "bohnice",
+      "name": "Bohnice",
+      "address": "Těšínská 600/4, Praha 8",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:brusnice-vzacne-tisky",
+      "selectionKey": "brusnice-vzacne-tisky",
+      "name": "Brusnice – vzácné tisky",
+      "address": "U Brusnice 324/9, Praha 6",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:brevnov",
+      "selectionKey": "brevnov",
+      "name": "Břevnov",
+      "address": "Bělohorská 1666/56, Praha 6",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:cibulka",
+      "selectionKey": "cibulka",
+      "name": "Cibulka",
+      "address": "Musílkova 335/62, Praha 5",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:cerny-most",
+      "selectionKey": "cerny-most",
+      "name": "Černý Most",
+      "address": "Bobkova 534/47, Praha 14",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:dedina",
+      "selectionKey": "dedina",
+      "name": "Dědina",
+      "address": "Žukovského 888/2, Praha 6",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:dejvice",
+      "selectionKey": "dejvice",
+      "name": "Dejvice",
+      "address": "Technická 2710/6, Praha 6",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:dittrichova",
+      "selectionKey": "dittrichova",
+      "name": "Dittrichova",
+      "address": "Dittrichova 1543/2, Praha 2",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:dum-cteni-ruska",
+      "selectionKey": "dum-cteni-ruska",
+      "name": "Dům čtení (Ruská)",
+      "address": "Ruská 1455/192, Praha 10",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:hloubetin",
+      "selectionKey": "hloubetin",
+      "name": "Hloubětín",
+      "address": "Hloubětínská 1138/5, Praha 14",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:hostivar",
+      "selectionKey": "hostivar",
+      "name": "Hostivař",
+      "address": "Golfová 910/10, Praha 15",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:hradcany",
+      "selectionKey": "hradcany",
+      "name": "Hradčany",
+      "address": "Pohořelec 111/25, Praha 1",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:chodov",
+      "selectionKey": "chodov",
+      "name": "Chodov",
+      "address": "Jírovcovo náměstí 1782/1, Praha 11",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:jezerka",
+      "selectionKey": "jezerka",
+      "name": "Jezerka",
+      "address": "Nuselská 603/94, Praha 4",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:kobylisy",
+      "selectionKey": "kobylisy",
+      "name": "Kobylisy",
+      "address": "Klapkova 26/3, Praha 8",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:korunni",
+      "selectionKey": "korunni",
+      "name": "Korunní",
+      "address": "Korunní 2160/68, Praha 10",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:krc",
+      "selectionKey": "krc",
+      "name": "Krč",
+      "address": "Štúrova 1282/12, Praha 4",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:ladvi",
+      "selectionKey": "ladvi",
+      "name": "Ládví",
+      "address": "Burešova 1661/2, Praha 8",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:letna",
+      "selectionKey": "letna",
+      "name": "Letná",
+      "address": "Milady Horákové 387/56, Praha 7",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:luziny",
+      "selectionKey": "luziny",
+      "name": "Lužiny",
+      "address": "Archeologická 2256/1, Praha 13",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:malesice",
+      "selectionKey": "malesice",
+      "name": "Malešice",
+      "address": "Počernická 524/64, Praha 10",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:novodvorska",
+      "selectionKey": "novodvorska",
+      "name": "Novodvorská",
+      "address": "Novodvorská 1013/151, Praha 4",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:opatov",
+      "selectionKey": "opatov",
+      "name": "Opatov",
+      "address": "Opatovská 1754/14, Praha 11",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:ostrcilovo-namesti",
+      "selectionKey": "ostrcilovo-namesti",
+      "name": "Ostrčilovo náměstí",
+      "address": "Ostrčilovo nám. 518/1, Praha 2",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:ostrovskeho",
+      "selectionKey": "ostrovskeho",
+      "name": "Ostrovského",
+      "address": "Na Skalce 972/29, Praha 5",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:pankrac",
+      "selectionKey": "pankrac",
+      "name": "Pankrác",
+      "address": "Na Veselí 542/5, Praha 4",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:petriny",
+      "selectionKey": "petriny",
+      "name": "Petřiny",
+      "address": "U Petřin 2511/1, Praha 6",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:prosek",
+      "selectionKey": "prosek",
+      "name": "Prosek",
+      "address": "Měšická 806/3, Praha 9",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:rajska-zahrada",
+      "selectionKey": "rajska-zahrada",
+      "name": "Rajská zahrada",
+      "address": "Generála Janouška 1060/2, Praha 14",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:sedmicka",
+      "selectionKey": "sedmicka",
+      "name": "Sedmička",
+      "address": "Tusarova 429/35, Praha 7",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:skalka",
+      "selectionKey": "skalka",
+      "name": "Skalka",
+      "address": "Rubensova 2237/2, Praha 10",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:smichov",
+      "selectionKey": "smichov",
+      "name": "Smíchov",
+      "address": "Náměstí 14. října 83/15, Praha 5",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:sporilov",
+      "selectionKey": "sporilov",
+      "name": "Spořilov",
+      "address": "Postupická 2932/7, Praha 4",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:stodulky",
+      "selectionKey": "stodulky",
+      "name": "Stodůlky",
+      "address": "Kovářova 1615/4, Praha 13",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:skolska",
+      "selectionKey": "skolska",
+      "name": "Školská",
+      "address": "Školská 1267/30, Praha 1",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:ustredni-knihovna",
+      "selectionKey": "ustredni-knihovna",
+      "name": "Ústřední knihovna",
+      "address": "Mariánské náměstí 98/1, Praha 1",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:velka-chuchle",
+      "selectionKey": "velka-chuchle",
+      "name": "Velká Chuchle",
+      "address": "Starochuchelská 20/7, Praha 16",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:velky-mlyn",
+      "selectionKey": "velky-mlyn",
+      "name": "Velký mlýn",
+      "address": "U Českých loděnic 40/6, Praha 8",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:vikova",
+      "selectionKey": "vikova",
+      "name": "Vikova",
+      "address": "Vikova 1223/4, Praha 4",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:vozovna",
+      "selectionKey": "vozovna",
+      "name": "Vozovna",
+      "address": "Za Žižkovskou vozovnou 2687/18, Praha 3",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:vysocany",
+      "selectionKey": "vysocany",
+      "name": "Vysočany",
+      "address": "Zbuzkova 285/34, Praha 9",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:zahradni-mesto",
+      "selectionKey": "zahradni-mesto",
+      "name": "Zahradní Město",
+      "address": "Topolová 2961/12a, Praha 10",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:zahrebska",
+      "selectionKey": "zahrebska",
+      "name": "Záhřebská",
+      "address": "Záhřebská 158/20, Praha 2",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    },
+    {
+      "id": "library-pending:mkp-selection:zizkov",
+      "selectionKey": "zizkov",
+      "name": "Žižkov",
+      "address": "Husitská 110/70, Praha 3",
+      "officialUrl": null,
+      "point": null,
+      "geometry": null,
+      "source": {
+        "id": "mkp-selection-2026-10-20",
+        "provider": "Městská knihovna v Praze",
+        "url": "https://www.mlp.cz/cz/pobocky",
+        "license": {
+          "name": "Licence katalogu a souřadnic není doložena",
+          "url": null
+        },
+        "dataDate": "2026-10-20",
+        "retrievedAt": "2026-10-20T10:57:42.850Z",
+        "rawChecksum": "907ef41610718ac7d4f24064f61e3b91fbe552bcde5bc0433572b088b6a7f42f",
+        "verification": "user_supplied",
+        "note": "Názvy a adresy z výběru správce podle katalogu MKP k 20. 10. 2026. Otevření oficiálního katalogu zablokovala síť prostředí (CONNECT 403); detaily, stabilní oficiální identity a GPS zatím nebyly ověřeny. Nejsou použity odhady ani geokódování."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha a URL oficiálního detailu nebyly ověřeny. Toto je pracovní identita dodaného výběru, nikoli oficiální ID pobočky."
+    }
   ]
 }

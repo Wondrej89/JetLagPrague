@@ -4,7 +4,7 @@ Veřejný klient je na **[JetLagPrague/](https://wondrej89.github.io/JetLagPragu
 
 Panel **Publikace herních podkladů** kontroluje a porovnává samostatný verzovaný herní katalog. Publikace používá autorizovanou GitHub App a Cloudflare Worker; stávající konfigurace a ochrany se zachovávají. V novém prostředí bez konfigurace zůstává zápis zakázaný. Český [postup nastavení, publikace, ověření nasazení a rollbacku](docs/PUBLISHING.md) obsahuje také kompatibilitu verzí a aktualizaci Workeru.
 
-Herní podklady se načítají z neměnných publikací. Vydání této iterace navazuje na schválenou publikaci z 20. 10. 2026: zachovává **117 parků, 3 letiště, 10 zoo a míst se zvířaty, administrativní hranice a stejný PID snapshot** a přidává **10 nemocnic**. Starší publikace zůstávají dostupné. Soukromé úpravy v prohlížeči se projeví ve hře až po publikaci; multiplayer zatím není dostupný.
+Herní podklady se načítají z neměnných publikací. Poslední zveřejněný katalog navazuje na schválenou publikaci z 20. 10. 2026: zachovává **117 parků, 3 letiště, 10 zoo a míst se zvířaty, administrativní hranice a stejný PID snapshot** a přidává **10 nemocnic**. Starší publikace zůstávají dostupné. Soukromé úpravy v prohlížeči se projeví ve hře až po publikaci; multiplayer zatím není dostupný.
 
 
 Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny. [Iterace 03B](CODEX_UKOL_03B_GTFS.md) používá aktuální obsluhu z GTFS a ruční serverovou publikaci. **Iterace 04A** přidává letiště, správu parků a geografické funkce POI pro Matching a Measuring.
@@ -12,6 +12,22 @@ Herní podklady se načítají z neměnných publikací. Vydání této iterace 
 Iterace 02 používá dodané soubory `data/raw/mestskecasti.geojson` (**57 městských částí**) a `data/raw/katastralni-uzemi-praha.geojson` (**112 katastrálních území Prahy**). Zachovává všechny souřadnice a atributy, podporuje samostatné zobrazení vrstev, zvýraznění území, přesouvatelný testovací bod a kontrolovanou aktualizaci zdrojů. Mapy.com poskytuje pouze mapový podklad.
 
 Původ je zaznamenán v `data/source-metadata/`: městské části mají v dodaných datech poskytovatele HMP-IPR a katalogový odkaz IPR, katalogový odkaz ČSÚ pro katastry doložil uživatel. **Licence a datum platnosti celé sady nejsou v dodaných souborech uvedeny a zůstávají výslovně nedoložené.** Datum převzetí do repozitáře se za datum platnosti nevydává. MIT licence kódu automaticky neurčuje licenci zdrojových geodat.
+
+## Knihovny Městské knihovny v Praze
+
+Vrstva **Body zájmu → Knihovny** obsahuje přesně 45 názvů a adres ze zadání. **Oficiální katalog `www.mlp.cz` blokuje síť cloudového prostředí (403), takže zatím není ověřena ani jedna poloha ani URL detailu. Všech 45 poboček proto zůstává `review`, bez geometrie a bez značek v mapě; do veřejné herní vrstvy vstupuje 0 knihoven.** Souřadnice ani oficiální identifikátory nebyly odhadnuté. [Úplný seznam nedořešených lokalit, adresy a audit](data/source-metadata/mkp-libraries.md).
+
+Nezahrnují se Modřany, DOK16, kiosky, doplňkové služby Ústřední knihovny, duplicitní dětské oddělení ani bibliobusy. Brusnice a Velký mlýn ve výběru zůstávají a lze je individuálně vyřadit. Otevírací doba, víkendy a svátky se nepoužívají k filtrování.
+
+Přepínač **Knihovny** má vlastní viditelnost a počty schválených, vyřazených a neověřených objektů. Hledání funguje podle názvu, ID a adresy. Neověřenou pobočku lze vybrat, přejmenovat, opatřit poznámkou, vyřadit nebo vrátit k revizi. Pro doplnění polohy vložte **skutečný odkaz na oficiální detail** a buď GPS, nebo zvolte **Umístit bod knihovny v mapě**. Pracovní ID `library-pending:mkp-selection:…` označuje pouze dodaný výběr; po určení detailu vznikne stabilní `library:mkp:…` podle oficiálního identifikátoru nebo URL slugu.
+
+Knihovna s bodem má ikonu knihy, úpravu názvu, adresy, poznámky, GPS i tažení v mapě. Před schválením je nutné výslovně potvrdit ověření přesné polohy podle oficiálního detailu. **Každá změna bodu zruší ověření a vrátí schválenou knihovnu k revizi.** Střed mapy ani geokódovaný návrh nejsou dokladem polohy. **Přidat knihovnu** umožní doplnit například znovu otevřenou pobočku; opakované oficiální ID se odmítne a existující objekt se znovu aktivuje ve vlastnostech.
+
+Úpravy i chybějící polohy se uchovávají v IndexedDB a úplných JSON/GeoJSON zálohách. Pozdější zdroj doplní dosud neznámé pobočky a převede rozhodnutí na původně neověřených kandidátech k odpovídajícím oficiálním ID. Názvy, vyloučení, body, poznámky a pozdější individuální rozhodnutí nepřepisuje. Schvalování knihoven nezasahuje do parků, zoo, nemocnic, letišť nebo PID.
+
+`nearestApprovedPoi`, Matching a Measuring používají jen schválené knihovny s doloženým bodem, geografickou vzdálenost v metrech a stávající pravidlo shod podle ID. Bez schválené knihovny vracejí „nelze určit“. Veřejná aplikace i Worker podporují **GameDataRelease 4** a historická schémata 1–3, kontrolní součty i dosavadní autorizaci. Do publikace se dostane pouze schválený bod, adresa, oficiální URL a doklad ověření; pracovní kandidáti ani poznámky se neposílají. Dosavadní neměnné publikace nebyly přegenerované.
+
+Pro dokončení automatického ověření je potřeba aktivovat uložený návrh povolení `www.mlp.cz` v nastavení cloudového prostředí (uložit a publikovat prostředí). Uložení návrhu samo síť nemění. Lze také dodat oficiální detaily a jejich přímé mapové odkazy k ověření; samotný mapový výřez nestačí.
 
 ## Nemocnice
 
@@ -35,7 +51,7 @@ Zdrojové body jsou v nepovinném `poi.pointCatalog`, uživatelské zásahy odd�
 
 `nearestApprovedPoi`, `matchingPois` a `measuringPois` pracují i přímo s veřejnými DTO zoo: používají geografickou vzdálenost k referenčnímu bodu, ignorují `excluded` a `review` a při shodné vzdálenosti zachovávají pravidlo stabilního ID. Viditelnost vrstvy nemění herní způsobilost.
 
-Nové herní katalogy používají **GameDataRelease 3**, který podporuje kategorie `zoo`, `hospital` a adresu. Čtení a kontrolní součty historických schémat 1 a 2 zůstávají zachované; staré soubory se nepřepisují. Publikují se pouze schválené zoo. Pracovní poznámky a importní audit se do veřejného katalogu neposílají. Aktuální Worker v `/status` oznamuje podporu verzí 1, 2 a 3; starší server publikaci nového schématu bezpečně zablokuje do aktualizace. V tomto repozitáři je také připojen automatický **Workers Builds** pro publikační server; jeho výsledek se ověřuje odděleně od Pages.
+Nové herní katalogy používají **GameDataRelease 4**, který podporuje kategorie `zoo`, `hospital`, `library`, adresy a doklad ověření knihoven. Čtení a kontrolní součty historických schémat 1, 2 a 3 zůstávají zachované; staré soubory se nepřepisují. Publikují se pouze schválené zoo. Pracovní poznámky a importní audit se do veřejného katalogu neposílají. Aktuální Worker v `/status` oznamuje podporu verzí 1, 2, 3 a 4; starší server publikaci nového schématu bezpečně zablokuje do aktualizace. V tomto repozitáři je také připojen automatický **Workers Builds** pro publikační server; jeho výsledek se ověřuje odděleně od Pages.
 
 ## Iterace 04A – letiště a parky
 

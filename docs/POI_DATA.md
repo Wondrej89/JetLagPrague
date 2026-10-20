@@ -146,3 +146,13 @@ Bez `PARKS_ZIP` se pouze audit skutečného archivu explicitně přeskočí; syn
 `hospital` navazuje na zoo, používá `poi.pointCatalog`, oddělené `poi.decisions` a vlastní body v `poi.manual`. Zdrojový katalog obsahuje deset správcem schválených nemocnic; adresy jsou volitelné. `withPublishedHospitals` doplní pouze dosud neznámé identity, nenahrazuje uložené řádky ani uživatelská rozhodnutí. `resolvePois` udržuje shodu Point geometrie s upraveným referenčním bodem. Katalogová nemocnice se vyřazuje, ručně vytvořenou lze odstranit.
 
 Herní funkce používají výhradně referenční bod, schválení a geografickou vzdálenost. Polygon ani silniční vzdálenost se nevyžadují. Vrstva má samostatný přepínač a červený kříž; parkové filtry a hromadné akce se na ni nevztahují. Publikace ve schématu 3 nese jen schválené objekty a zpětně čte schémata 1 a 2. [Původ, přesné body a omezení](../data/source-metadata/hospitals-curated.md).
+
+## Knihovny MKP
+
+Kategorie `library` vyžaduje Point, adresu a oficiální detail. `poi.unlocatedLibraries` uchovává kandidáty bez polohy odděleně od geografických POI: `point` i `geometry` jsou `null`, stav pouze `review` nebo `excluded`. Funkce `resolvePois` je nevrací, takže nemohou skončit v mapě, nejbližším POI ani publikaci. `resolveUnlocatedLibraries` aplikuje uživatelská rozhodnutí pro seznam a počty; po doplnění bodu skryje odpovídajícího kandidáta, jehož původ zůstane archivovaný.
+
+`library:mkp:…` vychází ze skutečně dodaného URL detailu nebo oficiálního `id`. Pracovní `library-pending:mkp-selection:…` není oficiální ID. Duplicitní ID ani opakované umístění stejného kandidáta se nepřijme. Při budoucím doplnění zdroje se převádí vyloučení, přejmenování a další rozhodnutí kandidáta, dosavadní body a pozdější změny se zachovávají.
+
+Ověření je navázané na konkrétní souřadnice; změna bodu je zneplatní. `explicitLibraryMapPoint` rozpoznává výslovný souřadnicový cíl/pin v odkazu (Mapy `source=coor&id=longitude,latitude`, souřadnicový dotaz, `geo:`). Samotné `x/y`, Google `@latitude,longitude`, ID firmy nebo adresa nejsou důkazem polohy. Pro automatický zdroj je nutné navíc doložit původ odkazu z detailu konkrétní pobočky. Ruční oprava vyžaduje explicitní kontrolu správce.
+
+Zdrojový seznam má 45 poboček; všechny jsou zatím k revizi kvůli blokaci `www.mlp.cz`. Licence není doložená. Nebyly doplněny odhadované souřadnice ani vymyšlené URL detailů. [Úplný audit a nedořešené lokality](../data/source-metadata/mkp-libraries.md).

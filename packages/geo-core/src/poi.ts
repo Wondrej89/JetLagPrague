@@ -9,6 +9,8 @@ const id = z.string().min(1).max(200);
 const text = z.string().max(10000);
 const httpUrl = z.url().refine(url => ['http:', 'https:'].includes(new URL(url).protocol));
 const pointSchema = z.tuple([z.number().finite().min(-180).max(180), z.number().finite().min(-90).max(90)]);
+export const libraryVerificationSchema = z.object({ point: pointSchema, method: z.enum(['official_map_link', 'manual_review']), checkedAt: z.iso.datetime(), url: httpUrl });
+export const libraryMetadataSchema = z.object({ officialUrl: httpUrl, selectionKey: id.optional(), verification: libraryVerificationSchema.optional() });
 export const poiStatusSchema = z.enum(['review', 'approved', 'excluded']);
 export const poiSourceSchema = z.object({
   id, provider: text.min(1), url: httpUrl.nullable(),
@@ -25,24 +27,30 @@ const geometrySchema = z.unknown().transform((value, ctx): Point | AreaGeometry 
   } catch (error) { ctx.addIssue({ code: 'custom', message: (error as Error).message }); return z.NEVER; }
 });
 export const poiSchema = z.object({
-  id, category: id, name: text, address: text.optional(), point: pointSchema, geometry: geometrySchema,
+  id, category: id, name: text, address: text.optional(), point: pointSchema, geometry: geometrySchema, library: libraryMetadataSchema.optional(),
   sourceId: id, source: poiSourceSchema, status: poiStatusSchema,
   reviewedAt: z.iso.datetime().nullable(), note: text,
   sourceIdentity: z.object({ key: id, fingerprint: z.string(), method: z.enum(['attribute-derived', 'manual']), reviewRequired: z.boolean() }).optional(),
   importAudit: z.object({ sourceRows: z.array(z.number().int().positive()), sourceNames: z.array(text), sourceRecords: z.array(z.object({ row: z.number().int().positive(), attributes: z.record(z.string(), z.json()) })), repairedRows: z.array(z.number().int().positive()), merged: z.boolean() }).optional(),
   attributes: z.record(z.string(), z.json()), memberIds: z.array(id).optional(),
 }).superRefine((poi, ctx) => {
-  if (!['zoo', 'hospital'].includes(poi.category)) return;
-  if (poi.geometry.type !== 'Point' || canonicalJson(poi.geometry.coordinates) !== canonicalJson(poi.point)) ctx.addIssue({ code: 'custom', message: `${poi.category === 'zoo' ? 'Zoo' : 'Nemocnice'} musí mít geometrii Point shodnou s referenčním bodem.` });
+  if (!['zoo', 'hospital', 'library'].includes(poi.category)) return;
+  if (poi.geometry.type !== 'Point' || canonicalJson(poi.geometry.coordinates) !== canonicalJson(poi.point)) ctx.addIssue({ code: 'custom', message: `${poi.category === 'zoo' ? 'Zoo' : poi.category === 'library' ? 'Knihovna' : 'Nemocnice'} musí mít geometrii Point shodnou s referenčním bodem.` });
   if (poi.category === 'zoo' && poi.address === undefined) ctx.addIssue({ code: 'custom', message: 'Zoo musí obsahovat adresu.' });
+  if (poi.category === 'library' && (!poi.library || !poi.address?.trim())) ctx.addIssue({ code: 'custom', message: 'Knihovna musí mít adresu a metadata oficiálního detailu.' });
+  if (poi.category === 'library' && poi.status === 'approved' && (!poi.library?.verification || canonicalJson(poi.library.verification.point) !== canonicalJson(poi.point))) ctx.addIssue({ code: 'custom', message: 'Schválená knihovna musí mít doloženou polohu pro tento referenční bod.' });
 });
 export type Poi = z.infer<typeof poiSchema>;
 export type PoiSource = z.infer<typeof poiSourceSchema>;
+/** Unlocated candidates are deliberately not geographic POIs: no invented Point,
+ * no map marker and no participation in distance calculations or publication. */
+export const unlocatedLibrarySchema = z.object({ id, selectionKey: id, name: text.min(1), address: text.min(1), officialUrl: httpUrl.nullable(), point: z.null(), geometry: z.null(), source: poiSourceSchema, status: z.enum(['review', 'excluded']), reviewedAt: z.iso.datetime().nullable(), note: text });
+export type UnlocatedLibrary = z.infer<typeof unlocatedLibrarySchema>;
 export const parkDatasetSchema = z.object({
   source: poiSourceSchema, records: z.array(poiSchema).max(10000), importRecord: z.json().optional(), checksum: z.string().regex(/^[a-f0-9]{64}$/),
 });
 export type ParkDataset = z.infer<typeof parkDatasetSchema>;
-const decisionSchema = z.object({ id, name: text.optional(), address: text.optional(), point: pointSchema.optional(), status: poiStatusSchema.optional(), reviewedAt: z.iso.datetime().nullable(), note: text.optional() });
+const decisionSchema = z.object({ id, name: text.optional(), address: text.optional(), point: pointSchema.optional(), status: poiStatusSchema.optional(), reviewedAt: z.iso.datetime().nullable(), note: text.optional(), libraryVerification: libraryVerificationSchema.nullable().optional() });
 export type PoiDecision = z.infer<typeof decisionSchema>;
 export const parkHierarchySchema = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal('unknown')]);
 export type ParkHierarchy = z.infer<typeof parkHierarchySchema>;
@@ -54,8 +62,9 @@ export type ParkFilters = z.infer<typeof parkFiltersSchema>;
 export const poiConfigurationSchema = z.object({
   version: z.literal(1), sources: z.array(parkDatasetSchema).max(50),
   pointCatalog: z.array(poiSchema).max(10000).optional(),
+  unlocatedLibraries: z.array(unlocatedLibrarySchema).max(10000).optional(),
   manual: z.array(poiSchema).max(10000), decisions: z.array(decisionSchema).max(20000),
-  visibility: z.object({ airports: z.boolean(), parks: z.boolean(), referencePoints: z.boolean(), zoos: z.boolean().optional(), hospitals: z.boolean().optional() }),
+  visibility: z.object({ airports: z.boolean(), parks: z.boolean(), referencePoints: z.boolean(), zoos: z.boolean().optional(), hospitals: z.boolean().optional(), libraries: z.boolean().optional() }),
   parkFilters: parkFiltersSchema.optional(),
 });
 export type PoiConfiguration = z.infer<typeof poiConfigurationSchema>;
@@ -66,16 +75,19 @@ function unique(ids: string[]) { if (new Set(ids).size !== ids.length) throw new
 export function validatePoiConfiguration(input: PoiConfiguration): void {
   unique(input.sources.map(s => s.source.id));
   const records = [...input.sources.flatMap(s => s.records), ...(input.pointCatalog ?? []), ...input.manual];
-  unique(records.map(p => p.id)); unique(input.decisions.map(d => d.id));
+  unique([...records.map(p => p.id), ...(input.unlocatedLibraries ?? []).map(p => p.id)]); unique(input.decisions.map(d => d.id));
+  unique((input.unlocatedLibraries ?? []).map(p => p.selectionKey));
+  unique(records.filter(p => p.category === 'library' && p.library?.selectionKey).map(p => p.library!.selectionKey!));
   for (const dataset of input.sources) for (const record of dataset.records) {
     if (record.category !== 'park' || record.source.id !== dataset.source.id || record.id !== parkId(dataset.source.id, record.sourceIdentity?.key ?? record.sourceId)) throw new Error('Nesouhlasí identita zdrojového parku.');
     if (record.status !== 'review' || record.reviewedAt !== null) throw new Error('Zdrojoví kandidáti se schvalují odděleným rozhodnutím.');
   }
-  if (input.pointCatalog?.some(record => !['zoo', 'hospital'].includes(record.category))) throw new Error('Bodový katalog této iterace obsahuje pouze zoo a nemocnice.');
+  if (input.pointCatalog?.some(record => !['zoo', 'hospital', 'library'].includes(record.category))) throw new Error('Bodový katalog této iterace obsahuje pouze zoo, nemocnice a knihovny.');
   for (const record of records) {
-    if (record.category === 'zoo' || record.category === 'hospital') {
+    if (['zoo', 'hospital', 'library'].includes(record.category)) {
       if (record.geometry.type !== 'Point' || canonicalJson(record.geometry.coordinates) !== canonicalJson(record.point)) throw new Error('Bodový POI musí mít shodný referenční bod a geometrii Point.');
       if (record.category === 'zoo' && record.address === undefined) throw new Error('Zoo musí mít adresu.');
+      if (record.category === 'library' && (!record.library || record.id !== libraryId(record.library.officialUrl) || !record.address?.trim())) throw new Error('Nesouhlasí identita nebo adresa knihovny.');
       continue;
     }
     if (record.category !== 'park' || !isArea(record.geometry)) throw new Error('Vlastní a importované POI této iterace musí být polygonové parky.');
@@ -191,21 +203,31 @@ export function resolvePois(airports: Poi[], configuration: PoiConfiguration): P
   return [...airports, ...sources, ...configuration.manual.filter(p => !sourceIds.has(p.id))].map(record => {
     const decision = record.category === 'airport' ? undefined : decisions.get(record.id);
     const result = { ...record, ...decision, id: record.id };
-    if (record.category === 'zoo' || record.category === 'hospital') result.geometry = { type: 'Point', coordinates: result.point };
+    if (['zoo', 'hospital', 'library'].includes(record.category)) result.geometry = { type: 'Point', coordinates: result.point };
+    if (record.category === 'library' && record.library) result.library = { ...record.library, verification: decision?.libraryVerification === undefined ? record.library.verification : decision.libraryVerification ?? undefined };
     if (record.attributes.sourceMergedInto) return { ...result, status: 'excluded' as const, note: `${result.note} Historická identita sjednocena do ${record.attributes.sourceMergedInto}.` };
-    if (record.sourceIdentity?.reviewRequired || (['park', 'zoo', 'hospital'].includes(record.category) && !result.name.trim()) || (record.category === 'zoo' && !result.address?.trim()) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
+    if (record.sourceIdentity?.reviewRequired || (['park', 'zoo', 'hospital', 'library'].includes(record.category) && !result.name.trim()) || (record.category === 'zoo' && !result.address?.trim()) || (record.category === 'library' && (!result.address?.trim() || !isLibraryLocationVerified(result))) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
       return { ...result, status: result.status === 'excluded' ? 'excluded' as const : 'review' as const, note: `${result.note} Referenční bod nebo dostupnost zdroje vyžaduje revizi.` };
     }
     return result;
   });
 }
 export function preparePoiDecision(poi: Poi, previous: PoiDecision | undefined, change: Partial<Omit<PoiDecision, 'id'>>, reviewedAt = new Date().toISOString()): PoiDecision {
-  if (!['park', 'zoo', 'hospital'].includes(poi.category)) throw new Error('Schválená letiště této lokální kategorie se automaticky nemění.');
+  if (!['park', 'zoo', 'hospital', 'library'].includes(poi.category)) throw new Error('Schválená letiště této lokální kategorie se automaticky nemění.');
   if (change.point) {
     pointSchema.parse(change.point);
     if (poi.category === 'park' && (!isArea(poi.geometry) || !booleanPointInPolygon(change.point, poi.geometry, { ignoreBoundary: true }))) throw new Error('Referenční bod musí ležet uvnitř parku, mimo otvory a hranici.');
   }
   const decision = decisionSchema.parse({ ...previous, ...change, id: poi.id, reviewedAt });
+  if (poi.category === 'library') {
+    if (!poi.library || poi.id !== libraryId(poi.library.officialUrl) || poi.geometry.type !== 'Point') throw new Error('Knihovna vyžaduje bod a stabilní identitu oficiální pobočky.');
+    const point = decision.point ?? poi.point;
+    const verification = decision.libraryVerification === undefined ? poi.library.verification : decision.libraryVerification ?? undefined;
+    const verified = isLibraryLocationVerified({ ...poi, point, library: { ...poi.library, verification } });
+    if (change.status === 'approved' && (!verified || !(decision.name ?? poi.name).trim() || !(decision.address ?? poi.address)?.trim())) throw new Error('Před schválením knihovny ověřte přesnou polohu, název a adresu.');
+    if (!verified && decision.status === 'approved') decision.status = 'review';
+    return decision;
+  }
   if (poi.category === 'zoo') {
     if (poi.geometry.type !== 'Point') throw new Error('Zoo musí mít bodovou geometrii.');
     if (decision.status === 'approved' && (!(decision.name ?? poi.name).trim() || !(decision.address ?? poi.address)?.trim())) throw new Error('Před schválením zoo doplňte název a adresu.');
@@ -297,6 +319,44 @@ export function withPublishedZoos(configuration: PoiConfiguration, published: re
 export function withPublishedHospitals(configuration: PoiConfiguration, published: readonly Poi[]): PoiConfiguration {
   if (published.some(poi => poi.category !== 'hospital')) throw new Error('Katalog nemocnic obsahuje jinou kategorii.');
   return withPublishedPointPois(configuration, published);
+}
+export function withPublishedLibraries(configuration: PoiConfiguration, published: readonly Poi[], unlocated: readonly UnlocatedLibrary[] = []): PoiConfiguration {
+  if (published.some(poi => poi.category !== 'library')) throw new Error('Katalog knihoven obsahuje jinou kategorii.');
+  const saved = [...(configuration.pointCatalog ?? []), ...configuration.manual], savedIds = new Set(saved.map(poi => poi.id));
+  const locatedKeys = new Set(saved.filter(poi => poi.category === 'library').map(poi => poi.library?.selectionKey).filter(Boolean));
+  // A locally positioned candidate remains authoritative for this draft, even
+  // if a new source uses another URL alias. Never create a second branch.
+  const accepted = published.filter(poi => !poi.library?.selectionKey || !locatedKeys.has(poi.library.selectionKey) || savedIds.has(poi.id));
+  const next = withPublishedPointPois(configuration, accepted), known = new Set((next.unlocatedLibraries ?? []).map(row => row.selectionKey));
+  const added = unlocated.filter(row => !known.has(row.selectionKey));
+  const result = added.length ? { ...next, unlocatedLibraries: [...(next.unlocatedLibraries ?? []), ...added] } : next;
+  const decisions = new Map(result.decisions.map(decision => [decision.id, decision]));
+  for (const poi of accepted) {
+    const candidate = result.unlocatedLibraries?.find(row => row.selectionKey === poi.library?.selectionKey);
+    const previous = candidate && decisions.get(candidate.id);
+    if (previous && !decisions.has(poi.id)) {
+      const inherited = { ...previous, id: poi.id };
+      delete inherited.point; delete inherited.libraryVerification;
+      for (const key of ['name', 'address', 'note', 'status'] as const) if (inherited[key] === undefined) delete inherited[key];
+      decisions.set(poi.id, inherited);
+    }
+  }
+  return decisions.size === result.decisions.length ? result : { ...result, decisions: [...decisions.values()] };
+}
+/** A branch ID comes only from a supplied official detail URL, never a guessed
+ * slug or geocoded name. Catalog/service pages cannot identify a branch. */
+export function libraryId(input: string): string {
+  const url = new URL(input), parts = url.pathname.split('/').filter(Boolean), branchIndex = parts.indexOf('pobocky');
+  if (url.protocol !== 'https:' || !['www.mlp.cz', 'mlp.cz'].includes(url.hostname) || url.port || url.username || url.password || branchIndex < 0) throw new Error('Doplňte skutečný HTTPS odkaz na detail pobočky na mlp.cz, nikoli přehled poboček.');
+  const key = url.searchParams.get('id') ?? parts.slice(branchIndex + 1).at(-1);
+  if (!key || ['detail', 'pobocky'].includes(key)) throw new Error('Z URL nelze určit stabilní identifikátor pobočky.');
+  return `library:mkp:${encodeURIComponent(decodeURIComponent(key))}`;
+}
+export function isLibraryLocationVerified(poi: Pick<Poi, 'id' | 'point' | 'library'>): boolean {
+  try {
+    const metadata = poi.library, verification = metadata?.verification;
+    return !!metadata && !!verification && poi.id === libraryId(metadata.officialUrl) && libraryId(verification.url) === poi.id && canonicalJson(verification.point) === canonicalJson(poi.point);
+  } catch { return false; }
 }
 function withPublishedPointPois(configuration: PoiConfiguration, published: readonly Poi[]): PoiConfiguration {
   const known = new Set([...(configuration.pointCatalog ?? []), ...configuration.manual, ...configuration.sources.flatMap(source => source.records)].map(poi => poi.id));

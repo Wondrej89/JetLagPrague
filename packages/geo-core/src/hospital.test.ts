@@ -84,7 +84,7 @@ describe('Hospital catalog and saved decisions', () => {
   });
 });
 
-it('publishes only approved hospitals in schema 3, preserves optional addresses and loads geographic public DTOs', async () => {
+it('publishes only approved hospitals in the current schema, preserves optional addresses and loads geographic public DTOs', async () => {
   const { world, snapshot } = await releaseTestInput();
   world.poi = withPublishedZoos(world.poi!, catalog.zoos.map(poi => poiSchema.parse(poi)));
   const before = await buildGameDataRelease(world, releaseTestAirports, snapshot, releaseTestDate);
@@ -92,7 +92,7 @@ it('publishes only approved hospitals in schema 3, preserves optional addresses 
   world.poi = decidePoi(world.poi, hospitals[0], { status: 'excluded' }); world.poi = decidePoi(world.poi, hospitals[1], { status: 'review' });
   world.poi = decidePoi(world.poi, hospitals[3], { name: 'Upravený Motol', address: 'Upravená adresa', point: [14.341, 50.074], note: 'PRIVATE HOSPITAL NOTE' });
   const release = await buildGameDataRelease(world, releaseTestAirports, snapshot, releaseTestDate);
-  expect(release.schemaVersion).toBe(3); expect(release.data.pois.filter(poi => poi.category === 'hospital')).toHaveLength(8);
+  expect(release.schemaVersion).toBe(4); expect(release.data.pois.filter(poi => poi.category === 'hospital')).toHaveLength(8);
   expect(release.data.pois.find(poi => poi.id === 'hospital-motol')).toMatchObject({ name: 'Upravený Motol', address: 'Upravená adresa', point: [14.341,50.074], geometry: { type: 'Point', coordinates: [14.341,50.074] } });
   expect(release.data.pois.find(poi => poi.id === 'hospital-sv-alzbety')!.address).toBe('');
   expect(canonicalJson(release)).not.toContain('PRIVATE HOSPITAL NOTE');

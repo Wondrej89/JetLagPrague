@@ -4,4 +4,4 @@
 .link-arrow{width:15px;height:15px;display:inline-block;vertical-align:middle;flex-shrink:0}.link-arrow.down{transform:rotate(90deg)}.brand-symbol .link-arrow{width:14px;height:14px;align-self:flex-start;margin-top:7px}
 @media(min-width:601px){.data-counts{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
-@media(min-width:1100px){.data-counts{grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(min-width:1100px){.data-counts{grid-template-columns:repeat(4,minmax(0,1fr))}}

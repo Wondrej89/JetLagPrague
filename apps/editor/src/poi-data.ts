@@ -1,4 +1,4 @@
-import { poiSchema, poiConfigurationSchema, validatePoiConfiguration } from '@jetlag/geo-core';
+import { poiSchema, poiConfigurationSchema, unlocatedLibrarySchema, validatePoiConfiguration } from '@jetlag/geo-core';
 import catalog from './data/poi-catalog.json';
 
 // Bundled application data: available on first visit, independent of an author's draft.
@@ -17,3 +17,7 @@ if (new Set(publishedZoos.map(poi => poi.id)).size !== publishedZoos.length || p
 
 export const publishedHospitals = catalog.hospitals.map(value => poiSchema.parse(value));
 if (new Set(publishedHospitals.map(poi => poi.id)).size !== publishedHospitals.length || publishedHospitals.some(poi => poi.category !== 'hospital')) throw new Error('Katalog nemocnic musí obsahovat bodové lokality s jedinečnými ID.');
+
+export const publishedLibraries = (catalog.libraries as unknown[]).map(value => poiSchema.parse(value));
+export const publishedUnlocatedLibraries = catalog.unlocatedLibraries.map(value => unlocatedLibrarySchema.parse(value));
+if (publishedLibraries.some(poi => poi.category !== 'library') || new Set(publishedUnlocatedLibraries.map(row => row.selectionKey)).size !== publishedUnlocatedLibraries.length) throw new Error('Neplatný katalog knihoven.');

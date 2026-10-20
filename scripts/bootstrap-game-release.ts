@@ -3,12 +3,13 @@ import { newWorld, readDefaultGameArea, defaultGameAreaFeature, setGameArea, rea
 import { buildGameDataRelease, releaseEntry, type GameReleaseIndex } from '../packages/geo-core/src/game-release';
 import { canonicalJson } from '../packages/geo-core/src/administrative';
 import { readPublication } from './pid-publication';
-import { withPublishedHospitals, withPublishedZoos, poiSchema, poiConfigurationSchema } from '../packages/geo-core/src/poi';
+import { withPublishedLibraries, withPublishedHospitals, withPublishedZoos, poiSchema, poiConfigurationSchema } from '../packages/geo-core/src/poi';
 const directory = process.argv.includes('--pid-directory') ? process.argv[process.argv.indexOf('--pid-directory') + 1] : 'apps/editor/public/pid';
 const catalog = JSON.parse(await readFile('apps/editor/src/data/poi-catalog.json', 'utf8'));
 const area = await readDefaultGameArea(JSON.parse(await readFile('apps/editor/public/defaults/prague-game-area.geojson', 'utf8')));
 const world = setGameArea(newWorld(), defaultGameAreaFeature(area));
 world.poi = withPublishedHospitals(withPublishedZoos(poiConfigurationSchema.parse(catalog.parks), (catalog.zoos ?? []).map((poi: unknown) => poiSchema.parse(poi))), (catalog.hospitals ?? []).map((poi: unknown) => poiSchema.parse(poi)));
+world.poi = withPublishedLibraries(world.poi, (catalog.libraries ?? []).map((poi: unknown) => poiSchema.parse(poi)));
 const admin = JSON.parse(await readFile('apps/editor/public/administrative/index.json', 'utf8')) as { datasets: { file: string }[] };
 for (const entry of admin.datasets) world.layers.push(await readAdministrativeSnapshot(await readFile(`apps/editor/public/administrative/${entry.file}`, 'utf8')));
 const snapshot = await readPublication(directory);

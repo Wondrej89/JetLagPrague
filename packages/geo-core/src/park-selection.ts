@@ -24,7 +24,7 @@ export function filterParkPois(pois: Poi[], filters: ParkFilters, target: 'list'
   return pois.filter(poi => {
     if (target === 'map' && poi.category === 'park' && filters.approvedOnlyMap) return poi.status === 'approved';
     if (poi.category === 'park' && ((!filters.showOutside && !parkMatchesHierarchy(poi, filters.hierarchies)) || (filters.status !== 'all' && poi.status !== filters.status))) return false;
-    return target !== 'list' || `${poi.name} ${poi.id} ${poi.sourceId}`.toLocaleLowerCase('cs').includes(query);
+    return target !== 'list' || `${poi.name} ${poi.id} ${poi.sourceId}${poi.category === 'library' ? ` ${poi.address ?? ''}` : ''}`.toLocaleLowerCase('cs').includes(query);
   });
 }
 export interface ParkDecisionChange { id: string; previous: PoiDecision | null; applied: PoiDecision }
