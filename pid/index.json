@@ -1,17 +1,17 @@
 {
   "format": "jetlag-praha-pid-catalog",
   "schemaVersion": 2,
-  "file": "snapshot-abd880948d1d7c5ec9b4264fb6aed599af0a6fba3cce7a6d32b070d4ec93aa57.json.gz",
-  "checksum": "abd880948d1d7c5ec9b4264fb6aed599af0a6fba3cce7a6d32b070d4ec93aa57",
-  "serviceDate": "2026-10-16",
-  "downloadedAt": "2026-10-16T09:40:05.991Z",
+  "file": "snapshot-85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee.json.gz",
+  "checksum": "85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee",
+  "serviceDate": "2026-10-20",
+  "downloadedAt": "2026-10-20T06:41:57.913Z",
   "quality": {
     "status": "verified",
     "issues": [
       "689 skupin má místní nejednoznačnost; tyto uzly vyžadují revizi, ostatní zůstávají ověřené."
     ],
     "unmappedActiveIds": [],
-    "groupsGeneratedAt": "2026-10-16T03:53:05",
+    "groupsGeneratedAt": "2026-10-19T03:52:56",
     "reviewGroupIds": [
       "asw:4942:cis:42297:cat:301003:p:2945/451",
       "gtfs-stop:U100V1",
@@ -706,9 +706,19 @@
   },
   "versions": [
     {
+      "file": "snapshot-85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee.json.gz",
+      "id": "pid:2026-10-20:85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee",
+      "checksum": "85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee",
+      "serviceDate": "2026-10-20",
+      "adapterVersion": "pid-gtfs-v1",
+      "preparedAt": "2026-10-20T06:42:29.674Z",
+      "downloadedAt": "2026-10-20T06:41:57.913Z",
+      "quality": "verified"
+    },
+    {
       "file": "snapshot-abd880948d1d7c5ec9b4264fb6aed599af0a6fba3cce7a6d32b070d4ec93aa57.json.gz",
-      "id": "pid:2026-10-16:abd880948d1d7c5ec9b4264fb6aed599af0a6fba3cce7a6d32b070d4ec93aa57",
       "checksum": "abd880948d1d7c5ec9b4264fb6aed599af0a6fba3cce7a6d32b070d4ec93aa57",
+      "id": "pid:2026-10-16:abd880948d1d7c5ec9b4264fb6aed599af0a6fba3cce7a6d32b070d4ec93aa57",
       "serviceDate": "2026-10-16",
       "adapterVersion": "pid-gtfs-v1",
       "preparedAt": "2026-10-16T09:40:45.776Z",
@@ -717,8 +727,8 @@
     },
     {
       "file": "snapshot-ed2c5e6bde2f69d2.json.gz",
-      "id": "pid:2026-08-20:ed2c5e6bde2f69d23bf25b020b901919fffaddd0ac38b70314f690d76f26ec0c",
       "checksum": "ed2c5e6bde2f69d23bf25b020b901919fffaddd0ac38b70314f690d76f26ec0c",
+      "id": "pid:2026-08-20:ed2c5e6bde2f69d23bf25b020b901919fffaddd0ac38b70314f690d76f26ec0c",
       "serviceDate": "2026-08-20",
       "adapterVersion": "pid-geodata-v1-stops-v3",
       "preparedAt": "2026-10-15T20:34:35.930Z",
