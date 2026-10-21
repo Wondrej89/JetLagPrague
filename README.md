@@ -4,7 +4,7 @@ Veřejný klient je na **[JetLagPrague/](https://wondrej89.github.io/JetLagPragu
 
 Panel **Publikace herních podkladů** kontroluje a porovnává samostatný verzovaný herní katalog. Publikace používá autorizovanou GitHub App a Cloudflare Worker; stávající konfigurace a ochrany se zachovávají. V novém prostředí bez konfigurace zůstává zápis zakázaný. Český [postup nastavení, publikace, ověření nasazení a rollbacku](docs/PUBLISHING.md) obsahuje také kompatibilitu verzí a aktualizaci Workeru.
 
-Herní podklady se načítají z neměnných publikací. Poslední zveřejněný katalog navazuje na schválenou publikaci z 20. 10. 2026: zachovává **117 parků, 3 letiště, 10 zoo a míst se zvířaty, 10 nemocnic, 45 knihoven, administrativní hranice a stejný PID snapshot** a přidává **25 schválených kin**. Starší publikace zůstávají dostupné. Soukromé úpravy v prohlížeči se projeví ve hře až po publikaci; multiplayer zatím není dostupný.
+Herní podklady se načítají z neměnných publikací. Poslední zveřejněný katalog navazuje na publikaci z 20. 10. 2026: zachovává **117 parků, 3 letiště, 10 zoo a míst se zvířaty, 10 nemocnic, 45 knihoven, 25 kin, administrativní hranice a stejný PID snapshot** a přidává **307 schválených vodních ploch**. Kvůli staršímu PID je označen jako historická reference. Starší publikace zůstávají dostupné. Soukromé úpravy v prohlížeči se projeví ve hře až po publikaci; multiplayer zatím není dostupný.
 
 
 Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny. [Iterace 03B](CODEX_UKOL_03B_GTFS.md) používá aktuální obsluhu z GTFS a ruční serverovou publikaci. **Iterace 04A** přidává letiště, správu parků a geografické funkce POI pro Matching a Measuring.
@@ -12,6 +12,30 @@ Herní podklady se načítají z neměnných publikací. Poslední zveřejněný
 Iterace 02 používá dodané soubory `data/raw/mestskecasti.geojson` (**57 městských částí**) a `data/raw/katastralni-uzemi-praha.geojson` (**112 katastrálních území Prahy**). Zachovává všechny souřadnice a atributy, podporuje samostatné zobrazení vrstev, zvýraznění území, přesouvatelný testovací bod a kontrolovanou aktualizaci zdrojů. Mapy.com poskytuje pouze mapový podklad.
 
 Původ je zaznamenán v `data/source-metadata/`: městské části mají v dodaných datech poskytovatele HMP-IPR a katalogový odkaz IPR, katalogový odkaz ČSÚ pro katastry doložil uživatel. **Licence a datum platnosti celé sady nejsou v dodaných souborech uvedeny a zůstávají výslovně nedoložené.** Datum převzetí do repozitáře se za datum platnosti nevydává. MIT licence kódu automaticky neurčuje licenci zdrojových geodat.
+
+## Vodní plochy
+
+Samostatná vrstva **Vodní plochy** používá dodaný `AGD_CUR_AGD_OCH_VODNIPLOCHYTOKY_P.zip` z [Geoportálu Praha](https://geoportalpraha.cz/data-a-sluzby/ke-stazeni/e01b4bb6d148496abff4f065686290ff). Z **3 524 polygonů** je **769 typu P**, z nich **763 pojmenovaných**. Import zachovává **763 kandidátních objektů podle původních GLOBALID**: **307 schválených, 384 k revizi a 72 vyřazených**. Šest nepojmenovaných ploch a 2 755 polygonů typu T nevstupuje do této kategorie. Původní ZIP se uchovává celý. [Audit, pravidla a známá omezení](data/source-metadata/waterbodies.md).
+
+**Biotop Lhotka, Biotop Radotín, Biotop Braník, Koupaliště Benice a Koupaliště Řeporyje zůstávají schválené.** Biotopy a přírodní koupaliště jsou platné vodní plochy. Samotné slovo „koupaliště“ neznamená bazén: nejednoznačné případy zůstávají k revizi. Automaticky lze vyřadit jen výslovně označené bazény a přesně zadaných 19 názvů areálů. **Jejich součet v tomto ZIPu je 72 polygonů, nikoliv uvedených 70.** `ČZU – libosad` odpovídá zdrojovému názvu `ČZU - libosad`; název se nepřepisuje. Všechny názvy z tabulky ručních kontrol jsou `review` (20 polygonů po rozepsání Louka Prague I/II/III). RN/PN/VN se podle zkratky nevyřazují a velikost není klasifikačním kritériem.
+
+Přepínač vrstvy a **Stav vodních ploch → approved / review / excluded** mají vlastní nastavení, které přetrvá reload. Stavový filtr mění mapu i seznam; vyhledávání používá název a GLOBALID. Detail umožní změnit název a poznámku, schválit, vrátit k revizi, vyřadit a **obnovit vyřazený objekt**. Zdroje uchovávají původní názvy, GIS atributy a přesné geometrie všech vyřazených záznamů. Nedochází k mazání podle statusu.
+
+Zdroj EPSG:5514 se převádí podle PRJ pomocí proj4 do WGS84; nic se nezjednodušuje ani nezaokrouhluje. Všech 763 dodaných pojmenovaných geometrií prošlo validací v GEOS bez oprav. Případná budoucí oprava používá GEOS MakeValid s auditem, pouze polygonovým výsledkem a maximální změnou plochy `max(0,01 m²; 0,1 %)`. Nejasná oprava import zablokuje a ponechá poslední funkční zdroj.
+
+Stejné názvy se **automaticky neslučují napříč Prahou**. Vícedílné či nejasné kandidáty zůstávají k revizi. Správce může vybrané skutečné části ručně sjednotit; výsledkem je Polygon/MultiPolygon k novému schválení, se seznamem původních GLOBALID. Akce **Rozdělit na původní zdrojové objekty** obnoví zdrojové části i předchozí rozhodnutí a zachová pozdější individuální úpravy. Nejde o nástroj pro libovolný řez hranic.
+
+**Import / aktualizace vodních ploch (GIS ZIP)** běží ve workeru. Nejprve zobrazí souhrn a rozdíly; data se změní až přes **Potvrdit import vodních ploch**. Aktualizace zachovává individuální názvy, poznámky a vyloučení; změna geometrie ručně schváleného objektu vyžaduje revizi. Zmizelé zdrojové objekty se archivují. IndexedDB i úplné JSON/GeoJSON zálohy obsahují zdroj a rozhodnutí. Automatické doplnění při prvním otevření nepřepisuje již uloženou vodní sadu.
+
+`nearestApprovedPoi`, Matching a Measuring používají pro `waterbody` výhradně schválené **polygony**. Vzdálenost je nejkratší geografická vzdálenost v metrech k ploše; uvnitř i na hranici je **0 m**. Otvory jsou mimo vodu, oddělené části MultiPolygonu patří k jedné schválené lokalitě. Pomocný vnitřní bod není cílem měření. Při chybějící geometrii nebo bez schváleného kandidáta vracejí „nelze určit“. Shody zachovávají dosavadní deterministické pravidlo ID.
+
+Nové publikace používají **GameDataRelease 6**, čtení a kontrolní součty historických schémat 1–5 zůstávají kompatibilní. Veřejný katalog obsahuje 307 schválených polygonů a původní GLOBALID, soukromý GIS audit a neaktivní objekty se nepublikují. Zabezpečení GitHub App/Worker, aktuálnost PID a atomický zápis se nemění. **Obsah předchozího PID, herní oblasti, pravidel a ostatních POI zůstává přesně zachovaný.** Jelikož převzatý veřejný PID má datum 20. 10. 2026, nová publikace z 21. 10. je historickou referencí; není vydávána za platný podklad ostré hry. Aktualizace PID je samostatný krok.
+
+**Vltava se v tomto kroku nevytváří ani neupravuje**, podle upřesnění správce. Neodvozují se žádné polygony z anonymních toků T.
+
+Licence konkrétního ZIPu není doložená (metadata odkazují pouze na opendata IPR). Datum 5. 10. 2026 je datum synchronizace metadat; nejde o nové geodetické měření. Konzervativní revize zůstávají u nejednoznačných názvů a duplicit, ne podle velikosti vodní plochy.
+
+Ověření vodních ploch: lint, typecheck, produkční sestavy obou aplikací, 221 jednotkových testů a 57 E2E scénářů prošly. E2E zahrnuje úspěšné opakování čtyř starších scénářů po zpřesnění selektoru tlačítka importu světa. Dva jednotkové a dva E2E audity byly přeskočené kvůli chybějícím původním archivům GTFS a parků. **Dodaný vodní ZIP se skutečně zpracoval v jednotkových testech i v prohlížeči.** Prošla kontrola sedmi neměnných publikací, administrativních dat, PID a sestavení Workeru (`wrangler deploy --dry-run`). Veřejná hra při buildu nadále odmítá import editorových GIS knihoven.
 
 ## Kina
 
@@ -85,7 +109,7 @@ Zdrojové body jsou v nepovinném `poi.pointCatalog`, uživatelské zásahy odd�
 
 `nearestApprovedPoi`, `matchingPois` a `measuringPois` pracují i přímo s veřejnými DTO zoo: používají geografickou vzdálenost k referenčnímu bodu, ignorují `excluded` a `review` a při shodné vzdálenosti zachovávají pravidlo stabilního ID. Viditelnost vrstvy nemění herní způsobilost.
 
-Nové herní katalogy používají **GameDataRelease 5**, který podporuje kategorie `zoo`, `hospital`, `library`, `cinema`, adresy a doklad ověření knihoven. Čtení a kontrolní součty historických schémat 1, 2, 3 a 4 zůstávají zachované; staré soubory se nepřepisují. Publikují se pouze schválené zoo. Pracovní poznámky a importní audit se do veřejného katalogu neposílají. Aktuální Worker v `/status` oznamuje podporu verzí 1, 2, 3, 4 a 5; starší server publikaci nového schématu bezpečně zablokuje do aktualizace. V tomto repozitáři je také připojen automatický **Workers Builds** pro publikační server; jeho výsledek se ověřuje odděleně od Pages.
+Nové herní katalogy používají **GameDataRelease 6**, který podporuje kategorie `zoo`, `hospital`, `library`, `cinema`, `waterbody`, adresy a doklad ověření knihoven. Čtení a kontrolní součty historických schémat 1–5 zůstávají zachované; staré soubory se nepřepisují. Publikují se pouze schválené zoo. Pracovní poznámky a importní audit se do veřejného katalogu neposílají. Aktuální Worker v `/status` oznamuje podporu verzí 1–6; starší server publikaci nového schématu bezpečně zablokuje do aktualizace. V tomto repozitáři je také připojen automatický **Workers Builds** pro publikační server; jeho výsledek se ověřuje odděleně od Pages.
 
 ## Iterace 04A – letiště a parky
 

@@ -91,7 +91,8 @@ it('publishes only approved cinemas in schema 5 with addresses and supports geog
   world.poi=withPublishedCinemas(world.poi!,cinemas);
   world.poi=decidePoi(world.poi,cinemas[0],{name:'Upravené Oko',address:'Upravená adresa',point:[14.43,50.1],note:'PRIVATE CINEMA NOTE'});
   world.poi=decidePoi(world.poi,cinemas[1],{status:'excluded'});
-  const release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+  const built=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+  const release=await createGameDataRelease(built.data,{publishedAt:releaseTestDate,kind:built.kind,schemaVersion:5});
   expect(release.schemaVersion).toBe(5);expect(release.data.pois.filter(poi=>poi.category==='cinema')).toHaveLength(24);
   expect(release.data.pois.filter(poi=>poi.category!=='cinema')).toEqual(before.data.pois);
   expect(release.data.pois.find(poi=>poi.id==='bio-oko')).toMatchObject({name:'Upravené Oko',address:'Upravená adresa',point:[14.43,50.1],geometry:{type:'Point',coordinates:[14.43,50.1]}});

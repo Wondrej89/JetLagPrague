@@ -63,7 +63,7 @@ test('nakreslí herní polygon s otvorem, bod a linii, upraví vrcholy, uloží 
   const exported = JSON.parse(await readFile(path, 'utf8'));
   expect(exported.world).toEqual(saved);
   await page.getByRole('button', { name: /Přidat vrstvu/ }).click();
-  await page.getByRole('button', { name: /Import/, exact: true }).click();
+  await page.getByRole('button', { name: /Import$/, exact: true }).click();
   await page.getByLabel('Co importovat').selectOption('world');
   await page.getByLabel('Soubor', { exact: true }).setInputFiles(path);
   page.once('dialog', dialog => dialog.accept());
@@ -121,7 +121,7 @@ test('vadný import je atomický, poškozený draft se nepřepíše a neplatný 
   await page.goto('/');
   await expect(page.getByRole('alert')).toContainText('Uložený draft nelze načíst');
   expect(await page.evaluate(key => localStorage.getItem(key), key)).toBe('{bad');
-  await page.getByRole('button', { name: /Import/, exact: true }).click();
+  await page.getByRole('button', { name: /Import$/, exact: true }).click();
   await page.getByLabel('Popis zdroje / licence').fill('Syntetický test');
   await page.getByLabel('Soubor', { exact: true }).setInputFiles({ name: 'invalid.geojson', mimeType: 'application/json', buffer: Buffer.from(JSON.stringify({ type: 'Point', coordinates: [181, 50] })) });
   await page.getByRole('button', { name: 'Importovat', exact: true }).click();

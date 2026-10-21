@@ -1,5 +1,6 @@
+import {readFile} from 'node:fs/promises';
 import catalog from '../../editor/src/data/poi-catalog.json' with { type: 'json' };
-import { addLibrary, verifyLibraryDecision, resolvePois, withPublishedCinemas, withPublishedHospitals, withPublishedLibraries, withPublishedZoos, decidePoi, poiSchema } from '../../../packages/geo-core/src/index';
+import { addLibrary, verifyLibraryDecision, resolvePois, withPublishedWaterbodies, withPublishedCinemas, withPublishedHospitals, withPublishedLibraries, withPublishedZoos, decidePoi, poiSchema, parkDatasetSchema } from '../../../packages/geo-core/src/index';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { generateKeyPairSync } from 'node:crypto';
 import worker, { MAX_PUBLISH_BYTES, PublisherCoordinator, type Storage, type PublisherEnvironment } from './index';
@@ -62,7 +63,7 @@ describe('Server authorization and immutable publication',()=>{
     const [expected,changes]=vi.mocked(GitHubClient.prototype.commit).mock.calls[0];expect(expected).toBe(head);expect(changes.map(file=>file.path)).toEqual([`data/releases/release-${release.checksums.content}.json`,'data/releases/current.json']);expect(changes[0].text).not.toContain('PRIVATE NOTE');expect(JSON.parse(changes[1].text).current.releaseId).toBe(release.releaseId);
   });
   it('accepts approved zoo through the protected publisher and keeps schema 2 publication compatible',async()=>{
-    expect(await (await send('/status')).json()).toMatchObject({configured:true,releaseSchemaVersions:[1,2,3,4,5]});
+    expect(await (await send('/status')).json()).toMatchObject({configured:true,releaseSchemaVersions:[1,2,3,4,5,6]});
     const {world,snapshot}=await releaseTestInput(),zoos=catalog.zoos.map(poi=>poiSchema.parse(poi));
     world.poi=withPublishedZoos(world.poi!,zoos);world.poi=decidePoi(world.poi,zoos[0],{status:'excluded'});
     release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
@@ -110,7 +111,8 @@ describe('Server authorization and immutable publication',()=>{
     const before=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
     world.poi=withPublishedCinemas(world.poi!,cinemas);
     world.poi=decidePoi(world.poi,cinemas[0],{status:'excluded'});
-    release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    const built=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    release=await createGameDataRelease(built.data,{publishedAt:releaseTestDate,kind:built.kind,schemaVersion:5});
     expect((await send('/publish',{expectedCommit:head,release})).status).toBe(202);
     const changes=vi.mocked(GitHubClient.prototype.commit).mock.calls[0][1],artifact=JSON.parse(changes[0].text);
     expect(changes).toHaveLength(2);expect(artifact.schemaVersion).toBe(5);
@@ -119,6 +121,21 @@ describe('Server authorization and immutable publication',()=>{
     expect(artifact.data.pois.filter((poi:{category:string})=>poi.category!=='cinema')).toEqual(before.data.pois);
     expect(artifact.data.pois.find((poi:{id:string})=>poi.id==='kino-atlas')).toMatchObject({address:'Ke Štvanici 371/4, Praha 8 – Karlín',point:[14.4383706,50.0915856],geometry:{type:'Point',coordinates:[14.4383706,50.0915856]}});
     expect(artifact.data.pidSnapshot).toEqual(before.data.pidSnapshot);
+  });
+  it('publishes approved water polygons in schema 6 through the authorized atomic GitHub path',async()=>{
+    const {world,snapshot}=await releaseTestInput();
+    const water=parkDatasetSchema.parse(JSON.parse(await readFile('apps/editor/src/data/waterbody-catalog.json','utf8')));
+    world.poi=withPublishedWaterbodies(world.poi!,water);
+    const excluded=water.records.find(p=>p.name==='Biotop Radotín')!;
+    world.poi=decidePoi(world.poi,excluded,{status:'excluded'});
+    release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    expect((await send('/publish',{expectedCommit:head,release})).status).toBe(202);
+    const changes=vi.mocked(GitHubClient.prototype.commit).mock.calls[0][1],artifact=JSON.parse(changes[0].text);
+    expect(changes).toHaveLength(2);expect(artifact.schemaVersion).toBe(6);
+    expect(artifact.data.pois.filter((p:{category:string})=>p.category==='waterbody')).toHaveLength(306);
+    expect(artifact.data.pois.some((p:{id:string})=>p.id===excluded.id)).toBe(false);
+    expect(artifact.data.pois.some((p:{name:string})=>p.name==='Zoo Praha')).toBe(false);
+    expect(artifact.data.pois.find((p:{name:string})=>p.name==='Biotop Lhotka')).toMatchObject({waterbody:{globalIds:['{9E842A20-F83B-4DEB-BC50-DF8139372FF8}']},geometry:water.records.find(p=>p.name==='Biotop Lhotka')!.geometry});
   });
   it('rejects duplicate content, immutable file collision, stale SHA, unverified PID and historical releases',async()=>{
     await seedIndex(release);expect((await send('/publish',{expectedCommit:head,release})).status).toBe(409);

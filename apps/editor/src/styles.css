@@ -211,11 +211,11 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .poi-counts { margin: 2px 0 8px 24px; font-size: 11px; color: #607065; }
 .poi-source-warning, .poi-merge p { font-size: 12px; line-height: 1.5; color: #6c572e; }
 .poi-list { max-height: 280px; overflow-y: auto; margin-top: 8px; }
-.poi-row { display: flex; align-items: center; gap: 6px; }
-.poi-row > input { flex: 0 0 auto; width: auto; }
-.poi-row > button { flex: 1; text-align: left; display: flex; flex-direction: column; min-width: 0; margin: 3px 0; }
-.poi-row small { font-size: 10px; overflow-wrap: anywhere; color: #69766d; }
-.poi-row .chosen { border-color: #267a52; background: #edf5ef; }
+.poi-row, .water-row { display: flex; align-items: center; gap: 6px; }
+.poi-row > input, .water-row > input { flex: 0 0 auto; width: auto; }
+.poi-row > button, .water-row > button { flex: 1; text-align: left; display: flex; flex-direction: column; min-width: 0; margin: 3px 0; }
+.poi-row small, .water-row small { font-size: 10px; overflow-wrap: anywhere; color: #69766d; }
+.poi-row .chosen, .water-row .chosen { border-color: #267a52; background: #edf5ef; }
 .poi-review-actions { display: flex; flex-wrap: wrap; gap: 5px; margin: 12px 0; }
 .poi-checksum { display: block; font-size: 10px; overflow-wrap: anywhere; white-space: normal; margin: 8px 0; }
 .poi-marker { display: grid; place-items: center; border-radius: 50%; background: #fff; border: 2px solid #305c78; color: #254e6b; font-size: 20px; box-shadow: 0 2px 5px #0003; }
@@ -240,9 +240,9 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .park-status-filters button { font-size: 11px; padding: 6px; }
 .park-status-filters [aria-pressed="true"] { background: #e4f0e7; border-color: #267a52; }
 .park-game-preview { font-weight: 600; margin-top: 14px; }
-.poi-row.approved > button { border-left: 3px solid #267a52; }
-.poi-row.excluded > button { border-left: 3px solid #888; background: #f4f5f4; }
-.poi-row.review > button { border-left: 3px dashed #8a958d; }
+.poi-row.approved > button, .water-row.approved > button { border-left: 3px solid #267a52; }
+.poi-row.excluded > button, .water-row.excluded > button { border-left: 3px solid #888; background: #f4f5f4; }
+.poi-row.review > button, .water-row.review > button { border-left: 3px dashed #8a958d; }
 .park-marker.approved { color: #267a52; border-color: #267a52; }
 .park-marker.excluded { color: #777; border-color: #888; background: #f4f4f4; }
 .park-marker.review { color: #738078; border-color: #8a958d; border-style: dashed; }
@@ -280,3 +280,10 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .cinema-marker svg { width: 22px; height: 22px; display: block; margin: 3px; }
 .cinema-marker.review { opacity: .7; }
 .cinema-marker.excluded { background: #eee; border-color: #999; color: #777; }
+
+.water-controls { border-block: 1px solid #d9dfd3; padding: 18px; }
+.water-controls fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+.water-controls label { display: block; margin-block: 9px; }
+.water-controls select,.water-controls input:not([type=checkbox]) { max-width: 100%; width: 100%; }
+.water-properties pre { overflow: auto; max-height: 320px; }
+.waterbody-marker { background: #dcefff; color: #2078ac; border-color: #2078ac; }

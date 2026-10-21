@@ -103,7 +103,7 @@ test('vědomě smazaná oblast se po reloadu neobnoví a její stav zůstává v
   const promise = page.waitForEvent('download'); await page.getByRole('button', { name: 'Exportovat GeoJSON', exact: true }).click();
   const file = await promise, exported = JSON.parse(await readFile((await file.path())!, 'utf8'));
   expect(exported.world.gameAreaInitialization.state).toBe('intentionally-empty');
-  await page.getByRole('button', { name: /Import/, exact: true }).click(); await page.getByLabel('Co importovat').selectOption('world');
+  await page.getByRole('button', { name: /Import$/, exact: true }).click(); await page.getByLabel('Co importovat').selectOption('world');
   await page.getByLabel('Soubor', { exact: true }).setInputFiles((await file.path())!);
   page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Importovat', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0); await page.reload(); await ready(page);

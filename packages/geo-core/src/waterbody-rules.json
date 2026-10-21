@@ -1,0 +1,53 @@
+{
+  "version": 1,
+  "allow": [
+    "Biotop Lhotka",
+    "Biotop Radotín",
+    "Biotop Braník",
+    "Koupaliště Benice",
+    "Koupaliště Řeporyje"
+  ],
+  "excluded": [
+    "Zoo Praha",
+    "Zoopark",
+    "Pražská botanická zahrada",
+    "Golf Vinoř",
+    "Golf Zbraslav",
+    "Golf Hostivař",
+    "Golf Hodkovičky",
+    "Golf Černý Most",
+    "Golf Resort Black Bridge",
+    "Galerie Golf Hostivař",
+    "Prague City Golf Club Zbraslav",
+    "Vista resort & club",
+    "Albertov UK",
+    "ČZU – libosad",
+    "VÚ Sylva Taroucy",
+    "VÚŽV",
+    "SSOŠ a SSOÚ BEAN",
+    "Chráněné bydlení Lahovice",
+    "Rezidence Hvězda"
+  ],
+  "review": {
+    "Aritma": "Název areálu",
+    "Bubec": "Název kulturního areálu",
+    "Dotek": "Nejednoznačný název",
+    "Focolare": "Název organizace",
+    "Kejřův mlýn": "Název areálu",
+    "Mlýn Rohlov": "Název mlýna",
+    "Pstruhová farma Lochkov": "Název provozu",
+    "Louka Prague I": "Pravděpodobně areálový název",
+    "Louka Prague II": "Pravděpodobně areálový název",
+    "Louka Prague III": "Pravděpodobně areálový název",
+    "ČHMU": "Instituce",
+    "RPP": "Nejasná zkratka",
+    "DRN Pražská cukerní": "Technické označení",
+    "RN MV ČR": "Retenční nádrž u instituce",
+    "RN Pneu Šafránek": "Technické označení",
+    "RN YIT Vysočany": "Nádrž podle developera",
+    "VP Agrofarma": "Potenciálně areálová nádrž",
+    "UN ČOV Dolní Chabry": "Technická nádrž",
+    "UN ČOV Koloděje": "Technická nádrž"
+  },
+  "reportedExcludedPolygons": 70
+}

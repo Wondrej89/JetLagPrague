@@ -24,3 +24,7 @@ if (publishedLibraries.some(poi => poi.category !== 'library') || new Set(publis
 
 export const publishedCinemas = catalog.cinemas.map(value => poiSchema.parse(value));
 if (new Set(publishedCinemas.map(poi => poi.id)).size !== publishedCinemas.length || publishedCinemas.some(poi => poi.category !== 'cinema')) throw new Error('Katalog kin musí obsahovat bodové lokality s jedinečnými ID.');
+
+import waterCatalog from './data/waterbody-catalog.json';
+import { parkDatasetSchema } from '@jetlag/geo-core';
+export const publishedWaterbodies = parkDatasetSchema.parse(waterCatalog);

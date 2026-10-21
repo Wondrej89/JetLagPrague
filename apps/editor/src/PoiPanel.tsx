@@ -20,7 +20,7 @@ export function PoiControls({ libraryCandidates, onSelectLibraryCandidate, onAdd
   const [mergeName, setMergeName] = useState('');
   const filters = configuration.parkFilters ?? defaultParkFilters();
   const parks = pois.filter(poi => poi.category === 'park');
-  const filtered = filterParkPois(pois, filters, 'list', search);
+  const filtered = filterParkPois(pois, filters, 'list', search).filter(p=>p.category!=='waterbody');
   const pending = libraryCandidates.filter(row => `${row.name} ${row.address} ${row.id}`.toLocaleLowerCase('cs').includes(search.trim().toLocaleLowerCase('cs')));
   const list: (Poi | UnlocatedLibrary)[] = [...filtered.filter(poi => ['zoo', 'hospital', 'library', 'cinema'].includes(poi.category)), ...pending, ...filtered.filter(poi => !['zoo', 'hospital', 'library', 'cinema'].includes(poi.category))];
   const matching = parks.filter(poi => parkMatchesHierarchy(poi, filters.hierarchies)).length;

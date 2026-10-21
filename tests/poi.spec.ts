@@ -89,7 +89,7 @@ test('park import: revize, ruční bod, aktualizace, vyloučení, skutečné slo
   const download = page.waitForEvent('download'); await page.getByRole('button', { name: 'Exportovat GeoJSON', exact: true }).click();
   const path = (await (await download).path())!; const exported = JSON.parse(await readFile(path, 'utf8'));
   expect(exported.world.poi).toEqual(saved.poi);
-  await page.getByRole('button', { name: /Import/, exact: true }).click(); await page.getByLabel('Co importovat').selectOption('world');
+  await page.getByRole('button', { name: /Import$/, exact: true }).click(); await page.getByLabel('Co importovat').selectOption('world');
   await page.getByLabel('Soubor', { exact: true }).setInputFiles(path);
   page.once('dialog', dialog => dialog.accept()); await page.getByRole('button', { name: 'Importovat', exact: true }).click();
   await expect(page.getByRole('dialog')).toHaveCount(0);

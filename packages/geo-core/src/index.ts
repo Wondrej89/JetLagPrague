@@ -269,3 +269,4 @@ export * from './libraries';
 export * from './park-selection';
 
 export * from './game-release';
+export * from './waterbodies';

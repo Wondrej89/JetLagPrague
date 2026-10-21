@@ -1,0 +1,355 @@
+{
+  "sourceChecksum": "e778e595fc2a6efe606d167468230cad3523583146417620c6245ade6c096f9d",
+  "datasetChecksum": "bd0d2f2a2f5463692a4bc263f9603d0e1be2e961fce13de284bb5e76c233da63",
+  "source": {
+    "id": "praha-water-areas",
+    "provider": "Hlavní město Praha / IPR Praha – Oázy chladu: vodní plochy a toky",
+    "url": "https://geoportalpraha.cz/data-a-sluzby/ke-stazeni/e01b4bb6d148496abff4f065686290ff",
+    "license": {
+      "name": "Otevřená data IPR; konkrétní licence není v dodaném ZIPu doložena",
+      "url": null
+    },
+    "dataDate": "2026-10-05",
+    "retrievedAt": "2026-10-21T12:09:01.051Z",
+    "rawChecksum": "e778e595fc2a6efe606d167468230cad3523583146417620c6245ade6c096f9d",
+    "verification": "user_supplied",
+    "note": "Dodaný oficiální Shapefile; EPSG:5514 → WGS84 podle PRJ pomocí PROJ/proj4. Pouze pojmenované objekty TYP=P. Žádné odvození Vltavy ani změny objektů TYP=T. Datum 5. 10. 2026 odpovídá synchronizaci metadat ZIPu, nikoli novému geodetickému měření."
+  },
+  "counts": {
+    "approved": 307,
+    "review": 384,
+    "excluded": 72
+  },
+  "named": 763,
+  "rules": {
+    "version": 1,
+    "allow": [
+      "Biotop Lhotka",
+      "Biotop Radotín",
+      "Biotop Braník",
+      "Koupaliště Benice",
+      "Koupaliště Řeporyje"
+    ],
+    "excluded": [
+      "Zoo Praha",
+      "Zoopark",
+      "Pražská botanická zahrada",
+      "Golf Vinoř",
+      "Golf Zbraslav",
+      "Golf Hostivař",
+      "Golf Hodkovičky",
+      "Golf Černý Most",
+      "Golf Resort Black Bridge",
+      "Galerie Golf Hostivař",
+      "Prague City Golf Club Zbraslav",
+      "Vista resort & club",
+      "Albertov UK",
+      "ČZU – libosad",
+      "VÚ Sylva Taroucy",
+      "VÚŽV",
+      "SSOŠ a SSOÚ BEAN",
+      "Chráněné bydlení Lahovice",
+      "Rezidence Hvězda"
+    ],
+    "review": {
+      "Aritma": "Název areálu",
+      "Bubec": "Název kulturního areálu",
+      "Dotek": "Nejednoznačný název",
+      "Focolare": "Název organizace",
+      "Kejřův mlýn": "Název areálu",
+      "Mlýn Rohlov": "Název mlýna",
+      "Pstruhová farma Lochkov": "Název provozu",
+      "Louka Prague I": "Pravděpodobně areálový název",
+      "Louka Prague II": "Pravděpodobně areálový název",
+      "Louka Prague III": "Pravděpodobně areálový název",
+      "ČHMU": "Instituce",
+      "RPP": "Nejasná zkratka",
+      "DRN Pražská cukerní": "Technické označení",
+      "RN MV ČR": "Retenční nádrž u instituce",
+      "RN Pneu Šafránek": "Technické označení",
+      "RN YIT Vysočany": "Nádrž podle developera",
+      "VP Agrofarma": "Potenciálně areálová nádrž",
+      "UN ČOV Dolní Chabry": "Technická nádrž",
+      "UN ČOV Koloděje": "Technická nádrž"
+    },
+    "reportedExcludedPolygons": 70
+  },
+  "excludedNames": [
+    {
+      "name": "Zoo Praha",
+      "sourceNames": [
+        "Zoo Praha"
+      ],
+      "polygons": 22
+    },
+    {
+      "name": "Zoopark",
+      "sourceNames": [
+        "Zoopark"
+      ],
+      "polygons": 2
+    },
+    {
+      "name": "Pražská botanická zahrada",
+      "sourceNames": [
+        "Pražská botanická zahrada"
+      ],
+      "polygons": 8
+    },
+    {
+      "name": "Golf Vinoř",
+      "sourceNames": [
+        "Golf Vinoř"
+      ],
+      "polygons": 9
+    },
+    {
+      "name": "Golf Zbraslav",
+      "sourceNames": [
+        "Golf Zbraslav"
+      ],
+      "polygons": 8
+    },
+    {
+      "name": "Golf Hostivař",
+      "sourceNames": [
+        "Golf Hostivař"
+      ],
+      "polygons": 3
+    },
+    {
+      "name": "Golf Hodkovičky",
+      "sourceNames": [
+        "Golf Hodkovičky"
+      ],
+      "polygons": 3
+    },
+    {
+      "name": "Golf Černý Most",
+      "sourceNames": [
+        "Golf Černý Most"
+      ],
+      "polygons": 1
+    },
+    {
+      "name": "Golf Resort Black Bridge",
+      "sourceNames": [
+        "Golf Resort Black Bridge"
+      ],
+      "polygons": 3
+    },
+    {
+      "name": "Galerie Golf Hostivař",
+      "sourceNames": [
+        "Galerie Golf Hostivař"
+      ],
+      "polygons": 3
+    },
+    {
+      "name": "Prague City Golf Club Zbraslav",
+      "sourceNames": [
+        "Prague City Golf Club Zbraslav"
+      ],
+      "polygons": 2
+    },
+    {
+      "name": "Vista resort & club",
+      "sourceNames": [
+        "Vista resort & club"
+      ],
+      "polygons": 1
+    },
+    {
+      "name": "Albertov UK",
+      "sourceNames": [
+        "Albertov UK"
+      ],
+      "polygons": 1
+    },
+    {
+      "name": "ČZU – libosad",
+      "sourceNames": [
+        "ČZU - libosad"
+      ],
+      "polygons": 1
+    },
+    {
+      "name": "VÚ Sylva Taroucy",
+      "sourceNames": [
+        "VÚ Sylva Taroucy"
+      ],
+      "polygons": 1
+    },
+    {
+      "name": "VÚŽV",
+      "sourceNames": [
+        "VÚŽV"
+      ],
+      "polygons": 1
+    },
+    {
+      "name": "SSOŠ a SSOÚ BEAN",
+      "sourceNames": [
+        "SSOŠ a SSOÚ BEAN"
+      ],
+      "polygons": 1
+    },
+    {
+      "name": "Chráněné bydlení Lahovice",
+      "sourceNames": [
+        "Chráněné bydlení Lahovice"
+      ],
+      "polygons": 1
+    },
+    {
+      "name": "Rezidence Hvězda",
+      "sourceNames": [
+        "Rezidence Hvězda"
+      ],
+      "polygons": 1
+    }
+  ],
+  "reviewNames": [
+    {
+      "name": "Aritma",
+      "polygons": 1
+    },
+    {
+      "name": "Bubec",
+      "polygons": 1
+    },
+    {
+      "name": "Dotek",
+      "polygons": 1
+    },
+    {
+      "name": "Focolare",
+      "polygons": 1
+    },
+    {
+      "name": "Kejřův mlýn",
+      "polygons": 1
+    },
+    {
+      "name": "Mlýn Rohlov",
+      "polygons": 1
+    },
+    {
+      "name": "Pstruhová farma Lochkov",
+      "polygons": 1
+    },
+    {
+      "name": "Louka Prague I",
+      "polygons": 1
+    },
+    {
+      "name": "Louka Prague II",
+      "polygons": 1
+    },
+    {
+      "name": "Louka Prague III",
+      "polygons": 1
+    },
+    {
+      "name": "ČHMU",
+      "polygons": 2
+    },
+    {
+      "name": "RPP",
+      "polygons": 1
+    },
+    {
+      "name": "DRN Pražská cukerní",
+      "polygons": 1
+    },
+    {
+      "name": "RN MV ČR",
+      "polygons": 1
+    },
+    {
+      "name": "RN Pneu Šafránek",
+      "polygons": 1
+    },
+    {
+      "name": "RN YIT Vysočany",
+      "polygons": 1
+    },
+    {
+      "name": "VP Agrofarma",
+      "polygons": 1
+    },
+    {
+      "name": "UN ČOV Dolní Chabry",
+      "polygons": 1
+    },
+    {
+      "name": "UN ČOV Koloděje",
+      "polygons": 1
+    }
+  ],
+  "info": {
+    "filename": "AGD_CUR_AGD_OCH_VODNIPLOCHYTOKY_P.zip",
+    "layerName": "AGD_OCH_VodniPlochyToky_p",
+    "format": "shapefile-zip",
+    "originalCrs": "S-JTSK / Křovákovo zobrazení (definice PRJ)",
+    "prj": "PROJCS[\"S-JTSK_Krovak_East_North\",GEOGCS[\"GCS_S_JTSK\",DATUM[\"D_S_JTSK\",SPHEROID[\"Bessel_1841\",6377397.155,299.1528128]],PRIMEM[\"Greenwich\",0.0],UNIT[\"Degree\",0.0174532925199433]],PROJECTION[\"Krovak\"],PARAMETER[\"False_Easting\",0.0],PARAMETER[\"False_Northing\",0.0],PARAMETER[\"Pseudo_Standard_Parallel_1\",78.5],PARAMETER[\"Scale_Factor\",0.9999],PARAMETER[\"Azimuth\",30.28813975277778],PARAMETER[\"Longitude_Of_Center\",24.83333333333333],PARAMETER[\"Latitude_Of_Center\",49.5],PARAMETER[\"X_Scale\",-1.0],PARAMETER[\"Y_Scale\",1.0],PARAMETER[\"XY_Plane_Rotation\",90.0],UNIT[\"Meter\",1.0]]",
+    "cpg": "UTF-8",
+    "encoding": "utf-8",
+    "originalChecksum": "e778e595fc2a6efe606d167468230cad3523583146417620c6245ade6c096f9d",
+    "files": [
+      {
+        "name": "AGD_OCH_VodniPlochyToky_p.cpg",
+        "bytes": 5,
+        "checksum": "3ad3031f5503a4404af825262ee8232cc04d4ea6683d42c5dd0a2f2a27ac9824"
+      },
+      {
+        "name": "AGD_OCH_VodniPlochyToky_p.dbf",
+        "bytes": 789634,
+        "checksum": "e85be7e7222992559190e2a4b7b1d9368e3e8fb97d0623309e4e60291540b783"
+      },
+      {
+        "name": "AGD_OCH_VodniPlochyToky_p.prj",
+        "bytes": 573,
+        "checksum": "57aed3fc2b90a6c64e2f3b095466f07eadd71f8c687ac1b33e023e57b45e69e1"
+      },
+      {
+        "name": "AGD_OCH_VodniPlochyToky_p.sbn",
+        "bytes": 34636,
+        "checksum": "b14604d2494972d859a81500940712b6615dfe518b3dca6f070084c920414491"
+      },
+      {
+        "name": "AGD_OCH_VodniPlochyToky_p.sbx",
+        "bytes": 2428,
+        "checksum": "8a0ced3f0d433c797c873f0b63d416e8c2dcc7fd8800dbe2c92cb9f36d261177"
+      },
+      {
+        "name": "AGD_OCH_VodniPlochyToky_p.shp",
+        "bytes": 6126820,
+        "checksum": "55fac2599b78997adafa3ba1375509b1537fe11d1abde7a139dfa08396ca5981"
+      },
+      {
+        "name": "AGD_OCH_VodniPlochyToky_p.shp.xml",
+        "bytes": 38781,
+        "checksum": "e4b929808737b92d66846e1a6f6e42787255e97d084b08ed7a55206ffcc9ef80"
+      },
+      {
+        "name": "AGD_OCH_VodniPlochyToky_p.shx",
+        "bytes": 28292,
+        "checksum": "2acdb95e645065ba1f8c4d6787ed6062f4e626e1b1163d69dbe5f1941d5f8cbf"
+      }
+    ],
+    "fields": [
+      "NAZEV",
+      "PRISTUPNOS",
+      "TYP",
+      "KOUPANI",
+      "KOUP_OBL",
+      "GLOBALID",
+      "SHAPE_LEN"
+    ],
+    "suggestedId": "",
+    "suggestedName": "NAZEV",
+    "transformation": "proj4 2.22.0: PRJ → EPSG:4326; pořadí vstupních os ze souboru, výstup [longitude, latitude]; datumová transformace podle PRJ a databáze proj4, bez lokálního transformačního gridu.",
+    "count": 3524
+  }
+}
