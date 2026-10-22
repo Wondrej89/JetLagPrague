@@ -3,6 +3,9 @@ import { existsSync } from 'node:fs';
 export default defineConfig({
   testDir: './tests',
   workers: 1,
+  // Keep assertion details available in Checks annotations as well as the
+  // downloadable logs/traces, including on restricted cloud networks.
+  reporter: process.env.CI ? [['github'], ['dot']] : 'list',
   use: {
     baseURL: 'http://127.0.0.1:4173',
     viewport: { width: 1440, height: 960 },
