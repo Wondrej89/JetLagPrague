@@ -63,6 +63,7 @@ function EffectControl({curse,e,view,send,photos}:{curse:Curse;e:CurseEffect;vie
  const hunter=view.role==='hunter',p=e.spec,rolls=view.rolls?.filter(r=>r.kind==='dice'&&!r.usedBy&&r.at>=curse.activatedAt)??[];
  const selectRoll=<label>Hod pro tento účinek<select value={rollId} onChange={ev=>setRollId(ev.target.value)}><option value="">Vyberte nepoužitý hod</option>{rolls.map(r=><option key={r.id} value={r.id}>{r.values.join(' + ')} · {r.source}</option>)}</select></label>;
  return <div className="curse-effect"><p>{p.text} · {e.state==='active'?'Trvá':e.state==='waiting_task'?'Začne po splnění úvodního úkolu':e.state==='awaiting_review'?'Čeká na ruční ověření schovaným':e.state==='fulfilled'?'Splněno':e.state==='failed'?'Porušeno':'Ukončeno'}</p>
+ {p.kind==='round_obligation'&&<p>Penalizace při porušení: {p.penaltySeconds===null?'nelze určit':`${p.penaltySeconds/60} min bonus pro schovaného`}</p>}
  {e.expiresAt!==undefined&&e.state==='active'&&<strong>{time(e.expiresAt-view.now)}</strong>}{e.selectedCategory&&<p>Zakázaná kategorie: {e.selectedCategory}</p>}{e.remainingQuestions!==undefined&&<p>Zbývá otázek: {e.remainingQuestions}</p>}{error&&<p role="alert">{error}</p>}
  {!hunter&&e.state==='awaiting_review'&&<><button onClick={()=>void send({type:'verify_curse_task',curseId:curse.id,effectId:e.id,verified:true})}>Ověřit splnění úkolu schovaným</button><button onClick={()=>void send({type:'verify_curse_task',curseId:curse.id,effectId:e.id,verified:false})}>Vrátit úkol k doplnění</button></>}
  {hunter&&e.state==='active'&&p.kind==='task'&&<>

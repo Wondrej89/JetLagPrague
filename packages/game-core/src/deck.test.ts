@@ -178,3 +178,9 @@ it('Move keeps its freeze after a missing hunters GPS and caps score pause at it
  h.send('hunter',{type:'location',role:'hunter',fix:null});expect(()=>h.send('hunter',{type:'location',role:'hunter',fix:{point:[point[0]+.01,point[1]],at:h.state.now,accuracy:5}})).toThrow('nesmí pohybovat');
  h.send('hider',{type:'location',role:'hider',fix:null});h.send('clock',{type:'tick'},move.deadline);expect(h.state.cardState!.move!.stage).toBe('needs_destination');expect(h.state.cardState!.move!.candidates).toEqual([]);expect(()=>h.send('hider',{type:'complete_move',stopId:f.env.stops[0].id,confirmed:true})).toThrow();h.send('clock',{type:'tick'},move.deadline+60000);expect(scoreGame(h.state).pausedMs).toBe(20*60000);readGameState(h.state,f.env);
 });
+
+it('Bridge Troll pays against fresh positions at activation, never the old preparation position',()=>{
+ const h=harness(),start=f.station.point;h.send('hunter',{type:'location',role:'hunter',fix:{point:[start[0]+.006,start[1]],at:h.state.now,accuracy:5}});const id=cast(h,'curse-bridge-troll');h.send('hider',{type:'location',role:'hider',fix:{point:[start[0]+.003,start[1]],at:h.state.now,accuracy:5}});const before=structuredClone(h.state);
+ expect(()=>h.send('hider',{type:'confirm_cast',curseId:id,proof:{}})).toThrow('geografická');expect(h.state).toEqual(before);
+ h.send('hider',{type:'location',role:'hider',fix:null});expect(()=>h.send('hider',{type:'confirm_cast',curseId:id,proof:{}})).toThrow('poloha');expect(h.state.curses[0].state).toBe('casting');
+});

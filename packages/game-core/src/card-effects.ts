@@ -198,7 +198,7 @@ export function cardCommand(s: GameState, c: Command, env: GameEnvironment, acto
     check(card.effect === 'curse' && card.mechanics?.status !== 'incomplete' && card.mechanics?.castingCost && card.mechanics.effects.length, 'Work in progress – chybí úplná pravidla a casting cost prokletí.');
     check(!s.curses.some(x => x.state === 'casting' || activeCurse(x) && x.cardId === c.cardId), 'Již probíhá sesílání nebo účinek stejné instance.');
     preparedEffects(s,card.id,c.setup??{},env);
-    s.curses.push({ id: `${s.id}:curse:${++s.sequence}`, cardId: c.cardId, name: card.name, description: card.description, icon: card.icon,
+    s.curses.push({ id: `${s.id}:curse:${++s.sequence}`, cardId: c.cardId, name: card.name, description: card.mechanics?.fullTextCs??card.description, icon: card.icon,
       activatedAt: s.now, condition: card.description, blocksQuestions: false, manual: true, target: 'hunter', state: 'casting', effects: [], evidence: [], setup:structuredClone(c.setup??{}),castRollStart:s.cardState.rolls.length,guesses:[],
       ...(validFix(s.fixes.hider, s.now, s.rules) ? { casterPoint: [...s.fixes.hider.point] } : {}) });
     event(s, 'casting_started', `Příprava seslání: ${card.name}. Karta dosud nebyla spotřebována.`, 'hider');
@@ -207,6 +207,8 @@ export function cardCommand(s: GameState, c: Command, env: GameEnvironment, acto
   } else if (c.type === 'confirm_cast') {
     const curse = s.curses.find(x => x.id === c.curseId); check(curse?.state === 'casting' && s.hand.includes(curse.cardId), 'Sesílání není rozpracované nebo karta chybí.');
     check(!pendingQuestion(s),'Nejprve dokončete otázku.');
+    // Casting is an atomic activation: geographical costs use current, reliable fixes.
+    if(validFix(s.fixes.hider,s.now,s.rules))curse.casterPoint=[...s.fixes.hider.point];else delete curse.casterPoint;
     const noEffect=payCost(s, curse, c.proof, env); activate(s, curse, env, noEffect);
   } else if (c.type === 'complete_curse_task' || c.type === 'violate_curse') {
     const curse = s.curses.find(x => x.id === c.curseId), effect = curse?.effects?.find(e => e.id === c.effectId);
