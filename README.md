@@ -280,6 +280,8 @@ npm run pid:check
 
 Playwright lokálně použije `/usr/bin/chromium`, pokud existuje; jinak svůj nainstalovaný prohlížeč. CI instaluje odpovídající Chromium přes `npx playwright install --with-deps chromium`. `PLAYWRIGHT_SKIP_BUILD=1 npm run test:e2e` testuje již sestavený `dist/site`, jinak se artefakt sestaví automaticky. Vlastní cestu nastavíte přes `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`. Testy nepoužívají skutečný API klíč a nekontrolují dostupnost živého podkladu. Selhání dlaždic je simulováno; dostupnost živých Mapy.com dlaždic se musí ověřit s vlastním omezeným klíčem.
 
+Regresní scénáře s přesnými počty historických zastávek, stanovišti Anděla a plochou sjednocených zón explicitně načítají neměnný ověřený snapshot z 20. 8. 2026. Nezávisí na aktuálním obsahu větve `pid-data`; produkční editor dál dostává novější publikaci. CI hlásí chyby Playwrightu i v anotacích GitHub Checks, vedle archivovaných stop a logů.
+
 ## GitHub Pages
 
 1. V repozitáři nastavte **Settings → Pages → Source: GitHub Actions**.

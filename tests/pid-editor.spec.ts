@@ -5,9 +5,11 @@ import { destination } from '@turf/turf';
 import { newWorld, newFeature, pragueDate, type PidSnapshot } from '../packages/geo-core/src/index';
 import { testPlatform, testSnapshot } from '../packages/geo-core/src/pid-test-fixtures';
 import { storedWorld } from './draft-helper';
+import { useHistoricalPidFixture } from './pid-legacy-fixture';
 
 test('skutečná data PID: priority Anděla, původní stanoviště, ruční bod, geometrie zóny, obnova a bezpečné selhání aktualizace', async ({ page, context }) => {
   test.setTimeout(120000);
+  await useHistoricalPidFixture(context);
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await context.route('https://api.mapy.com/**', route => route.abort());
   let liveRequests = 0;

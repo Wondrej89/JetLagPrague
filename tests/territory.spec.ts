@@ -3,9 +3,11 @@ import { gzipSync } from 'node:zlib';
 import { createPidSnapshot, newFeature, newWorld, pragueDate } from '../packages/geo-core/src/index';
 import { testPlatform, testSnapshot } from '../packages/geo-core/src/pid-test-fixtures';
 import { storedWorld } from './draft-helper';
+import { useHistoricalPidFixture } from './pid-legacy-fixture';
 
 test('skutečná Praha: předvolba, filtrace, všechny 400m zóny, historie a obnova vlastních dat', async ({ page, context }) => {
   test.setTimeout(120000);
+  await useHistoricalPidFixture(context);
   const errors: string[] = []; page.on('pageerror', error => errors.push(error.message));
   await context.route('https://api.mapy.com/**', route => route.abort()); await context.route('https://data.pid.cz/**', route => route.abort());
   const draft = newWorld(); draft.layers[1].features = [newFeature({ type: 'Point', coordinates: [14.42, 50.08] }, 'Zachovaný vlastní bod')];
