@@ -3,7 +3,12 @@ import { readFile } from 'node:fs/promises';
 import { releaseTestInput } from '../packages/geo-core/src/game-release-test-fixtures';
 import { storedWorld } from './draft-helper';
 const base='http://127.0.0.1:4175/JetLagPrague/';
-test.beforeEach(async({page})=>{await page.route('https://api.mapy.com/**',route=>route.abort());});
+test.beforeEach(async({page})=>{
+ await page.route('https://api.mapy.com/**',route=>route.abort());
+ // CI tests the exact deployable artifact, which can include a configured
+ // publisher URL. Never contact that real service or obtain an admin session.
+ await page.route('**/status',route=>route.fulfill({headers:{'Access-Control-Allow-Origin':'*'},json:{configured:false,releaseSchemaVersions:[6]}}));
+});
 
 test('veřejná produkční stránka načte a ověří release bez editoru a bez přístupu do jeho databáze',async({page})=>{
  await page.addInitScript(()=>{indexedDB.open=()=>{throw new Error('Veřejná hra nesmí otevřít editor DB');};});

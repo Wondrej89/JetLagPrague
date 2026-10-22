@@ -1,4 +1,4 @@
-# Game MVP: mobilní klient a lokální simulátor
+# Game MVP: mobilní klient a prohlížečový simulátor
 
 Tato etapa přidává skutečný sdílený stav hry a dvě mobilní role. Nezavádí multiplayer ani produkční autentizaci. Geografický editor, zdroje, existující publikace a zabezpečený publisher se nemění.
 
@@ -9,7 +9,7 @@ npm ci
 npm run dev:simulator
 ```
 
-Otevřete **http://127.0.0.1:4177/** nebo použijte odkaz **Herní simulátor** v lokálním editoru. V produkčním editoru odkaz vede na bezpečnou návodovou stránku. Server naslouchá pouze na loopbacku. Pro mapový podklad použijte stávající klientský `VITE_MAPY_API_KEY` v `.env.local`, s povoleným lokálním refererem. Bez klíče fungují geografické výpočty a špendlíky; aplikace výslovně oznamuje chybějící podklad. Nevkládejte do aplikace serverové klíče.
+Otevřete **https://wondrej89.github.io/JetLagPrague/simulator/**; instalace ani přihlášení nejsou potřeba. Pro lokální vývoj použijte příkazy výše a **http://127.0.0.1:4177/**. Obě prostředí sestavují stejný `main.tsx` a stejné komponenty. Server pro vývoj naslouchá pouze na loopbacku. Pro podklad použijte stávající klientský `VITE_MAPY_API_KEY` v `.env.local`, s povoleným lokálním refererem; Pages používají dosavadní Actions secret. Bez klíče fungují geografické výpočty a špendlíky s upozorněním. Nevkládejte do aplikace serverové klíče.
 
 1. Výchozí nová hra je pozastavená. V pravém telefonu vyberte zastávku ze seznamu nebo mapy. Je nutná platná GPS v jejím 400m okruhu a uvnitř herní oblasti. Potvrďte **Potvrdit a uzamknout stanoviště**.
 2. V levém telefonu zvolte **Otázky → Matching / Measuring / Radar**, konkrétní otázku a **Položit otázku**. Pravý telefon dostane stejnou otázku.
@@ -20,15 +20,17 @@ Otevřete **http://127.0.0.1:4177/** nebo použijte odkaz **Herní simulátor** 
 
 **Uložit scénář** stáhne soukromý JSON včetně obrázků. **Načíst soukromý scénář** obnoví data pouze po kontrole verze, katalogu, stavu a příloh. Nepublikujte tento JSON do GitHubu: obsahuje polohy a soukromé informace obou rolí.
 
-## URL a bezpečné nasazení
+## URL, izolace a síť
 
-- Veřejná hra zůstává na `/JetLagPrague/`, editor na `/JetLagPrague/editor/`.
-- `/JetLagPrague/?role=hunter` a `?role=hider` používají stejný renderer mobilních telefonů. Bez autorizované partie zobrazují stav bez připojení, umožňují lokální zobrazení vlastní GPS po výslovném spuštění, nemají tajné polohy ani přístup k simulátorové DB. Nevytvářejí zdánlivou multiplayerovou místnost.
-- Na **https://wondrej89.github.io/JetLagPrague/simulator/** se publikuje pouze bezpečná vstupní stránka s lokálním návodem. Diagnostická aplikace a její úložiště nejsou obsahem tohoto produkčního artefaktu. Rozhoduje samostatný build entry point a kontrola modulů, nikoli kontrola hostname, skrytý odkaz nebo heslo v JS.
-- Plně funkční desktopový simulátor je v této etapě místní na `127.0.0.1:4177`.
-- Stávající OAuth cookie publisheru patří jeho serveru a není automaticky důkazem administrátorské relace pro jiný frontend. Nepřidáváme veřejný endpoint vracející plný stav nebo fotografie a neobcházíme GitHub App/Worker.
+- Veřejná hra zůstává na `/JetLagPrague/`, editor na `/JetLagPrague/editor/` a plný testovací simulátor na **`/JetLagPrague/simulator/`**.
+- Simulátor nese označení **„Testovací simulace – nejde o skutečnou multiplayerovou hru“**. Má pouze místní stav návštěvníka a simulované souřadnice. Nečte skutečnou GPS, produkční partie, administrátorskou relaci ani pracovní drafty editoru. Proto nevyžaduje OAuth. Oprávnění GitHub App a Workeru zůstávají beze změny.
+- `/JetLagPrague/?role=hunter` a `?role=hider` používají stejný renderer telefonů, ale bez autorizované partie zobrazují stav bez připojení. Jejich dosavadní dobrovolné zobrazení vlastní GPS je oddělené od simulátoru; nečtou jeho databázi.
+- Katalog se načítá z veřejného `../releases/` na Pages, z `/releases/` při lokálním vývoji. Povolené jsou pouze GET konkrétního indexu a neměnných souborů publikací, bez cookies, autorizačních hlaviček, těl požadavků nebo přesměrování. SHA-256, schémata i uzamčená verze se nadále ověřují.
+- Mapy.com podklad je **pevný atlas Prahy v zoomu 13**, z rozsahu `[49.94,14.22]` až `[50.19,14.72]` (latitude/longitude). Jedna konečná sada dlaždic se načte při otevření nezávisle na scénáři, pak se vykresluje pouze z místních blob URL. Tři mapy sdílejí stejnou sadu v paměti. Zoom, posun a fit kamery ani změna simulovaných poloh neodesílají další geografické požadavky. Větší přiblížení podklad zvětší; mimo pevný rozsah zůstávají geometrie bez podkladu. Výpadek neblokuje simulaci. Dlaždice nejsou trvale uložené ani součástí distribuovaného katalogu. Poskytovatel vidí běžná připojovací metadata, veřejný klientský klíč a veřejný origin, nikoli stav simulace.
+- Fotografie, soukromé polohy, karty a diagnostika se neodesílají. Export vyvolaný tlačítkem stáhne soubor na zařízení; aplikace jej nikam nenahrává. O jeho dalším sdílení rozhoduje návštěvník.
+- Produkční build má CSP zakazující externí skripty, formulářové odesílání, rámce a objekty; síť dovoluje pouze vlastní statické soubory a Mapy.com. Kontrola modulů odmítne import editoru, publisheru a editorových GIS závislostí. Do simulátoru je z prostředí zpřístupněn pouze veřejný klientský mapový klíč. Samostatný build veřejné hry dál odmítá import aplikace simulátoru.
 
-Před vzdáleným provozem plného simulátoru je nutná skutečná serverová kontrola správce (například přístupová brána před celou aplikací), oddělený origin a oprávnění. GitHub Pages samotné takovou ochranu neposkytují. Do té doby nepublikujte vývojový entry point, nespouštějte dev server na veřejném rozhraní a nedávejte před něj pouze klientské heslo.
+IndexedDB je oddělená názvem a datovým modelem, nikoli novým originem: důvěryhodné aplikace Pages sdílejí origin a běžná pravidla prohlížeče. Jiný prohlížeč nebo profil má jiné úložiště; dvě karty téhož profilu sdílejí uloženou simulaci. Souběžné řízení jedné simulace více kartami se nepodporuje. Smazání dat webu odstraní místní scénář a fotografie; pro přenos či zálohu slouží explicitní export. Dostupnost katalogu je nutná při otevření stránky, nejedná se o offline PWA.
 
 ## Architektura
 
@@ -37,7 +39,7 @@ Před vzdáleným provozem plného simulátoru je nutná skutečná serverová k
 | `packages/game-core` | Deterministický stavový automat, pravidla a registr, role, GPS snapshoty, stanoviště, časovače, karty, odměny, prokletí, historie a validace uloženého stavu. Bez Reactu, mapy, úložiště, síťových volání, vlastního času nebo náhodného generátoru mimo uložený seed. |
 | `packages/geo-resolver` | Adaptér **ověřeného publikovaného `GameDataRelease`** na existující `geo-core`. Matching/Measuring používají dosavadní geografické funkce, administrativní oblasti dosavadní pravidlo hranic, vodní plochy vzdálenost k přesnému polygonu. |
 | `packages/game-ui` | Jedna sada mobilních komponent obou rolí, read-only Leaflet mapa s Mapy.com, kontrakt rolového transportu a location provideru. `GamePhone` se používá v simulátoru; `PhoneScreen` také ve veřejných mobilních pohledech bez partie. |
-| `apps/simulator` | Výhradně místní administrativa: dva telefony, tři mapové objekty, scénáře, virtuální čas, oddělená IndexedDB, fotografie, soukromý import/export a diagnostika mimo telefony. Produkční `public.tsx` obsahuje pouze návod. |
+| `apps/simulator` | Prohlížečový sandbox na Pages i lokálně: dva telefony, tři mapové objekty, scénáře, virtuální čas, oddělená IndexedDB, fotografie, soukromý import/export a diagnostika mimo telefony. Žádný herní server ani publikační klient. |
 
 Události mají stabilní ID, čas a publikum. Čas a seed předává volající. Opakovaný příkaz se stejným ID nemá další účinek. Při změně katalogu se rozehraný scénář načítá s původním ID; chybějící historická verze se nenahrazuje novou. Žádný výpočet nesahá do editorového draftu ani nepoužívá Mapy.com jako zdroj objektové databáze.
 
@@ -46,7 +48,7 @@ Události mají stabilní ID, čas a publikum. Čas a seed předává volající
 - Úvodní limit je 45 minut, okruh stanoviště 400 m. Po uzamčení jej nelze měnit.
 - Při vypršení limitu se použije platná poloha a uchová seznam způsobilých zastávek. Předběžně zvolená způsobilá zastávka nebo jediný kandidát se uzamkne. Při překryvu je nutná volba. Chybějící GPS, nepřesné měření nebo žádný kandidát znamenají stav vyžadující řešení; žádná náhradní zastávka se neodhadne.
 - Testovací konfigurovatelná kvalita GPS: nejvýše 50 m nepřesnosti, stáří nejvýše 120 sekund, žádný budoucí timestamp. Jde o nastavení této implementace, nikoliv tvrzení o originálním pravidle. Případné rychlostní údaje nejsou automatickým důkazem dopravního režimu.
-- Matching a Measuring implicitně používají uzamčenou zastávku. Radar má explicitní volbu cíle (stanoviště / skutečná GPS) pro **novou hru**. Změna konfigurace nepřepíše rozpracovanou otázku. Hledači dostávají vlastní snapshot při položení otázky; cíl se také uzamkne a diagnostika jej ukazuje pouze správci.
+- Matching a Measuring implicitně používají uzamčenou zastávku. Radar má explicitní volbu cíle (stanoviště / skutečná GPS) pro **novou hru**. Změna konfigurace nepřepíše rozpracovanou otázku. Hledači dostávají vlastní snapshot při položení otázky; cíl se také uzamkne a diagnostika jej ukazuje pouze v místní testovací laboratoři.
 - Matching/Measuring/Radar mají pětiminutové reakční okno. Automatická odpověď může přijít dříve potvrzením schovaného, jinak při vypršení. Při selhání resolveru zůstane chyba bez odpovědi a bez odměny. Ruční otázka ani fotografie nikdy nevrací automaticky odhad.
 - Odměny: Matching a Measuring 3 → 1, Radar 2 → 1. Nabídka se uloží při otevření; znovuotevření/reload ji nezmění. Karty lze hrát před otevřením odměny.
 - Limit ruky je šest, uložený efekt jej může zvýšit. Při překročení je nutné zahrát či odhodit přebytek; reload nepomůže limit obejít. Časové bonusy se nehrají jako akční karta, započítávají se z karet zbylých v ruce na konci kola.
@@ -84,6 +86,8 @@ Pro skutečný multiplayer je potřeba autorizované soukromé objektové úlož
 
 Kontroly zahrnují deterministické přechody, pětiminutové okno, manuální a fotografické otázky bez náhodných odpovědí, snapshoty a změnu cíle Radaru, uzamčení a překryvy zastávek, 3 → 1 i 2 → 1, discard, opakované otevření odměny, kapacitu a overflow, bonusy, Veto/Randomize, prokletí, přiblížení a rolové DTO. Geografické integrační testy používají skutečné ověřené publikované podklady.
 
-E2E operují skutečnými komponentami telefonů a formuláři; zahrnují celý tok otázka → odpověď → nabídka → ponechání → reload, virtuální čas, karty, fotografie, soukromý export a prázdné veřejné úložiště. Produkční kontrola navíc odmítne build obsahující editorový GIS nebo soukromé moduly simulátoru. Závěrečné počty testů jsou v README.
+E2E operují skutečnými komponentami telefonů a formuláři přímo v minifikovaném Pages artefaktu pod `/JetLagPrague/simulator/`. Zahrnují celý tok otázka → odpověď → nabídka → ponechání → reload, virtuální čas, karty, fotografie, soukromý export/import, oddělení dvou prohlížečových kontextů a nezměněné editorové úložiště na stejném originu. Síťový audit při změnách GPS, fotografiích, kartách, diagnostice, exportu a reloadu dovoluje pouze veřejné GET bez těla: statické soubory, katalog a předem určený atlas. Odmítá jakýkoli jiný cíl, změnové metody nebo WebSocket; test navíc zakáže skutečnou geolokaci a otevření cizí databáze. Mapový server je v testech nahrazen deterministickou obrazovou odpovědí; dostupnost živé služby se tím netvrdí. Samostatný smoke test ověřuje i `npm run dev:simulator`.
 
-Závěrečné ověření: lint, typecheck, build editoru / veřejné hry / veřejného vstupu simulátoru, 246 jednotkových a 63 E2E scénářů prošly. Šest E2E simulátoru bylo po posledních úpravách opakováno včetně importu/exportu fotografie a atomického odmítnutí neplatného scénáře. Dva jednotkové a dva E2E audity jsou přeskočené kvůli nedodaným původním archivům GTFS a parků. Sedm historických publikací a geodatové kontrolní součty zůstaly platné.
+Workflow `.github/workflows/pages.yml` instaluje Chromium a spouští celou E2E sadu po produkčním buildu s `PLAYWRIGHT_SKIP_BUILD=1`, tedy nad přesně tím artefaktem, který se později nahraje na Pages. Testy neprovádějí autentizaci ani publikaci; případný nakonfigurovaný publisher je nahrazen testovací odpovědí bez relace. Selhání blokuje deploy a uloží diagnostiku. Jednotkové testy navíc kontrolují omezené veřejné čtení a deterministický atlas. Herní pravidla, POI katalogy a historické publikace tato změna neupravuje.
+
+Závěrečné lokální ověření: lint, typecheck, produkční build, **249 jednotkových a 66 E2E testů** prošly (celá E2E sada s nastavením CI, 8,9 minuty). Dva jednotkové a dva E2E audity původních GTFS/parkových archivů jsou výslovně přeskočené. Kontroly administrativních dat, PID a všech sedmi neměnných publikací prošly bez úpravy dat.

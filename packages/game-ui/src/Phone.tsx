@@ -1,17 +1,17 @@
 import {useEffect,useRef,useState,useSyncExternalStore} from 'react';
 import {QUESTION_GROUPS,questionRegistry,type Command,type QuestionType,type Role,type RoleView} from '../../game-core/src/index';
 import {distanceMeters} from '../../geo-core/src/index';
-import {MapSurface} from './MapSurface';
+import {MapSurface,type StaticBasemap} from './MapSurface';
 import {browserLocationProvider,type GameTransport} from './runtime';
 import type {Fix} from '../../game-core/src/index';
 export interface PhotoRepository {put(file:File):Promise<string>;get(id:string):Promise<Blob|null>}
 export const formatTime=(ms:number)=>`${String(Math.floor(Math.max(0,ms)/60000)).padStart(2,'0')}:${String(Math.floor(Math.max(0,ms)/1000)%60).padStart(2,'0')}`;
 function Photo({id,photos}:{id:string;photos:PhotoRepository}){const [url,setUrl]=useState('');useEffect(()=>{let cancelled=false,local='';photos.get(id).then(blob=>{if(blob&&!cancelled){local=URL.createObjectURL(blob);setUrl(local);}}).catch(()=>{});return()=>{cancelled=true;if(local)URL.revokeObjectURL(local);};},[id,photos]);return url?<img className="question-photo" src={url} alt="Fotografie od schovaného"/>:<p>Fotografie není v tomto místním úložišti dostupná.</p>;}
-export function GamePhone({transport,apiKey,photos}:{transport:GameTransport;apiKey?:string;photos:PhotoRepository}){
+export function GamePhone({transport,apiKey,basemap,photos}:{transport:GameTransport;apiKey?:string;basemap?:StaticBasemap;photos:PhotoRepository}){
  const view=useSyncExternalStore(transport.subscribe,transport.getView);
- return <PhoneScreen view={view} apiKey={apiKey} photos={photos} send={command=>transport.send(command)}/>;
+ return <PhoneScreen view={view} apiKey={apiKey} basemap={basemap} photos={photos} send={command=>transport.send(command)}/>;
 }
-export function PhoneScreen({view,apiKey,photos,send}:{view:RoleView;apiKey?:string;photos:PhotoRepository;send(command:Command):Promise<void>}){
+export function PhoneScreen({view,apiKey,basemap,photos,send}:{view:RoleView;apiKey?:string;basemap?:StaticBasemap;photos:PhotoRepository;send(command:Command):Promise<void>}){
  const [tab,setTab]=useState('map'),[group,setGroup]=useState<QuestionType|null>(null),[search,setSearch]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
  const hunter=view.role==='hunter',pending=view.questions.find(q=>q.state==='pending'||q.state==='error'),last=[...view.questions].reverse().find(q=>q.state==='answered');
  const run=async(command:Command)=>{setError('');try{await send(command);}catch(error){setError(error instanceof Error?error.message:'Akce selhala.');}};
@@ -32,7 +32,7 @@ export function PhoneScreen({view,apiKey,photos,send}:{view:RoleView;apiKey?:str
    {!hunter&&!!view.overflow&&<div className="phone-alert" role="alert">Překročen limit ruky o {view.overflow}. Zahrajte nebo odhoďte přebytečné karty.<button onClick={()=>setTab('cards')}>Upravit ruku</button></div>}
    {pending&&tab!=='incoming'&&<button className="incoming-banner" onClick={()=>{setTab(hunter?'questions':'incoming');setGroup(pending.definition.type);}}><span>◉ {hunter?'Čekáme na odpověď':'Příchozí otázka'}</span><strong>{pending.definition.label}</strong>{pending.deadline!==null&&<small>{formatTime(pending.deadline-view.now)}</small>}</button>}
    {tab==='map'&&<>
-    <div className="phone-map"><MapSurface markers={markers} apiKey={apiKey} center={!hunter&&!station&&selectedStop?selectedStop.point:own?.point} circle={hunter?null:station?.point??selectedStop?.point}/></div>
+    <div className="phone-map"><MapSurface markers={markers} apiKey={apiKey} basemap={basemap} center={!hunter&&!station&&selectedStop?selectedStop.point:own?.point} circle={hunter?null:station?.point??selectedStop?.point}/></div>
     <section className="phone-section"><div className="section-title"><h2>{hunter?'Praha je vaše mapa':'Moje stanoviště'}</h2><span>⌖</span></div>
      <p className="gps-label">{own?`${own.point[1].toFixed(6)}, ${own.point[0].toFixed(6)} · ±${Math.round(own.accuracy)} m`:'GPS není dostupná.'}</p>
      {view.gpsIssue&&<p role="status" className="phone-alert">{view.gpsIssue}</p>}

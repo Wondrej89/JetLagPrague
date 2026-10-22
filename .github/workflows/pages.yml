@@ -1,4 +1,4 @@
-name: Deploy game and editor to GitHub Pages
+name: Test and deploy game, editor and simulator to GitHub Pages
 on:
   push:
     branches: [main]
@@ -11,6 +11,7 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     permissions:
       contents: read
       pages: read
@@ -49,6 +50,21 @@ jobs:
         env:
           VITE_MAPY_API_KEY: ${{ secrets.VITE_MAPY_API_KEY }}
           VITE_PUBLISHER_URL: ${{ vars.PUBLISHER_URL }}
+      - name: Install E2E Chromium
+        run: npx playwright install --with-deps chromium
+      - name: E2E against the exact Pages artifact
+        run: npm run test:e2e
+        env:
+          CI: 'true'
+          PLAYWRIGHT_SKIP_BUILD: '1'
+      - name: Upload E2E failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-failure-diagnostics
+          path: test-results
+          if-no-files-found: ignore
+          retention-days: 7
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
