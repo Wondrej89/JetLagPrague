@@ -36,6 +36,9 @@ test('nový prohlížeč zobrazí 26 kin, přesné body, samostatnou viditelnost
 });
 
 test('přejmenování, adresa, poznámka, GPS, vyřazení a tažení bodu přetrvají reload bez změny původního katalogu',async({page})=>{
+  // Three full geographic-draft reloads share this scenario's budget. Keep
+  // individual locator/persistence deadlines unchanged on slower CI runners.
+  test.setTimeout(60000);
   await page.goto('/');await ready(page);const before=await storedWorld(page);
   await page.getByLabel('Hledat POI').fill('bio-oko');await page.locator('.poi-row button').click();
   await page.getByLabel('Název kina',{exact:true}).fill('Moje upravené kino');await page.getByLabel('Adresa kina',{exact:true}).fill('Moje testovací adresa');await page.getByLabel('Poznámka ke kinu').fill('Moje soukromá poznámka');
