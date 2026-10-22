@@ -50,8 +50,18 @@ jobs:
         env:
           VITE_MAPY_API_KEY: ${{ secrets.VITE_MAPY_API_KEY }}
           VITE_PUBLISHER_URL: ${{ vars.PUBLISHER_URL }}
-      - name: Install E2E Chromium
-        run: npx playwright install --with-deps chromium
+      - name: Select E2E Chromium
+        shell: bash
+        run: |
+          # Hosted Ubuntu already includes Chrome and its native dependencies.
+          # Avoid an unnecessary browser/apt download blocking Pages deployment.
+          e2e_browser="$(command -v google-chrome-stable || command -v google-chrome || command -v chromium || true)"
+          if [ -n "$e2e_browser" ]; then
+            "$e2e_browser" --version
+            echo "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=$e2e_browser" >> "$GITHUB_ENV"
+          else
+            npx playwright install --with-deps chromium
+          fi
       - name: E2E against the exact Pages artifact
         run: npm run test:e2e
         env:
