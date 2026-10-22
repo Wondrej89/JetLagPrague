@@ -10,6 +10,7 @@ export interface QuestionDefinition {
   resolver: 'poi_matching' | 'poi_measuring' | 'same_area' | 'radar' | 'thermometer' | 'tentacles' | 'manual' | 'photo' | 'unsupported';
   answerMode: 'automatic' | 'manual' | 'photo'; rewardPolicy: RewardPolicy | null; timeoutSeconds: number | null;
   availability: 'ready' | 'manual' | 'missing_data' | 'unsupported'; requirements: string[];
+  spatialVersion?: 2; toleranceMeters?: number; sourceRule?: string;
   target: TargetPolicy; radiusMeters?: number; minMoveMeters?: number; configured?: boolean; testOnly?: boolean;
 }
 export interface CardDefinition {
@@ -19,13 +20,17 @@ export interface CardDefinition {
   curse?: { durationMs?: number; condition: string; blocksQuestions: boolean; manual: boolean };
 }
 export interface GameRules {
-  cardVersion?: 2; size?: GameSize;
+  cardVersion?: 2; questionVersion?: 2; size?: GameSize;
   id: string; label: string; testOnly: boolean; hideMs: number; radiusMeters: number; gpsMaxAgeMs: number; gpsMaxAccuracyM: number;
   handLimit: number; veto: { enabled: boolean; reward: boolean }; randomize: { enabled: boolean; restartTimer: boolean };
   questions: QuestionDefinition[]; cards: CardDefinition[]; deck: string[];
 }
 export interface Stop { id: string; name: string; point: Point }
+export interface PublicPoi { id: string; name: string; point: Point }
+export type QuestionPhase = 'awaiting_second_measurement' | 'awaiting_response' | 'answered' | 'error';
 export interface QuestionInstance {
+  phase?: QuestionPhase; responseStartedAt?: number; secondCapturedAt?: number; answerPoi?: PublicPoi; errorCode?: 'thermometer_tie';
+  manualResolution?: { at: number; note: string };
   rewardModifierIds?: string[]; id: string; definition: QuestionDefinition; askedAt: number; deadline: number | null;
   hunterFix: Fix; targetPoint: Point; secondFix?: Fix;
   state: 'pending' | 'answered' | 'vetoed' | 'error'; answer?: string; error?: string; answeredAt?: number; photoId?: string; draftPhotoId?: string;
@@ -48,11 +53,13 @@ export type Command =
   | { type: 'select_station'; stopId: string }
   | { type: 'lock_station'; stopId: string }
   | { type: 'ask'; questionId: string; confirmations?: string[]; ransomText?:string }
-  | { type: 'second_measurement' }
+  | { type: 'second_measurement'; confirmations?: string[]; ransomText?: string }
+  | { type: 'resolve_thermometer_tie'; answer: 'TEPLEJI' | 'CHLADNĚJI'; confirmed: boolean; note: string }
   | { type: 'attach_photo'; photoId:string }
   | { type: 'answer'; answer?: string; photoId?: string }
   | { type: 'draw_reward'; rewardId: string }
-  | { type: 'keep_reward'; rewardId: string; cardId: string }
+  | { type: 'keep_reward'; rewardId: string; cardId: string; cardIds?: never }
+  | { type: 'keep_reward'; rewardId: string; cardIds: string[]; cardId?: never }
   | { type: 'play_card'; cardId: string; targetCardId?: string; discardIds?: string[] }
   | { type: 'begin_cast'; cardId: string; setup?: CurseSetup }
   | { type: 'cancel_cast'; curseId: string }
@@ -72,9 +79,9 @@ export type Command =
   | { type: 'fulfill_curse'; curseId: string }
   | { type: 'finish' };
 export interface Envelope { id: string; at: number; actor: Role | 'clock'; command: Command }
-export interface Resolution { state: 'known' | 'unknown'; answer?: string; reason?: string; details?: Record<string, string | number | Point | null> }
+export interface Resolution { code?: 'thermometer_tie'; publicPoi?: PublicPoi; state: 'known' | 'unknown'; answer?: string; reason?: string; details?: Record<string, string | number | Point | null> }
 export interface GameEnvironment {
-  releaseId: string; stops: Stop[];
+  releaseId: string; stops: Stop[]; maxMovementMeters?: number;
   insideArea(point: Point): boolean; distance(a: Point, b: Point): number;
   resolve(question: QuestionInstance): Resolution;
   availability(definition: QuestionDefinition): { state: QuestionDefinition['availability']; reason: string };
@@ -86,7 +93,7 @@ export interface RoleView {
   rolls?: CardRuntime['rolls']; penalties?: CardRuntime['penalties']; doors?:CardRuntime['doors'];
   startedAt?:number; connected?:boolean; gameId: string; releaseId: string; role: Role; phase: GameState['phase']; elapsedMs: number; now: number; hideRemainingMs: number;
   proximityActive?:boolean; finalScoreMs?:number; ownFix: Fix | null; gpsIssue:string|null; canAsk: boolean; blockingReason: string; walking?: boolean; station?: Stop | null; provisionalStopId?: string | null; stops?: Stop[];
-  questions: { id: string; definition: QuestionDefinition; state: QuestionInstance['state']; askedAt: number; deadline: number | null; answer?: string; error?: string; photoId?: string; draftPhotoId?:string; secondCaptured: boolean }[];
+  questions: { phase?: QuestionPhase; responseStartedAt?: number; answerPoi?: PublicPoi; manualTie?: boolean; measurement?: { first: Point; second?: Point; movement: number | null; remaining: number | null; canFinish: boolean }; id: string; definition: QuestionDefinition; state: QuestionInstance['state']; askedAt: number; deadline: number | null; answer?: string; error?: string; photoId?: string; draftPhotoId?:string; secondCaptured: boolean }[];
   availableQuestions: (QuestionDefinition & { reason: string })[];
   hand?: { instanceId: string; definition: CardDefinition }[]; handLimit?: number; overflow?: number; bonusSeconds?: number;
   rewards?: Reward[]; rewardCards?: Record<string, CardDefinition>; curses: Curse[]; events: GameEvent[];

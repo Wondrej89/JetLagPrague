@@ -1,3 +1,4 @@
+import {Rewards} from './Rewards';
 import { useState } from 'react';
 import { activeCurse, type CardDefinition, type CastingProof, type Command, type Curse, type CurseEffect, type CurseSetup, type RoleView } from '../../game-core/src/index';
 import type { PhotoRepository } from './Phone';
@@ -53,7 +54,7 @@ export function CardsPanel({view,send,photos}:{view:RoleView;send:Send;photos:Ph
   {(['time_bonus','powerup','curse'] as const).map(type=><section key={type}><h3>{type==='time_bonus'?'Časové bonusy':type==='powerup'?'Powerupy':'Prokletí v ruce'}</h3>{view.hand?.filter(c=>c.definition.type===type).map(c=><Card key={c.instanceId} id={c.instanceId} card={c.definition} view={view} send={send}/>)}</section>)}
   {view.move&&view.move.stage!=='completed'&&<article className="curse-card"><h3>Move – probíhá ověřovaný přesun</h3><p>Do konce přesunu: {time(view.move.deadline-view.now)}. Hledači stojí; čas schovaného se nezapočítává. Změňte simulovanou GPS schovaného a potvrďte způsobilé cílové stanoviště do 20 minut.</p><label>Cíl Move<select value={destination} onChange={e=>setDestination(e.target.value)}><option value="">Vyberte cílovou zastávku</option>{(view.move?.stage==='needs_destination'?view.move.candidates:view.stops)?.filter(s=>s.id!==view.move?.origin.id).map(s=><option key={s.id} value={s.id}>{s.name}</option>)}</select></label><button disabled={!destination||false} onClick={()=>void send({type:'complete_move',stopId:destination,confirmed:true})}>Potvrdit dokončený přesun a ověřit GPS</button></article>}
   {view.finalScoreMs!==undefined&&<p>Výsledný čas včetně bonusů a penalizací: {time(view.finalScoreMs)}</p>}
-  <h3>Karetní odměny</h3>{view.rewards?.filter(r=>r.state!=='claimed').map(r=><article className="reward-card" key={r.id}><h3>Lízni {r.policy.draw}, ponech {r.policy.keep}</h3>{r.state==='pending'?<button disabled={!!view.overflow} onClick={()=>void send({type:'draw_reward',rewardId:r.id})}>Otevřít karetní odměnu</button>:<><p>Nabídka je uložená a po reloadu se nezmění.</p>{r.offer.map(id=><button className="offered-card" key={id} disabled={!!view.overflow} onClick={()=>void send({type:'keep_reward',rewardId:r.id,cardId:id})}><span>{view.rewardCards?.[id]?.icon} {view.rewardCards?.[id]?.name}</span><small>Ponechat tuto kartu</small></button>)}</>}</article>)}
+  <Rewards view={view} send={send}/>
   <h3>Moje zahraná prokletí</h3><CursePanel view={view} send={send} photos={photos}/>
  </>;
 }

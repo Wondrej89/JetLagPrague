@@ -1,13 +1,14 @@
+import {SPATIAL_SCENARIOS,spatialScenario} from './spatial-scenarios';
 import {createGame,deckRules,transition,type GameState,type GameEnvironment,type GameRules,type Point,type Role} from '../../../packages/game-core/src/index';
 import {configureCardFixture} from './card-fixtures';
 import type {GameDataRelease} from '../../../packages/geo-core/src/index';
-export const SCENARIOS=[
+export const SCENARIOS=[...SPATIAL_SCENARIOS,
  ['deck-100','Rozložení přesného balíčku 100 karet'],['power-duplicate','Duplicate časového bonusu'],['power-discard-1','Discard 1 Draw 2'],['power-discard-2','Discard 2 Draw 3'],['power-expand','Draw 1 Expand 1'],['power-move','Move · 20 minut a pozastavený čas'],['curse-chalice','TEST Overflowing Chalice · tři odměny'],['curse-spotty','TEST Spotty Memory · blokace kategorie'],['curse-drained','TEST Drained Brain · blokace tří otázek'],['curse-water','TEST Water Weight · úkol a průběžná povinnost'],['curse-timed','TEST časově omezeného efektu'],['curse-cost','TEST atomické ceny zahrání'],['curse-photo','TEST ceny a úkolu s fotografií'],['curse-manual','TEST ručního potvrzení'],['curse-penalty','TEST penalizace průběžné povinnosti'],
  ['blank','Nová hra – výběr stanoviště'],['same-zoo','Matching · stejná nejbližší zoo'],['different-hospital','Matching · rozdílné nemocnice'],['measuring','Measuring · letiště'],['radar-in','Radar 800 m · uvnitř'],['radar-out','Radar 800 m · mimo'],['veto','Testovací Veto před odpovědí'],['randomize','Testovací Randomize'],['reward','Dobírání 3 → 1'],['overflow','Překročený limit ruky'],['curse','Testovací prokletí a splnění'],['walk-in','Přiblížení pěšky pod 400 m'],['transit-in','V dopravě pod 400 m bez upozornění'],['overlap','Překryv zastávkových okruhů'],['timeout','Pětiminutové reakční okno'],['missing-gps','Chybějící GPS'],['missing-data','Chybějící geografická vrstva'],
 ] as const;
 export function buildScenario(id:string,release:GameDataRelease,env:GameEnvironment,seed=42,rules:GameRules=deckRules('small')):GameState{
  if(!SCENARIOS.some(([key])=>key===id))throw new Error('Neznámý testovací scénář.');
- rules=structuredClone(rules);const fixtureCard=configureCardFixture(rules,id);
+ rules=structuredClone(rules);const spatial=spatialScenario(id,release,env,seed,rules);if(spatial)return spatial;const fixtureCard=configureCardFixture(rules,id);
  const start=Date.parse(`${release.data.pidSnapshot.serviceDate}T10:00:00Z`);let s=createGame({id:`simulation-${seed}`,releaseId:release.releaseId,seed,now:start,rules});let sequence=0;
  const send=(actor:Role|'clock',command:Parameters<typeof transition>[1]['command'],at=s.now)=>{s=transition(s,{id:`scenario-${++sequence}`,at,actor,command},env);};
  const nearestStop=(p:Point)=>[...env.stops].sort((a,b)=>env.distance(a.point,p)-env.distance(b.point,p)||a.id.localeCompare(b.id))[0];

@@ -303,8 +303,8 @@ export function mergeParks(configuration: PoiConfiguration, parks: Poi[], name: 
   for (const member of parks) next = decidePoi(next, member, { status: 'excluded', note: `Část parku sloučena do ${park.id}.` });
   return { configuration: next, park };
 }
-export function distanceToPoiMeters(point: Position, poi: Pick<Poi, 'point'> & Partial<Pick<Poi, 'category' | 'geometry'>>): number {
-  if (poi.category === 'waterbody') {
+export function distanceToPoiMeters(point: Position, poi: Pick<Poi, 'point'> & Partial<Pick<Poi, 'category' | 'geometry'>>, mode: 'category' | 'geometry' = 'category'): number {
+  if (poi.category === 'waterbody' || mode === 'geometry' && poi.geometry && isArea(poi.geometry)) {
     try {
       if (!poi.geometry || !isArea(poi.geometry)) return NaN;
       const geometry=validateGeometry(poi.geometry);if(!isArea(geometry))return NaN;
@@ -318,10 +318,10 @@ export type GeographicPoi = Pick<Poi, 'id' | 'category' | 'point' | 'status'> & 
 export type NearestPoiResult<T extends GeographicPoi = Poi> = { state: 'known'; poi: T; distanceMeters: number; tiedIds: string[] } | { state: 'unknown'; reason: string };
 /** Haversine metres, tie within 1 μm: lexicographically smallest stable ID.
  * Eligibility is independent of visibility. Invalid points never yield a guess. */
-export function nearestApprovedPoi<T extends GeographicPoi>(point: Position, category: string, pois: readonly T[]): NearestPoiResult<T> {
+export function nearestApprovedPoi<T extends GeographicPoi>(point: Position, category: string, pois: readonly T[], mode: 'category' | 'geometry' = 'category'): NearestPoiResult<T> {
   if (!pointSchema.safeParse(point).success) return { state: 'unknown', reason: 'Neplatná poloha; nelze určit.' };
   const candidates = pois.filter(p => p.category === category && p.status === 'approved' && pointSchema.safeParse(p.point).success)
-    .map(poi => ({ poi, distanceMeters: distanceToPoiMeters(point, poi) }));
+    .map(poi => ({ poi, distanceMeters: distanceToPoiMeters(point, poi, mode) }));
   if (candidates.some(candidate => !Number.isFinite(candidate.distanceMeters))) return { state: 'unknown', reason: 'Chybí spolehlivá geometrie schválené vodní plochy; nelze určit.' };
   if (!candidates.length) return { state: 'unknown', reason: 'Neexistuje schválený kandidát; nelze určit.' };
   const minimum = candidates.reduce((minimum, p) => Math.min(minimum, p.distanceMeters), Infinity);

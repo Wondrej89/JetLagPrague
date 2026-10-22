@@ -1,3 +1,4 @@
+import { spatialQuestions, type QuestionConfiguration } from './spatial-questions';
 import type { CardDefinition, GameRules, QuestionDefinition, QuestionType } from './types';
 export const QUESTION_GROUPS: {id:QuestionType;name:string;icon:string;color:string;description:string}[] = [
   {id:'matching',name:'Matching',icon:'⇄',color:'#2275b7',description:'Je nejbližší lokalita stejná?'},
@@ -9,7 +10,7 @@ export const QUESTION_GROUPS: {id:QuestionType;name:string;icon:string;color:str
 ];
 const labels: Record<string,string> = {airport:'Letiště',transit_line:'Linka MHD',stop_name:'Délka názvu zastávky',street:'Ulice',municipal:'Městská část',cadastral:'Katastrální území',landmass:'Pevnina',park:'Přírodní park',zoo:'Zoo',golf:'Golfové hřiště',cinema:'Kino',aquapark:'Aquapark',hospital:'Nemocnice',library:'Knihovna',rail:'Železniční stanice',elevation:'Nadmořská výška',waterbody:'Vodní plochy',vltava:'Vltava – vzdálenost k řece'};
 const supportedPoi = ['airport','zoo','cinema','hospital','library','waterbody'];
-export function questionRegistry(): QuestionDefinition[] {
+export function questionRegistry(options: QuestionConfiguration = {}): QuestionDefinition[] {
   const result: QuestionDefinition[]=[];
   for (const type of ['matching','measuring'] as const) {
     const categories=type==='matching'?['airport','transit_line','stop_name','street','municipal','cadastral','landmass','park','zoo','golf','cinema','aquapark','hospital','library']:['airport','rail','elevation','waterbody','vltava','zoo','golf','cinema','aquapark','hospital','library'];
@@ -20,8 +21,10 @@ export function questionRegistry(): QuestionDefinition[] {
     }
   }
   for(const radiusMeters of [400,800,1500,3000,6000])result.push({id:`radar:${radiusMeters}`,type:'radar',category:'distance',label:`Radar ${radiusMeters.toLocaleString('cs-CZ')} m`,description:`Jsi do ${radiusMeters.toLocaleString('cs-CZ')} metrů ode mě?`,resolver:'radar',answerMode:'automatic',rewardPolicy:{draw:2,keep:1},timeoutSeconds:300,availability:'ready',requirements:[],target:'station',radiusMeters,configured:true});
+  if(options.legacy){
   result.push({id:'thermometer:unconfigured',type:'thermometer',category:'distance',label:'Dvě měření',description:'Uložte první a druhou polohu po přesunu. Variantě chybí schválená minimální vzdálenost a odměna.',resolver:'thermometer',answerMode:'automatic',rewardPolicy:null,timeoutSeconds:null,availability:'unsupported',requirements:['thermometer_rules'],target:'station',configured:false});
   for(const category of ['library','park','museum','hospital'])result.push({id:`tentacles:${category}`,type:'tentacles',category,label:labels[category]??'Muzea',description:'Dosah, způsob výběru a odměna této varianty nejsou schválené.',resolver:'tentacles',answerMode:'automatic',rewardPolicy:null,timeoutSeconds:null,availability:'unsupported',requirements:[category,'tentacles_rules'],target:'station',configured:false});
+  }else result.push(...spatialQuestions(options));
   result.push({id:'photo:surroundings',type:'photo',category:'surroundings',label:'Fotografie okolí',description:'Pošli fotografii svého aktuálního okolí. Testovací zadání bez karetní odměny; finální foto karty čekají na pravidla.',resolver:'photo',answerMode:'photo',rewardPolicy:null,timeoutSeconds:null,availability:'manual',requirements:[],target:'gps',configured:true,testOnly:true});
   return result;
 }
@@ -35,4 +38,4 @@ export const TEST_CARDS: CardDefinition[] = [
   {id:'curse-look',type:'curse',name:'Rozhlédněte se',icon:'✦',description:'Testovací ruční úkol: přečtěte název nejbližší ulice a potvrďte splnění.',effect:'curse',curse:{condition:'Přečtěte název nejbližší ulice.',blocksQuestions:false,manual:true}},
 ];
 /** Explicit local test rules, never represented as the official card rules. */
-export function simulationRules():GameRules {return {id:'prague-mvp-test-v1',label:'Testovací pravidla MVP · karty a doplňkové varianty nejsou schválené',testOnly:true,hideMs:45*60000,radiusMeters:400,gpsMaxAgeMs:120000,gpsMaxAccuracyM:50,handLimit:6,veto:{enabled:true,reward:false},randomize:{enabled:true,restartTimer:false},questions:questionRegistry(),cards:TEST_CARDS,deck:Array.from({length:8},()=>TEST_CARDS.map(c=>c.id)).flat()};}
+export function simulationRules():GameRules {return {id:'prague-mvp-test-v1',label:'Testovací pravidla MVP · karty a doplňkové varianty nejsou schválené',testOnly:true,hideMs:45*60000,radiusMeters:400,gpsMaxAgeMs:120000,gpsMaxAccuracyM:50,handLimit:6,veto:{enabled:true,reward:false},randomize:{enabled:true,restartTimer:false},questions:questionRegistry({legacy:true}),cards:TEST_CARDS,deck:Array.from({length:8},()=>TEST_CARDS.map(c=>c.id)).flat()};}

@@ -1,6 +1,6 @@
 import catalogue from './card-catalog.json' with {type:'json'};
 import { curseRules } from './curse-rules';
-import { simulationRules } from './registry';
+import { questionRegistry, simulationRules } from './registry';
 import type { CardDefinition, GameRules } from './types';
 import type { CardMechanics, GameSize } from './card-types';
 
@@ -23,7 +23,7 @@ export function deckRules(size: GameSize): GameRules {
     ...catalogue.curses.map(c => ({ id: c.id, name: c.name, type: 'curse' as const, icon: '☾', effect: 'curse' as const,
       description: c.summary, mechanics: curseRules(c.id,size) })),
   ];
-  return { ...simulationRules(), id: `${catalogue.version}:${size}`, cardVersion: 2, size,
+  return { ...simulationRules(), id: `${catalogue.version}:${size}`, cardVersion: 2, questionVersion: 2, questions:questionRegistry(), size,
     label: `100 karet · ${size} · pravidla z dodané tabulky; rozporné a nedodané mechanismy jsou WIP`, testOnly: true, cards,
     deck: [...catalogue.bonuses.flatMap(c => Array<string>(c.count).fill(c.id)),
       ...catalogue.powerups.flatMap(c => Array<string>(c.count).fill(c.id)), ...catalogue.curses.map(c => c.id)] };
