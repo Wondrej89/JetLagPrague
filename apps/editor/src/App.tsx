@@ -377,6 +377,7 @@ export function App() {
       <div className="brand-copy"><span className="eyebrow">JET LAG / PRAHA</span><h1>Geografický editor</h1></div>
       <span className="version-tag">ITERACE 04A <span>·</span> DRAFT</span>
       <div className="header-actions">
+        <a className="simulator-entry" href={import.meta.env.DEV ? 'http://127.0.0.1:4177/' : '../simulator/'} target="_blank" rel="noreferrer">Herní simulátor ↗</a>
         <button disabled={editing} onClick={() => setPublicationOpen(true)}>Publikace herních podkladů</button>
         <button disabled={editing} onClick={() => setSourcesOpen(true)}>Správa zdrojů</button>
         <button disabled={editing} onClick={() => setPidSources(true)}>Doprava PID</button>

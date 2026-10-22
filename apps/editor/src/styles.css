@@ -287,3 +287,4 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .water-controls select,.water-controls input:not([type=checkbox]) { max-width: 100%; width: 100%; }
 .water-properties pre { overflow: auto; max-height: 320px; }
 .waterbody-marker { background: #dcefff; color: #2078ac; border-color: #2078ac; }
+.header-actions .simulator-entry { display: inline-flex; align-items: center; border: 1px solid #dbe1d9; border-radius: 6px; padding: 8px 11px; background: white; color: #28463c; text-decoration: none; font-size: 12px; }

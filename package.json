@@ -12,7 +12,7 @@
   ],
   "scripts": {
     "dev": "npm run dev:game --",
-    "build": "npm run typecheck && npm run build:editor && npm run build:game && tsx scripts/assemble-pages.ts",
+    "build": "npm run typecheck && npm run build:editor && npm run build:game && npm run build:simulator && tsx scripts/assemble-pages.ts",
     "preview": "vite preview --config vite.game.config.ts --host 0.0.0.0",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --max-warnings 0",
@@ -39,7 +39,9 @@
     "release:check": "tsx scripts/check-game-releases.ts",
     "preview:editor": "vite preview --host 0.0.0.0",
     "publisher:dev": "wrangler dev --config apps/publisher/wrangler.toml",
-    "publisher:deploy": "wrangler deploy --config apps/publisher/wrangler.toml"
+    "publisher:deploy": "wrangler deploy --config apps/publisher/wrangler.toml",
+    "dev:simulator": "vite --config vite.simulator.config.ts",
+    "build:simulator": "vite build --config vite.simulator.config.ts"
   },
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "2.20.2",

@@ -13,6 +13,16 @@ Iterace 02 používá dodané soubory `data/raw/mestskecasti.geojson` (**57 měs
 
 Původ je zaznamenán v `data/source-metadata/`: městské části mají v dodaných datech poskytovatele HMP-IPR a katalogový odkaz IPR, katalogový odkaz ČSÚ pro katastry doložil uživatel. **Licence a datum platnosti celé sady nejsou v dodaných souborech uvedeny a zůstávají výslovně nedoložené.** Datum převzetí do repozitáře se za datum platnosti nevydává. MIT licence kódu automaticky neurčuje licenci zdrojových geodat.
 
+## Game MVP – mobilní UI a lokální simulátor
+
+Nové sdílené jádro, geografický resolver a mobilní komponenty obou rolí jsou v `packages/game-core`, `packages/geo-resolver` a `packages/game-ui`. Skutečně funkční lokální simulátor spustíte `npm run dev:simulator` na **http://127.0.0.1:4177/**. Dva telefony používají společný stav, publikovaný katalog, GPS snapshoty, časovače, výběr stanoviště, otázky, karetní balíček, odměny, prokletí a soukromé fotografie. Stav se ukládá odděleně od editoru. Vyberte scénář a klikněte na **Načíst testovací scénář**; **Reset hry** vyžaduje potvrzení.
+
+Na **[/simulator/](https://wondrej89.github.io/JetLagPrague/simulator/)** je bezpečná veřejná vstupní stránka s návodem. Plná diagnostika je zatím pouze lokální, protože sdílení administrátorské relace nebylo bezpečně zavedeno. Produkční build ji neobsahuje. Veřejné mobilní pohledy [hledačů](https://wondrej89.github.io/JetLagPrague/?role=hunter) a [schovaného](https://wondrej89.github.io/JetLagPrague/?role=hider) používají stejný renderer, umožňují vlastní GPS po souhlasu a jasně oznamují chybějící serverovou partii. **Nejde o zabezpečený multiplayer.**
+
+Matching, Measuring a Radar mají funkční průchod i odměny podle zadání. **Thermometer a Tentacles zůstávají Work in progress** dle následného upřesnění. Neověřené karetní účinky a složení balíčku jsou výslovně testovací konfigurace, nikoliv tvrzení o originálních pravidlech. Odkaz na pravidla vracel HTTP 403. Historický PID není automaticky platný pro ostrou hru. [Úplný návod, architektura, pravidla, bezpečnost, scénáře a omezení](docs/GAME_MVP.md).
+
+Ověření Game MVP: lint, typecheck a produkční build všech tří vstupů prošly; **246 jednotkových testů a 63 E2E scénářů** bylo úspěšných. Závěrečných šest E2E simulátoru bylo znovu spuštěno po dokončení veřejného mobilního pohledu a doplnění importu soukromého scénáře. Dva jednotkové a dva E2E audity jiných původních archivů zůstávají přeskočené (úplný GTFS a parkový ZIP). Ověřeny jsou i přesuny skutečných špendlíků, překryv a konec 45 minut, zrychlený čas, soukromé fotografie, import/export, zachování editoru a absence diagnostiky v produkčním `/simulator/`. Sedm neměnných publikací, administrativní zdroje a kontrola PID prošly beze změny dat.
+
 ## Vodní plochy
 
 Samostatná vrstva **Vodní plochy** používá dodaný `AGD_CUR_AGD_OCH_VODNIPLOCHYTOKY_P.zip` z [Geoportálu Praha](https://geoportalpraha.cz/data-a-sluzby/ke-stazeni/e01b4bb6d148496abff4f065686290ff). Z **3 524 polygonů** je **769 typu P**, z nich **763 pojmenovaných**. Import zachovává **763 kandidátních objektů podle původních GLOBALID**: **307 schválených, 384 k revizi a 72 vyřazených**. Šest nepojmenovaných ploch a 2 755 polygonů typu T nevstupuje do této kategorie. Původní ZIP se uchovává celý. [Audit, pravidla a známá omezení](data/source-metadata/waterbodies.md).
