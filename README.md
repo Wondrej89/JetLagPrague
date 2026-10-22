@@ -337,3 +337,12 @@ Datum platnosti celé sady a její licence nejsou v dodaných souborech doložen
 Validace skutečných 169 geometrií a všech čtyř pražských referenčních bodů prošla. Při opakované práci se už ověřené geometrie používají jako neměnné objekty, aby každá úprava vlastností znovu neověřovala všech téměř 100 tisíc vrcholů. Po obnovení stránky proběhne validace uloženého draftu znovu. Pro plnou sadu je určená IndexedDB; pokud ji prohlížeč zakáže a localStorage nemá dost místa, editor oznámí neuložené změny a je potřeba použít export.
 
 PID je implementované podle návodu výše; přibalená časově nesourodá data zůstávají výslovně označená k revizi. Další POI kategorie mimo současný katalog, úplný katalog schválených otázek, multiplayer a obecné GIS union/difference/clipping v editoru zůstávají odložené. Testovací simulátor a publikování neměnných herních release jsou dostupné podle návodů výše. GeoJSON export editoru zůstává draftem. Kreslení nové oddělené části vlastního MultiPolygonu nemá samostatný nástroj; podporuje se import, úprava vrcholů a validovaný editor GeoJSON. Souběžná editace více kartami není podporovaná.
+
+
+## Karetní balíček simulátoru
+
+Nové partie ve [webovém simulátoru](https://wondrej89.github.io/JetLagPrague/simulator/) používají verzovaný balíček **100 karet: 55 časových bonusů, 21 powerupů, 24 prokletí**. Při založení zvolte Small / Medium / Large; volba je po celou partii pevná. Všechna prokletí mají původní anglický text z tabulky dodané správcem, český překlad, cenu a samostatné stavy účinků. Duplicate kopíruje libovolnou kartu; Move stojí ostatní ruku, oznámí dosavadní zastávku a během nejvýše 20 minut zastaví hledače i započítávání času schovaného. Doba a skutečná GPS cíle se ověřují v jádře.
+
+Karty, hody, nabídky, čekající ověření, časovače, průběžné povinnosti, penalizace i soukromé foto/video přílohy přežijí reload a vlastní export/import. Staré hry `prague-mvp-test-v1` zůstávají beze změny ve stavu verze 1; nová konfigurace používá verzi 2. Simulátor stále běží pouze v prohlížeči a neposkytuje autoritativní multiplayer. Diagnostické přidání karty a pracovní scénáře jsou jasně označené.
+
+Fyzické úkoly a obsah médií potvrzují hráči; aplikace nepředstírá rozpoznávání mostů, budov či zvířat z GPS. Chybějící pravidlo délky šibenice, neúplné původní znění Randomize, výslovná otázková blokace Bird Guide a automatické ověřování zahraničních kuchyní či návazných odjezdů jsou popsané v [pravidlech a omezeních](docs/GAME_MVP.md). Thermometer, Tentacles a další herní mechaniky se tímto rozšířením nemění.

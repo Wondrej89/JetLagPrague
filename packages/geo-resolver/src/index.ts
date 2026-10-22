@@ -50,5 +50,5 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
     }
     return {state:'unknown',reason:'Resolver této varianty není implementovaný.'};
   }
-  return {releaseId:release.releaseId,stops:release.data.pidSnapshot.stops.filter(p=>p.eligibility==='allowed').map(p=>({id:p.id,name:p.name,point:p.point})),insideArea:(p:Point)=>containsGamePoint(p,release.data.gameArea.geometry),distance:distanceMeters,availability,resolve};
+  return {namedWaterDistance:(point:Point)=>{const nearest=nearestApprovedPoi(point,'waterbody',release.data.pois.filter(p=>p.name.trim().length>0));return nearest.state==='known'?{state:'known' as const,meters:nearest.distanceMeters}:{state:'unknown' as const,reason:nearest.reason};},releaseId:release.releaseId,stops:release.data.pidSnapshot.stops.filter(p=>p.eligibility==='allowed').map(p=>({id:p.id,name:p.name,point:p.point})),insideArea:(p:Point)=>containsGamePoint(p,release.data.gameArea.geometry),distance:distanceMeters,availability,resolve};
 }

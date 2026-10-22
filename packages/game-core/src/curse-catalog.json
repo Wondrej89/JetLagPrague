@@ -1,0 +1,174 @@
+{
+  "sourceUrl": "https://docs.google.com/spreadsheets/d/1jbE0vujOeOzc4oSfkqbOxmL9IiEaln2w_IOkmN60rQY/edit?gid=2072350586",
+  "acquisition": "Úplný text vložený uživatelem 2026-10-22; překlepy originálu zachovány. Český překlad doplněn v projektu.",
+  "curses": [
+    {
+      "id": "curse-zoologist",
+      "effectEn": "Take a photo of a wild fish, bird, mammal, reptile, amphibian or bug. The seeker(s) must take a picture of a wild animal in the same category before  asking another question.",
+      "castingCostEn": "A photo of an animal",
+      "effectCs": "Vyfoťte volně žijící rybu, ptáka, savce, plaza, obojživelníka nebo bezobratlého. Než hledači položí další otázku, musí vyfotit volně žijící zvíře ze stejné kategorie.",
+      "castingCostCs": "Fotografie zvířete."
+    },
+    {
+      "id": "curse-unguided-tourist",
+      "effectEn": "Send the seeker(s) an unzoomed google Street View image from a street within 500ft (152m) of where they are now. The shot has to be parallel to the horizon and include at least one human-built structure other than a road. Without using the internet for research, they must find what you sent them in real life before they can use transportation or ask another question. They must send a picture the hiders for verification.",
+      "castingCostEn": "Seker(s) must be outside",
+      "effectCs": "Pošlete hledačům nepřiblížený snímek Google Street View z ulice do 500 stop (152 m) od jejich současné polohy. Záběr musí být rovnoběžný s horizontem a obsahovat alespoň jednu člověkem postavenou stavbu kromě silnice. Bez internetového hledání musí místo najít ve skutečnosti, než použijí dopravu nebo položí další otázku. Schovanému musí poslat fotografii k ověření.",
+      "castingCostCs": "Hledači musí být venku."
+    },
+    {
+      "id": "curse-endless-tumble",
+      "effectEn": "Seekers Must roll a die at least 100ft (30m) and have it land on a 5 or a 6 before they can ask another question. The die must roll the full distance, unaided, using only the momentum from the initial throw and gravity to travel the 100ft (30m). If the seekers accidentally hit someone with a die you are awarded a [S10, M20, L30] minute bonus",
+      "castingCostEn": "Roll a die. If its 5 or 6 this card has no effect.",
+      "effectCs": "Než hledači položí další otázku, musí hodit kostkou tak, aby se bez pomoci dokutálela alespoň 100 stop (30 m) a skončila na 5 nebo 6. Celou vzdálenost musí překonat pouze počáteční hybností a gravitací. Pokud někoho kostkou neúmyslně zasáhnou, schovaný získá bonus [S10, M20, L30] minut.",
+      "castingCostCs": "Hoďte kostkou. Při 5 nebo 6 nemá karta žádný účinek."
+    },
+    {
+      "id": "curse-hidden-hangman",
+      "effectEn": "Before asking another question or boarding another form of transportation, seeker(s) must be the hider(s) in game of hangman.",
+      "castingCostEn": "Discard 2 cards",
+      "effectCs": "Před další otázkou nebo nastoupením do dalšího dopravního prostředku musí hledači porazit schovaného ve hře šibenice. Originál obsahuje překlep „must be the hider(s)“; výsledek hry potvrzují hráči, aplikace neurčuje nedodaný limit chybných pokusů.",
+      "castingCostCs": "Odhoďte 2 další karty."
+    },
+    {
+      "id": "curse-overflowing-chalice",
+      "effectEn": "For the next three questions, you may draw (not keep) an additional card when drawing from the hider deck",
+      "castingCostEn": "Discard a card",
+      "effectCs": "U následujících tří otázek můžete při dobírání z balíčku schovaného dobrat o jednu kartu více. Počet ponechaných karet se nemění.",
+      "castingCostCs": "Odhoďte 1 další kartu."
+    },
+    {
+      "id": "curse-mediocre-travel-agent",
+      "effectEn": "Choose any publicly-accessible place within [S0.25, M0.25, L0.50]mi [S0.40, M0.40, 0.50]km of the seeker(s) current location. They cannot currently be on transit. They must go there, and spend at least [S5, M5, L10] minutes there, before asking another question. They must send you at least three photos of them enjoying their vacation, and procure an object to bring you as souvenir. If this souvenir is lost before they can get to you, you are awarded and extra [S30, M45, L60] minutes.",
+      "castingCostEn": "",
+      "effectCs": "Vyberte veřejně přístupné místo do [S0,25, M0,25, L0,50] míle / [S0,40, M0,40, L0,50] km od současné polohy hledačů. Hledači právě nesmí být v dopravě. Musí tam dojít a před další otázkou tam strávit nejméně [S5, M5, L10] minut. Musí poslat alespoň tři fotografie, jak si užívají dovolenou, a opatřit suvenýr, který přinesou schovanému. Pokud suvenýr před setkáním ztratí, schovaný získá dalších [S30, M45, L60] minut. Hodnoty mil a kilometrů pro Large jsou rozporné a vyžadují rozhodnutí správce.",
+      "castingCostCs": "Bez další karetní ceny; podmínkou účinku je, že hledači právě nejsou v dopravě."
+    },
+    {
+      "id": "curse-luxury-car",
+      "effectEn": "Take a photo of a car. The seekers must take a photo of a more expensive car before asking another question.",
+      "castingCostEn": "A photo of a car",
+      "effectCs": "Vyfoťte automobil. Hledači musí před další otázkou vyfotit dražší automobil.",
+      "castingCostCs": "Fotografie automobilu."
+    },
+    {
+      "id": "curse-u-turn",
+      "effectEn": "Seeker(s) must disembark their current mode of transportation at the next station (as long as that station is served by another form of transit in the next [S0.5, M0.5, L1] hours",
+      "castingCostEn": "Seekers must be heading the wrong way. (Their next station is further from you then they are.)",
+      "effectCs": "Hledači musí vystoupit ze současného dopravního prostředku na následující zastávce, pokud odtud během [S0,5, M0,5, L1] hodiny jede jiná doprava.",
+      "castingCostCs": "Hledači musí jet nesprávným směrem: jejich následující zastávka je od schovaného dál než jejich současná poloha."
+    },
+    {
+      "id": "curse-bridge-troll",
+      "effectEn": "The seekers must ask their next question from under a bridge",
+      "castingCostEn": "Seekers Must be at least [S1, M5, L30]mi [S0.3, M1.5, L9.1]km from you",
+      "effectCs": "Hledači musí položit následující otázku z místa pod mostem.",
+      "castingCostCs": "Hledači musí být od schovaného alespoň [S1, M5, L30] mil / [S0,3, M1,5, L9,1] km. Tyto dvě sady jsou rozporné; bez rozhodnutí správce se vzdálenost nevymýšlí."
+    },
+    {
+      "id": "curse-water-weight",
+      "effectEn": "Seeker(s) must acquire and carry at least 2 liters of liquid per seeker for the rest of your run. They cannot ask another question until they have acquired the liquid. The water may be distributed between seeker as they see fit. If the liquid is lost or abandoned at any point the hider is awarded a [S30, M30, L60] minute bonus",
+      "castingCostEn": "Seekers must be within 1,000ft (300 meters) of a body of water",
+      "effectCs": "Hledači musí opatřit a po zbytek kola nést alespoň 2 litry tekutiny na každého hledače. Dokud tekutiny nezískají, nemohou položit další otázku. Tekutiny si mezi sebe mohou rozdělit libovolně. Pokud je kdykoli ztratí nebo odloží, schovaný získá bonus [S30, M30, L60] minut.",
+      "castingCostCs": "Hledači musí být do 1 000 stop (300 m) od vodní plochy. Podle úplného textu se ověřují hledači, nikoliv schovaný."
+    },
+    {
+      "id": "curse-jammed-door",
+      "effectEn": "For the next [S0.5, M1, L3] hours, whenever the seeker(s) want to pass through a doorway into a building, business, train, or other vehicle they must first roll 2 dice. If they do not roll a 7 or higher they cannot enter that space (including through other doorways) any given doorway can be reattempted after [S5, M10, L15] minutes.",
+      "castingCostEn": "Discard 2 cards",
+      "effectCs": "Po následujících [S0,5, M1, L3] hodiny musí hledači před průchodem dveřmi do budovy, provozovny, vlaku nebo jiného vozidla hodit dvěma kostkami. Bez součtu alespoň 7 nesmí do daného prostoru vstoupit ani jinými dveřmi. Pokus o stejný vstup mohou opakovat po [S5, M10, L15] minutách.",
+      "castingCostCs": "Odhoďte 2 další karty."
+    },
+    {
+      "id": "curse-cairn",
+      "effectEn": "You have one attempt to stack as many rocks on top of each other as you can in a freestanding tower. Each rock may only touch one other rock. Once you have added a rock to the tower it may not be removed. Before adding another rock, the tower must stand for at least 5 seconds. If at any point any rock other then the base rock touches the ground, your tower has fallen. Once your tower falls tell the seekers how many rocks high your tower was when it last stood for five seconds. The seekers must then construct a rock tower of the same number of rucks, under the same parameters before asking another question. If their tower falls they must restart. The rocks must be found in nature and both teams must  disperse the rocks after building.",
+      "castingCostEn": "Build a rock tower",
+      "effectCs": "Máte jeden pokus postavit co nejvyšší samostatně stojící věž z kamenů. Každý kámen se smí dotýkat pouze jednoho dalšího kamene. Přidaný kámen se nesmí odstranit. Před přidáním dalšího musí věž stát alespoň 5 sekund. Jakmile se země dotkne jiný než základní kámen, věž spadla. Sdělte hledačům výšku poslední věže, která stála pět sekund. Před další otázkou musí postavit stejně vysokou věž za stejných podmínek; při pádu začínají znovu. Kameny musí pocházet z přírody a oba týmy je po stavbě musí znovu rozptýlit.",
+      "castingCostCs": "Postavte věž z kamenů."
+    },
+    {
+      "id": "curse-urban-explorer",
+      "effectEn": "For the rest of the run seekers cannot ask question when they are on transit or in a train station",
+      "castingCostEn": "Discard 2 cards",
+      "effectCs": "Po zbytek kola nesmí hledači pokládat otázky v dopravním prostředku ani na vlakovém nádraží.",
+      "castingCostCs": "Odhoďte 2 další karty."
+    },
+    {
+      "id": "curse-impressionable-consumer",
+      "effectEn": "Seekers must enter and gain admission (if applicable) to a location or buy a product that they saw an advertisement for before asking another question. This advertisement musts be found out in the world and must be at least 100ft (30m) from the product or location itself.",
+      "castingCostEn": "The seekers next question is free",
+      "effectCs": "Před další otázkou musí hledači vstoupit na místo a případně zaplatit vstupné, nebo koupit produkt, na který viděli reklamu. Reklamu musí najít ve skutečném okolí nejméně 100 stop (30 m) od daného místa nebo produktu.",
+      "castingCostCs": "Následující otázka hledačů je zdarma: schovaný za ni nezíská karetní odměnu."
+    },
+    {
+      "id": "curse-egg-partner",
+      "effectEn": "Seeker(s) must acquire an egg before asking another question. This egg is now treated as an official team member of the seekers. If any team members are abandoned or killed (defined as crack in the eggs case) before the end of your run you are awarded an extra [S30 M45 L60] minutes. This course cannot be played during the endgame.",
+      "castingCostEn": "Discard two cards",
+      "effectCs": "Před další otázkou musí hledači opatřit vejce. Vejce se stává oficiálním členem jejich týmu. Pokud ho před koncem kola opustí nebo rozbijí (praskne skořápka), schovaný získá dalších [S30, M45, L60] minut. Toto prokletí nelze zahrát během endgame.",
+      "castingCostCs": "Odhoďte 2 další karty a potvrďte, že nejde o endgame; jeho vymezení aplikace neodvozuje z GPS."
+    },
+    {
+      "id": "curse-distant-cuisine",
+      "effectEn": "Find a restaurant within your zone that explicitly serves food from a specific foreign country. The seekers must visit a restaurant serving food from a country that is equal or great distance away before asking another question",
+      "castingCostEn": "You must be at the restaurant",
+      "effectCs": "Najděte ve své zóně restauraci, která výslovně podává kuchyni konkrétní cizí země. Před další otázkou musí hledači navštívit restauraci s kuchyní ze země, která je stejně daleko nebo dále. Zemi a porovnání hráči potvrzují ručně; aplikace nemá schválený geografický podklad pro vzdálenosti zemí.",
+      "castingCostCs": "Musíte být v dané restauraci."
+    },
+    {
+      "id": "curse-right-turn",
+      "effectEn": "For the next [S20, M40, L60] minutes the seekers can only turn right at any street intersection. If at any point they find themselves in dead end where they cannot continue forward or turn right for another 1,000ft (304m) they must do a full 180. A right turn is defined as a road at any angle that veers to the right of the seekers",
+      "castingCostEn": "Discard a card",
+      "effectCs": "Po následujících [S20, M40, L60] minut smějí hledači na křižovatkách odbočovat pouze doprava. Ocitnou-li se ve slepé uličce, kde nemohou dalších 1 000 stop (304 m) pokračovat rovně nebo doprava, musí se otočit o 180 stupňů. Pravá odbočka je cesta v jakémkoli úhlu napravo od směru hledačů.",
+      "castingCostCs": "Odhoďte 1 další kartu."
+    },
+    {
+      "id": "curse-labyrinth",
+      "effectEn": "Spend up to [S10, M20, L30] minutes drawing a solvable maze and send a photo of it to the seekers. You cannot use the internet to research maze designs. The seekers musts solve the maze before asking another question.",
+      "castingCostEn": "Draw a maze",
+      "effectCs": "Věnujte nejvýše [S10, M20, L30] minut kreslení řešitelného bludiště a pošlete jeho fotografii hledačům. Nesmíte vyhledávat návrhy na internetu. Před další otázkou musí hledači bludiště vyřešit.",
+      "castingCostCs": "Nakreslete bludiště."
+    },
+    {
+      "id": "curse-bird-guide",
+      "effectEn": "You have one chance to film a bird for as long as possible. Up to [S5 M10 L15] minutes straight, if at any point the bird leaves the frame your timer is stopped. The seekers must then film a bird for the same amount of time or longer",
+      "castingCostEn": "Film a bird",
+      "effectCs": "Máte jediný pokus souvisle natáčet ptáka co nejdéle, nejvýše [S5, M10, L15] minut. Jakmile pták opustí záběr, čas se zastaví. Hledači musí následně natáčet ptáka stejně dlouho nebo déle.",
+      "castingCostCs": "Natočte ptáka."
+    },
+    {
+      "id": "curse-spotty-memory",
+      "effectEn": "For the rest of the run, one random category of questions will be disabled at all times. After this curse is played seeker(s) must roll a die to determine the category of questions to be disabled. The catergy remain disabled until the next question is asked at which point a die is rolled again to choose an e category. The same category can be disabled multiple times in a row",
+      "castingCostEn": "Discard a time bonus card",
+      "effectCs": "Po zbytek kola je vždy zakázaná jedna náhodná kategorie otázek. Po zahrání musí hledači hodit kostkou a určit zakázanou kategorii. Zůstává zakázaná do položení následující otázky, kdy se hází znovu. Stejná kategorie může padnout i několikrát za sebou.",
+      "castingCostCs": "Odhoďte 1 kartu časového bonusu."
+    },
+    {
+      "id": "curse-lemon-phylactery",
+      "effectEn": "Before asking another question the seeker(s) must each find a lemon and affix it to their outermost layer of their clothes or skin. If at any point one of these lemons is no longer touching a seeker you are awarded  [S30, M45, L60] minutes. This curse cannot be played during the endgame.",
+      "castingCostEn": "Discard a powerup card",
+      "effectCs": "Před další otázkou musí každý hledač najít citron a připevnit jej k vnější vrstvě oblečení nebo ke kůži. Pokud některý citron přestane být v kontaktu s hledačem, schovaný získá [S30, M45, L60] minut. Toto prokletí nelze zahrát během endgame.",
+      "castingCostCs": "Odhoďte 1 powerup a potvrďte, že nejde o endgame."
+    },
+    {
+      "id": "curse-drained-brain",
+      "effectEn": "Choose three questions in different categories. The seekers cannot ask those questions for the rest of the run.",
+      "castingCostEn": "Discard your hand",
+      "effectCs": "Vyberte tři otázky z různých kategorií. Po zbytek kola je hledači nesmějí položit.",
+      "castingCostCs": "Odhoďte celou zbývající ruku."
+    },
+    {
+      "id": "curse-ransom-note",
+      "effectEn": "The next question that the seekers ask must be composed of words and letters cut out of any printed material. The question must be coherent and include at least 5 words.",
+      "castingCostEn": "Spell out \"Ransom Note\" as a ransom note (without using this card)",
+      "effectCs": "Následující otázku musí hledači sestavit ze slov a písmen vystřižených z libovolného tištěného materiálu. Otázka musí dávat smysl a mít alespoň 5 slov.",
+      "castingCostCs": "Sestavte nápis „Ransom Note“ jako výkupné z vystříhaných písmen; nesmíte použít tuto kartu."
+    },
+    {
+      "id": "curse-gamblers-feet",
+      "effectEn": "For the next [S20, M40, L60] minutes seekers must roll a die before they take any steps in any direction, they may take that many steps before rolling again",
+      "castingCostEn": "Roll a die if its even number this curse has no effect",
+      "effectCs": "Po následujících [S20, M40, L60] minut musí hledači před jakýmikoli kroky v libovolném směru hodit kostkou. Mohou udělat nejvýše tolik kroků, kolik padlo, a poté musí házet znovu.",
+      "castingCostCs": "Hoďte kostkou. Při sudém čísle nemá prokletí žádný účinek."
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "version": "prague-cards-100-v1",
+  "source": "Uživatelské zadání: JetLagPrague – implementace kompletního karetního balíčku (2026-10-22)",
+  "fullRulesStatus": "curse-table-transcribed-and-powerups-clarified-by-user",
+  "bonuses": [
+    {
+      "id": "bonus-red",
+      "name": "Red",
+      "count": 25,
+      "minutes": {
+        "small": 2,
+        "medium": 3,
+        "large": 5
+      }
+    },
+    {
+      "id": "bonus-orange",
+      "name": "Orange",
+      "count": 15,
+      "minutes": {
+        "small": 4,
+        "medium": 6,
+        "large": 10
+      }
+    },
+    {
+      "id": "bonus-yellow",
+      "name": "Yellow",
+      "count": 10,
+      "minutes": {
+        "small": 6,
+        "medium": 9,
+        "large": 15
+      }
+    },
+    {
+      "id": "bonus-green",
+      "name": "Green",
+      "count": 3,
+      "minutes": {
+        "small": 8,
+        "medium": 12,
+        "large": 20
+      }
+    },
+    {
+      "id": "bonus-blue",
+      "name": "Blue",
+      "count": 2,
+      "minutes": {
+        "small": 12,
+        "medium": 18,
+        "large": 30
+      }
+    }
+  ],
+  "powerups": [
+    {
+      "id": "randomize",
+      "name": "Randomize",
+      "count": 4,
+      "effect": "randomize",
+      "summary": "Zachované testovací pravidlo: jiná dostupná automatická otázka stejného typu; GPS a termín zůstávají. Soulad s úplným textem čeká na zdroj."
+    },
+    {
+      "id": "veto",
+      "name": "Veto",
+      "count": 4,
+      "effect": "veto",
+      "summary": "Zachované testovací pravidlo: zrušení čekající otázky bez odměny. Soulad s úplným textem čeká na zdroj."
+    },
+    {
+      "id": "duplicate",
+      "name": "Duplicate",
+      "count": 2,
+      "effect": "duplicate",
+      "summary": "Vytvoří auditovanou kopii libovolné vybrané karty v ruce. Původní cílová karta zůstává."
+    },
+    {
+      "id": "move",
+      "name": "Move",
+      "count": 1,
+      "effect": "move",
+      "summary": "Odhoďte celou ostatní ruku, oznamte hledačům dosavadní zastávku a přesuňte se na nové místo do 20 minut. Během přesunu se čas schovaného nezapočítává a hledači stojí."
+    },
+    {
+      "id": "discard-1-draw-2",
+      "name": "Discard 1 Draw 2",
+      "count": 4,
+      "effect": "discard_1_draw_2",
+      "summary": "Odhodí jednu další vybranou kartu z ruky a dobere dvě karty do ruky."
+    },
+    {
+      "id": "discard-2-draw-3",
+      "name": "Discard 2 Draw 3",
+      "count": 4,
+      "effect": "discard_2_draw_3",
+      "summary": "Odhodí dvě další vybrané karty z ruky a dobere tři karty do ruky."
+    },
+    {
+      "id": "draw-1-expand-1",
+      "name": "Draw 1 Expand 1",
+      "count": 2,
+      "effect": "draw_1_expand_1",
+      "summary": "Dobere jednu kartu a zvýší kapacitu ruky o jednu po zbytek hry."
+    }
+  ],
+  "curses": [
+    {
+      "id": "curse-zoologist",
+      "name": "The Zoologist",
+      "summary": "Fotografie divokého zvířete stejné kategorie"
+    },
+    {
+      "id": "curse-unguided-tourist",
+      "name": "The Unguided Tourist",
+      "summary": "Nalezení místa podle Street View"
+    },
+    {
+      "id": "curse-endless-tumble",
+      "name": "The Endless Tumble",
+      "summary": "Úkol s kostkou a vzdáleností 30 m"
+    },
+    {
+      "id": "curse-hidden-hangman",
+      "name": "The Hidden Hangman",
+      "summary": "Hra šibenice"
+    },
+    {
+      "id": "curse-overflowing-chalice",
+      "name": "The Overflowing Chalice",
+      "summary": "+1 dobíraná karta u příštích 3 otázek"
+    },
+    {
+      "id": "curse-mediocre-travel-agent",
+      "name": "The Mediocre Travel Agent",
+      "summary": "Návštěva určeného místa, časový pobyt a důkazy"
+    },
+    {
+      "id": "curse-luxury-car",
+      "name": "The Luxury Car",
+      "summary": "Fotografie dražšího automobilu"
+    },
+    {
+      "id": "curse-u-turn",
+      "name": "The U-Turn",
+      "summary": "Vystoupení na následující způsobilé zastávce"
+    },
+    {
+      "id": "curse-bridge-troll",
+      "name": "The Bridge Troll",
+      "summary": "Následující otázka pod mostem"
+    },
+    {
+      "id": "curse-water-weight",
+      "name": "Water Weight",
+      "summary": "Dva litry tekutiny na hledače po zbytek kola; získání tekutin odblokuje otázky, nošení pokračuje a ztráta vede k penalizaci dle varianty"
+    },
+    {
+      "id": "curse-jammed-door",
+      "name": "The Jammed Door",
+      "summary": "Omezení vstupu na základě hodu dvěma kostkami"
+    },
+    {
+      "id": "curse-cairn",
+      "name": "The Cairn",
+      "summary": "Stavění kamenné věže"
+    },
+    {
+      "id": "curse-urban-explorer",
+      "name": "The Urban Explorer",
+      "summary": "Zákaz otázek v dopravě a na vlakových nádražích"
+    },
+    {
+      "id": "curse-impressionable-consumer",
+      "name": "The Impressionable Consumer",
+      "summary": "Úkol vycházející z reklamy"
+    },
+    {
+      "id": "curse-egg-partner",
+      "name": "The Egg Partner",
+      "summary": "Ochrana vejce do konce kola"
+    },
+    {
+      "id": "curse-distant-cuisine",
+      "name": "The Distant Cuisine",
+      "summary": "Návštěva restaurace s příslušnou zahraniční kuchyní"
+    },
+    {
+      "id": "curse-right-turn",
+      "name": "The Right Turn",
+      "summary": "Pouze pravá odbočení po omezenou dobu"
+    },
+    {
+      "id": "curse-labyrinth",
+      "name": "The Labyrinth",
+      "summary": "Vyřešení bludiště"
+    },
+    {
+      "id": "curse-bird-guide",
+      "name": "The Bird Guide",
+      "summary": "Natočení ptáka po stanovenou dobu"
+    },
+    {
+      "id": "curse-spotty-memory",
+      "name": "Spotty Memory",
+      "summary": "Náhodně zablokovaná kategorie otázek"
+    },
+    {
+      "id": "curse-lemon-phylactery",
+      "name": "The Lemon Phylactery",
+      "summary": "Nošení citronu do konce kola"
+    },
+    {
+      "id": "curse-drained-brain",
+      "name": "The Drained Brain",
+      "summary": "Zákaz tří konkrétních otázek"
+    },
+    {
+      "id": "curse-ransom-note",
+      "name": "The Ransom Note",
+      "summary": "Sestavení další otázky z vystříhaného textu"
+    },
+    {
+      "id": "curse-gamblers-feet",
+      "name": "The Gambler's Feet",
+      "summary": "Omezení počtu kroků podle hodů kostkou"
+    }
+  ],
+  "rulesUrl": "https://docs.google.com/spreadsheets/d/1jbE0vujOeOzc4oSfkqbOxmL9IiEaln2w_IOkmN60rQY/edit?gid=2072350586",
+  "sourceAccess": "Originální tabulka vložena uživatelem; kilometrové hodnoty a powerupy potvrzeny uživatelem 2026-10-22."
+}
