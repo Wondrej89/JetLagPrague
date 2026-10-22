@@ -9,7 +9,17 @@ async function clickMap(page: Page, x: number, y: number) {
   await page.mouse.click(box.x + x, box.y + y);
 }
 async function drawPolygon(page: Page, positions: number[][]) {
-  for (const [x, y] of [...positions, positions[0]]) await clickMap(page, x, y);
+  const map=page.getByTestId('map');
+  await expect(map).toHaveClass(/geoman-draw-cursor/);
+  const vertices=map.locator('.marker-icon:not(.cursor-marker):not(.marker-icon-middle)');
+  for (const [index,[x,y]] of positions.entries()) {
+    await clickMap(page,x,y);
+    await expect(vertices).toHaveCount(index+1);
+  }
+  // Geoman may snap a vertex away from the requested pixel. Close the actual
+  // first vertex, as a user would, rather than clicking its unsnapped position.
+  await vertices.first().click();
+  await expect(map).not.toHaveClass(/geoman-draw-cursor/);
 }
 test.beforeEach(async ({ page }) => {
   // Živé mapové dlaždice bez klíče nejsou předmětem těchto testů.
@@ -19,10 +29,17 @@ test.beforeEach(async ({ page }) => {
 });
 
 test('nakreslí herní polygon s otvorem, bod a linii, upraví vrcholy, uloží a obnoví export', async ({ page }) => {
+  test.setTimeout(60000);
   const failures: string[] = [];
   page.on('pageerror', e => failures.push(e.message));
   await page.goto('/');
   await expect(page.getByText('Chybí API klíč Mapy.com')).toBeVisible();
+  await expect(page.locator('.app-shell')).toHaveAttribute('aria-busy','false');
+  await expect.poll(async()=>(await world(page)).layers.some(layer=>layer.kind==='cadastral')).toBe(true);
+  // This scenario tests geometry editing. Visible POI markers can intercept
+  // the fixed drawing coordinates as the independently loaded catalog grows.
+  for (const name of ['Letiště','Parky','Zoo a místa se zvířaty','Nemocnice','Knihovny','Kina']) await page.getByLabel(name,{exact:true}).uncheck();
+  await expect(page.locator('.poi-marker')).toHaveCount(0);
   await page.getByRole('button', { name: 'Herní oblast', exact: true }).click();
   await page.getByRole('button', { name: 'Praha · všech 57 městských částí Polygon', exact: true }).click();
   page.once('dialog', dialog => dialog.accept());
