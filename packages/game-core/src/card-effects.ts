@@ -1,3 +1,4 @@
+import {createHangman,endHangman,hangmanCommand,synchronizeHangman,updateHangmanTime} from './hangman';
 import {nextDeductionEpoch} from './deductions';
 import type { CardDefinition, Command, Curse, GameEnvironment, GameState, Fix, QuestionDefinition, QuestionInstance, Role } from './types';
 import type { CastingProof, CurseEffect, RollCondition } from './card-types';
@@ -11,6 +12,7 @@ const event = (s: GameState, type: string, text: string, audience: Role | 'all' 
 export const activeCurse = (c: Curse) => !['casting', 'fulfilled', 'ended'].includes(c.state)&&(c.state!=='failed'||!!c.effects?.some(e=>['active','awaiting_review'].includes(e.state)));
 export function refreshCurse(c: Curse) {
   if (!c.effects || c.state === 'casting') return;
+  if(c.hangman){synchronizeHangman(c);return;}
   const taskDone=c.effects.some(e=>e.spec.kind==='task')&&c.effects.filter(e=>e.spec.kind==='task').every(e=>e.state==='fulfilled');
   if(taskDone)for(const e of c.effects)if(e.state==='waiting_task')e.state='active';
   if(taskDone)for(const e of c.effects)if(e.state==='active'&&(e.spec.kind==='travel'||e.spec.kind==='round_obligation')&&e.spec.endsWithTask)e.state='ended';
@@ -33,6 +35,7 @@ export function updateCardTime(s: GameState,env:GameEnvironment) {
     if(selected||move.candidates.length===1)finishMove(s,selected??move.candidates[0],move.deadline,fix,move.deadline);else{move.stage='needs_destination';event(s,'move_choice_required','Limit 20 minut přesunu skončil. Schovaný musí zvolit stanoviště způsobilé v rozhodný okamžik.','hider');}
   }
   for (const curse of s.curses) if (curse.effects && curse.state !== 'casting') {
+    if(curse.hangman){updateHangmanTime(s,curse);continue;}
     for (const e of curse.effects) if (e.state === 'active' && e.expiresAt !== undefined && s.now >= e.expiresAt) {
       e.state = 'ended'; event(s, 'effect_ended', `Účinek skončil: ${curse.name}.`);
     }
@@ -188,11 +191,14 @@ function activate(s: GameState, curse: Curse, env:GameEnvironment, noEffect=fals
     return effect;
   });
   if(noEffect)for(const e of curse.effects)e.state='ended';
-  curse.state = 'ongoing'; curse.activatedAt = s.now; refreshCurse(curse);
+  curse.state = 'ongoing'; curse.activatedAt = s.now;
+  if(s.rules.hangmanVersion===1&&cardDefinition(s,curse.cardId).id==='curse-hidden-hangman')createHangman(curse,s);
+  refreshCurse(curse);
   s.hand = s.hand.filter(id => id !== curse.cardId); s.discardPile.push(curse.cardId);
   event(s, noEffect?'curse_no_effect':'curse_activated', noEffect?`${curse.name}: casting hod znamená nulový účinek; karta byla spotřebována.`:`Aktivní prokletí: ${curse.name}.`);
 }
 export function cardCommand(s: GameState, c: Command, env: GameEnvironment, actor: Role | 'clock'): boolean {
+  if(hangmanCommand(s,c,actor))return true;
   if (!['begin_cast', 'cancel_cast', 'confirm_cast', 'complete_curse_task', 'violate_curse', 'roll', 'complete_move','verify_curse_task','start_curse_visit','guess_letter','curse_roll','attempt_door','enter_space','steps_taken'].includes(c.type)) return false;
   check(s.cardState && s.version === 2, 'Tato akce vyžaduje novou karetní konfiguraci.');
   check(s.mode === 'simulation', 'V ostré hře tuto akci musí vyhodnotit autoritativní server.');
@@ -216,6 +222,7 @@ export function cardCommand(s: GameState, c: Command, env: GameEnvironment, acto
     const noEffect=payCost(s, curse, c.proof, env); activate(s, curse, env, noEffect);
   } else if (c.type === 'complete_curse_task' || c.type === 'violate_curse') {
     const curse = s.curses.find(x => x.id === c.curseId), effect = curse?.effects?.find(e => e.id === c.effectId);
+    check(!curse?.hangman,'Hangman se vyhodnocuje vlastními pravidly; ruční splnění není povoleno.');
     check(curse && effect?.state === 'active' && c.confirmed === true, 'Úkol vyžaduje výslovné potvrzení hráče.');
     if (c.type === 'complete_curse_task') {
       check(effect.spec.kind === 'task', 'Průběžnou povinnost nelze ukončit splněním úvodního úkolu.');
@@ -242,7 +249,7 @@ export function cardCommand(s: GameState, c: Command, env: GameEnvironment, acto
     event(s, 'dice_roll', `Hod ${values.join(' + ')} · ${c.manualValues ? 'ruční vstup hráče' : 'seedovaná simulace'} · ${passed ? 'podmínka splněna' : 'podmínka nesplněna'}.`, actor);
   } else if(c.type==='verify_curse_task'){
     const curse=s.curses.find(x=>x.id===c.curseId),e=curse?.effects?.find(e=>e.id===c.effectId);
-    check(curse&&e?.state==='awaiting_review'&&e.spec.kind==='task'&&e.spec.approvalByHider,'Úkol nečeká na ověření schovaným.');
+    check(!curse?.hangman,'Výsledek Hangmana vyhodnocuje jádro.');check(curse&&e?.state==='awaiting_review'&&e.spec.kind==='task'&&e.spec.approvalByHider,'Úkol nečeká na ověření schovaným.');
     e.state=c.verified?'fulfilled':'active';refreshCurse(curse);event(s,'task_reviewed',`${curse.name}: schovaný ${c.verified?'potvrdil':'odmítl'} splnění úkolu. Ruční posouzení důkazu.`);
   } else if(c.type==='start_curse_visit'){
     const curse=s.curses.find(x=>x.id===c.curseId),e=curse?.effects?.find(e=>e.id===c.effectId);
@@ -292,6 +299,7 @@ export function rollPassed(values: number[], condition: RollCondition) {
 }
 export function finishCardEffects(s: GameState) {
   for (const curse of s.curses) if (curse.effects) {
+    if(curse.hangman&&curse.hangman.state!=='won'&&curse.hangman.state!=='cancelled'){endHangman(s,curse,'round_ended');continue;}
     for (const effect of curse.effects) if (['waiting_task','active','awaiting_review'].includes(effect.state)) effect.state = 'ended';
     if (curse.state === 'casting') curse.state = 'ended'; else refreshCurse(curse);
   }

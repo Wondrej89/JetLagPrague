@@ -20,6 +20,7 @@ export interface CardDefinition {
   curse?: { durationMs?: number; condition: string; blocksQuestions: boolean; manual: boolean };
 }
 export interface GameRules {
+  uxVersion?: 1; hangmanVersion?: 1; manualHangmanResponses?: boolean;
   mapVersion?: 1; moveVersion?: 2; automaticDeductionMap?: boolean; deductionConsent?: { hunter: boolean; hider: boolean; authority: 'simulator' };
   cardVersion?: 2; questionVersion?: 2; size?: GameSize;
   id: string; label: string; testOnly: boolean; hideMs: number; radiusMeters: number; gpsMaxAgeMs: number; gpsMaxAccuracyM: number;
@@ -38,7 +39,7 @@ export interface QuestionInstance {
   state: 'pending' | 'answered' | 'vetoed' | 'error'; answer?: string; error?: string; answeredAt?: number; photoId?: string; draftPhotoId?: string;
 }
 export interface Reward { id: string; questionId: string; policy: RewardPolicy; state: 'pending' | 'offered' | 'claimed'; offer: string[] }
-export interface Curse { id: string; cardId: string; name: string; description: string; icon: string; activatedAt: number; expiresAt?: number; condition: string; blocksQuestions: boolean; manual: boolean; target: 'hunter'; state: 'active' | CurseStage; effects?: CurseEffect[]; evidence?: Evidence[]; casterPoint?: Point; setup?: CurseSetup; castRollStart?:number; guesses?: string[]; maskedWord?: string }
+export interface Curse { hangman?: import('./hangman').HangmanState; id: string; cardId: string; name: string; description: string; icon: string; activatedAt: number; expiresAt?: number; condition: string; blocksQuestions: boolean; manual: boolean; target: 'hunter'; state: 'active' | CurseStage; effects?: CurseEffect[]; evidence?: Evidence[]; casterPoint?: Point; setup?: CurseSetup; castRollStart?:number; guesses?: string[]; maskedWord?: string }
 export interface GameEvent { id: string; at: number; type: string; audience: 'all' | Role; text: string }
 export interface Deduction {
   id: string; questionId: string; epochId: string; releaseId: string; geometryTarget: TargetPolicy;
@@ -47,9 +48,11 @@ export interface Deduction {
   parameters: { definitionId: string; resolver: QuestionDefinition['resolver']; category: string; hunterPoint: Point; secondPoint?: Point; radiusMeters?: number; minMoveMeters?:number; toleranceMeters: number; distanceMode?: 'geometry' };
 }
 export interface GameState {
+  lobby?: { choices: Partial<Record<Role, boolean>>; ready: Record<Role, boolean>; startedAt?: number };
+  noticeAcknowledgements?: Partial<Record<Role, string[]>>;
   epochId?: string; deductions?: Deduction[]; endgame?: boolean;
   version: 1 | 2; cardState?: CardRuntime; id: string; releaseId: string; mode: 'simulation'|'live'; rules: GameRules; startedAt: number; now: number;
-  phase: 'hiding' | 'needs_station' | 'seeking' | 'finished'; hideDeadline: number;
+  phase: 'awaiting_map_consent' | 'awaiting_ready' | 'hiding' | 'needs_station' | 'seeking' | 'finished'; hideDeadline: number;
   players: Record<Role, { id: string; name: string }>;
   fixes: Partial<Record<Role, Fix>>; walking: boolean; provisionalStopId: string | null; station: Stop | null; deadlineCandidates: Stop[] | null;
   questions: QuestionInstance[]; hand: string[]; drawPile: string[]; discardPile: string[]; rewards: Reward[]; curses: Curse[]; effects: {cardId:string;value:number;at:number;lifetime?:'game'}[];
@@ -57,6 +60,11 @@ export interface GameState {
 }
 export type Command =
   | { type: 'tick' }
+  | { type: 'map_consent'; enabled: boolean }
+  | { type: 'ready' }
+  | { type: 'acknowledge_notice'; eventId: string }
+  | { type: 'set_hangman_word'; curseId: string; word: string; manuallyConfirmed: boolean }
+  | { type: 'respond_hangman'; curseId: string; responseId: string }
   | { type: 'declare_endgame'; confirmed: boolean }
   | { type: 'location'; role: Role; fix: Fix | null; observation?: boolean }
   | { type: 'walking'; value: boolean }
@@ -98,6 +106,9 @@ export interface GameEnvironment {
   namedWaterDistance?(point: Point): { state: 'known'; meters: number } | { state: 'unknown'; reason: string };
 }
 export interface RoleView {
+  hangmanVersion?:1; lobby?: GameState['lobby']; indicators?: import('./indicators').GameIndicator[];
+  wallElapsedMs?: number; pausedMs?: number; bonusMs?: number; penaltyMs?: number;
+  acknowledgedNotices?: string[];
   automaticDeductionMap?: boolean; epochId?: string; deductions?: Deduction[]; endgame?: boolean; revealedStations?: Stop[];
   blockedCategories?: QuestionType[]; questionConfirmations?: {id: string; text: string}[];
   cardVersion?: 2; size?: GameSize; drawCount?: number; discardCount?: number; move?: CardRuntime['move'];

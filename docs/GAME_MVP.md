@@ -11,12 +11,12 @@ npm run dev:simulator
 
 Otevřete **https://wondrej89.github.io/JetLagPrague/simulator/**; instalace ani přihlášení nejsou potřeba. Pro lokální vývoj použijte příkazy výše a **http://127.0.0.1:4177/**. Obě prostředí sestavují stejný `main.tsx` a stejné komponenty. Server pro vývoj naslouchá pouze na loopbacku. Pro podklad použijte stávající klientský `VITE_MAPY_API_KEY` v `.env.local`, s povoleným lokálním refererem; Pages používají dosavadní Actions secret. Bez klíče fungují geografické výpočty a špendlíky s upozorněním. Nevkládejte do aplikace serverové klíče.
 
-1. Výchozí nová hra je pozastavená. V pravém telefonu vyberte zastávku ze seznamu nebo mapy. Je nutná platná GPS v jejím 400m okruhu a uvnitř herní oblasti. Potvrďte **Potvrdit a uzamknout stanoviště**.
+1. Založte novou hru a na každém telefonu samostatně rozhodněte o zakreslování odpovědí, potom potvrďte **Jsem připraven**. Celkový čas zahrnuje i prvních 45 minut schovávání; simulátor má samostatnou pauzu a časové kroky. V pravém telefonu vyberte zastávku ze seznamu nebo mapy. Je nutná platná GPS v jejím 400m okruhu a uvnitř herní oblasti. Potvrďte **Potvrdit a uzamknout stanoviště**.
 2. V levém telefonu zvolte **Otázky → Matching / Measuring / Radar**, konkrétní otázku a **Položit otázku**. Pravý telefon dostane stejnou otázku.
 3. Vpravo otevřete **Otázka → Odpovědět nyní**, nebo v ovládání posuňte čas o pět minut. Ruční a fotografické otázky potřebují skutečný vstup schovaného.
 4. Otevřete **Karty → Otevřít karetní odměnu**, vyberte jednu ze skutečně vylosovaných karet. Ostatní se odhodí. Po reloadu zůstává stejná nabídka i balíček.
 5. Horní špendlíky nebo formuláře mění skutečně simulované GPS. Nepřichytávají se k ulicím ani zastávkám. Značka uzamčeného stanoviště je třetí, samostatný objekt.
-6. Vyberte některý z přednastavených scénářů a stiskněte **Načíst testovací scénář**. Změna výběru sama nerozbije rozehraný stav. **Reset hry** vyžaduje potvrzení. **Nová hra** začne znovu výběrem stanoviště. Stejný seed a scénář vytvoří stejné rozložení karet a stejné přechody.
+6. Vyberte některý z přednastavených scénářů a stiskněte **Načíst testovací scénář**. Změna výběru sama nerozbije rozehraný stav. **Reset hry** vyžaduje potvrzení. **Nová hra** vytvoří nové ID a začne znovu souhlasem a připraveností na obou telefonech. Stejný seed a scénář vytvoří stejné rozložení karet a stejné přechody.
 
 **Uložit scénář** stáhne soukromý JSON včetně obrázků. **Načíst soukromý scénář** obnoví data pouze po kontrole verze, katalogu, stavu a příloh. Nepublikujte tento JSON do GitHubu: obsahuje polohy a soukromé informace obou rolí.
 
@@ -118,3 +118,6 @@ Workflow `.github/workflows/pages.yml` vybere prohlížeč a spouští celou E2E
 Předchozí nasazení webového simulátoru ověřilo lint, typecheck, produkční build, **249 jednotkových a 66 E2E testů**. Karetní rozšíření navíc testuje přesné složení, všech 24 casting procesů, varianty, role, náhodu, trvalé a časové účinky, Move, Duplicate a prohlížečové důkazy. Dva jednotkové a dva E2E audity původních GTFS/parkových archivů jsou výslovně přeskočené. Kontroly administrativních dat, PID a všech sedmi neměnných publikací prošly bez úpravy dat.
 
 GitHub Actions spouští celou E2E sadu proti hotovému artefaktu Pages. Přednostně používá Chrome z hostovaného Ubuntu runneru přes `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`; jeho verze se vypíše v logu. Pokud runner prohlížeč nemá, nainstaluje spravovaný Chromium Playwrightu. Testy se kvůli síti nevynechávají. Tato volba odstraňuje zbytečné opakované stahování prohlížeče a nativních závislostí, které 22. 10. blokovalo nasazení.
+
+
+Aktuální úvod partie, upozornění a pražská pravidla Hangmana jsou popsané v [GAME_UX_HANGMAN.md](GAME_UX_HANGMAN.md).

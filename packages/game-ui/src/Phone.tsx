@@ -1,3 +1,5 @@
+import {PartyStart} from './PartyStart';
+import {Indicators} from './Indicators';
 import {GameMap} from './GameMap';
 import type {GameDataRelease} from '../../geo-core/src/index';
 import {Rewards} from './Rewards';
@@ -9,6 +11,7 @@ import {MapSurface,type StaticBasemap} from './MapSurface';
 import {browserLocationProvider,type GameTransport} from './runtime';
 import type {Fix} from '../../game-core/src/index';
 export interface PhotoRepository {put(file:File):Promise<string>;putVideo?(file:File):Promise<string>;get(id:string):Promise<Blob|null>}
+export const formatGameTime=(ms:number)=>`${String(Math.floor(Math.max(0,ms)/3600000)).padStart(2,'0')}:${String(Math.floor(Math.max(0,ms)/60000)%60).padStart(2,'0')}:${String(Math.floor(Math.max(0,ms)/1000)%60).padStart(2,'0')}`;
 export const formatTime=(ms:number)=>`${String(Math.floor(Math.max(0,ms)/60000)).padStart(2,'0')}:${String(Math.floor(Math.max(0,ms)/1000)%60).padStart(2,'0')}`;
 function Photo({id,photos}:{id:string;photos:PhotoRepository}){const [url,setUrl]=useState('');useEffect(()=>{let cancelled=false,local='';photos.get(id).then(blob=>{if(blob&&!cancelled){local=URL.createObjectURL(blob);setUrl(local);}}).catch(()=>{});return()=>{cancelled=true;if(local)URL.revokeObjectURL(local);};},[id,photos]);return url?<img className="question-photo" src={url} alt="Fotografie od schovaného"/>:<p>Fotografie není v tomto místním úložišti dostupná.</p>;}
 export function GamePhone({transport,apiKey,basemap,photos,release}:{transport:GameTransport;release?:GameDataRelease;apiKey?:string;basemap?:StaticBasemap;photos:PhotoRepository}){
@@ -17,12 +20,14 @@ export function GamePhone({transport,apiKey,basemap,photos,release}:{transport:G
 }
 export function PhoneScreen({view,apiKey,basemap,photos,send,release}:{view:RoleView;release?:GameDataRelease;apiKey?:string;basemap?:StaticBasemap;photos:PhotoRepository;send(command:Command):Promise<void>}){
  const [tab,setTab]=useState('map'),[group,setGroup]=useState<QuestionType|null>(null),[search,setSearch]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const prestart=view.phase==='awaiting_map_consent'||view.phase==='awaiting_ready';
+ const navigate=(id:string)=>{setTab(id);setGroup(null);setSearch('');setError('');};
  const hunter=view.role==='hunter',pending=view.questions.find(q=>q.state==='pending'||q.state==='error'),last=[...view.questions].reverse().find(q=>q.state==='answered');
  const run=async(command:Command)=>{setError('');try{await send(command);}catch(error){setError(error instanceof Error?error.message:'Akce selhala.');}};
  const tabs=hunter?[['map','⌖','Mapa'],['questions','?','Otázky'],['curses','☾','Prokletí'],['history','≡','Historie']]:[['map','⌖','Úkryt'],['incoming','?','Otázka'],['cards','▤','Karty'],['history','≡','Historie']];
  const active=view.curses.filter(activeCurse);
  const [ransomText,setRansomText]=useState(''),[tieNote,setTieNote]=useState(''),[tieConfirmed,setTieConfirmed]=useState(false),[publicPoint,setPublicPoint]=useState<Fix['point']>();
- const [acknowledgedMove,setAcknowledgedMove]=useState(''),[completedNotice,setCompletedNotice]=useState(''),[moveSelection,setMoveSelection]=useState('');
+ const [acknowledgedMove,setAcknowledgedMove]=useState(''),[moveSelection,setMoveSelection]=useState('');
  const moveKey=view.move?`${view.move.cardId}:${view.move.startedAt}`:'';
  const moving=!!view.move&&view.move.stage!=='completed';
  const [confirmed,setConfirmed]=useState<string[]>([]);const confirmationsReady=(view.questionConfirmations??[]).every(c=>confirmed.includes(c.id));
@@ -39,14 +44,13 @@ export function PhoneScreen({view,apiKey,basemap,photos,send,release}:{view:Role
  return <article className={`game-phone ${view.role}`} data-testid={`phone-${view.role}`}>
   {hunter&&moving&&acknowledgedMove!==moveKey&&<section className="move-screen" role="dialog" aria-modal="true" aria-label="Schovaný použil Move"><h2>SCHOVANÝ POUŽIL MOVE</h2><p>Původní stanoviště: <strong>{view.move!.origin.name}</strong></p><p>Hra je na 20 minut pozastavena. Musíte zůstat na místě a nesmíte pokládat otázky.</p><strong>{formatTime(view.move!.deadline-view.now)}</strong><div className="move-origin-map"><MapSurface markers={[{id:'move-origin',role:'station',point:view.move!.origin.point,label:`Odhalené původní stanoviště: ${view.move!.origin.name}`}]} center={view.move!.origin.point} apiKey={apiKey} basemap={basemap}/></div><button onClick={()=>setAcknowledgedMove(moveKey)}>Rozumím · zobrazit herní mapu</button></section>}
   <header className="phone-top"><span className="phone-brand">J<span>JETLAG / PRAHA</span></span><span className="role-badge">{hunter?'HLEDAČI':'SCHOVANÝ'}</span></header>
-  <div className="phone-clock"><span>{view.connected===false?'Bez připojené partie':view.phase==='hiding'||view.phase==='needs_station'?'Cesta do úkrytu':'Herní čas'}<strong>{view.connected===false?'—:—':view.phase==='hiding'?formatTime(view.hideRemainingMs):formatTime(view.elapsedMs)}</strong></span><span className={`phase-label ${view.phase}`}>{view.connected===false?'Čeká na partii':view.phase==='hiding'?'Výběr stanoviště':view.phase==='needs_station'?'Nutné řešení':view.phase==='finished'?'Konec kola':view.move?.stage==='moving'?'Move · pauza':'Hledání běží'}</span></div>
+  <div className="phone-clock"><span>Celkový čas hry<strong>{view.connected===false?'—:—:—':formatGameTime(view.elapsedMs)}</strong></span><span className={`phase-label ${view.phase}`}>{view.connected===false?'Čeká na partii':prestart?'Před začátkem':view.phase==='hiding'?'Výběr stanoviště':view.phase==='needs_station'?'Nutné řešení':view.phase==='finished'?'Konec kola':view.move?.stage==='moving'?'Move · pauza':'Hledání běží'}</span></div>
+  {view.phase==='hiding'&&<div className="hiding-countdown">Čas na výběr stanoviště: <strong>{formatTime(view.hideRemainingMs)}</strong></div>}
   <main className="phone-scroll">
    {error&&<p role="alert" className="phone-alert">{error}</p>}
    {!hunter&&view.proximityActive&&<div className="phone-alert proximity" role="status">Hledači jsou poblíž! Dostali se do vzdálenosti 400 metrů od tvého stanoviště.</div>}
-   {!hunter&&!!view.overflow&&<div className="phone-alert" role="alert">Překročen limit ruky o {view.overflow}. Zahrajte nebo odhoďte přebytečné karty.<button onClick={()=>setTab('cards')}>Upravit ruku</button></div>}
-   {moving&&<p className="phone-alert" role="status">Move: dosavadní zastávka {view.move!.origin.name}. {view.move!.stage==='moving'?'Hledači stojí; čas schovaného je pozastaven.':'Limit skončil; čeká se na jednoznačné stanoviště. Otázky jsou blokované, čas opět běží.'} Do konce přesunu {formatTime(view.move!.deadline-view.now)}.</p>}
-   {view.move?.stage==='completed'&&completedNotice!==moveKey&&<p className="phone-alert" role="status">Move dokončen. Hledání pokračuje s novou dedukční etapou.<button onClick={()=>setCompletedNotice(moveKey)}>Pokračovat</button></p>}
-   {pending&&tab!=='incoming'&&<button className="incoming-banner" onClick={()=>{setTab(hunter?'questions':'incoming');setGroup(pending.definition.type);}}><span>◉ {pending.phase==='awaiting_second_measurement'?'Thermometer – probíhá přesun':hunter?'Čekáme na odpověď':'Příchozí otázka'}</span><strong>{pending.definition.label}</strong>{pending.deadline!==null&&<small>{formatTime(pending.deadline-view.now)}</small>}</button>}
+   {prestart&&view.lobby?<PartyStart view={view} send={run}/>:<>
+   <Indicators view={view} navigate={target=>{navigate(target);if(target==='questions'&&pending)setGroup(pending.definition.type);}} send={run}/>
    {tab==='map'&&<>
     <div className="phone-map"><GameMap release={release} view={view} storageKey={`jetlag-public-map:${view.gameId}:${view.role}`} markers={markers} apiKey={apiKey} basemap={basemap} center={publicPoint??(!hunter&&!station&&selectedStop?selectedStop.point:own?.point)} circle={hunter?null:moving?(view.stops??[]).find(s=>s.id===(moveSelection||view.move?.selectedStopId))?.point??null:station?.point??selectedStop?.point}/></div>
     <section className="phone-section"><div className="section-title"><h2>{hunter?'Praha je vaše mapa':'Moje stanoviště'}</h2><span>⌖</span></div>
@@ -78,18 +82,19 @@ export function PhoneScreen({view,apiKey,basemap,photos,send,release}:{view:Role
      <label className="photo-upload">Připojit fotografii<input type="file" accept="image/jpeg,image/png,image/webp" capture="environment" disabled={busy} onChange={async e=>{const file=e.target.files?.[0];if(!file)return;setBusy(true);setError('');try{const id=await photos.put(file);await send({type:'attach_photo',photoId:id});}catch(err){setError((err as Error).message);}finally{setBusy(false);}}}/></label>{busy&&<p>Ukládám fotografii…</p>}{pending.draftPhotoId&&<><Photo id={pending.draftPhotoId} photos={photos}/><button className="primary phone-wide" onClick={()=>void run({type:'answer',photoId:pending.draftPhotoId})}>Odeslat fotografii</button></>}
     </>}
     <button className="phone-wide" onClick={()=>setTab('cards')}>Použít kartu před odpovědí</button>
-   </article>:<><p>Nyní není rozpracovaná otázka.</p>{last&&<div className="answer-card"><span>{last.definition.label}</span><strong>{last.answer}</strong></div>}<button className="primary phone-wide" onClick={()=>setTab('cards')}>Otevřít karetní odměnu</button></>}</section>}
+   </article>:<><p>{last?'Odpověď odeslána.':'Nyní není rozpracovaná otázka.'}</p>{last&&<div className="answer-card"><span>{last.definition.label}</span><strong>{last.answer}</strong></div>}{view.rewards?.filter(r=>r.state!=='claimed').map(r=><div className="reward-notice" key={r.id}><strong>Můžeš si líznout nové karty.</strong><button className="primary phone-wide" onClick={()=>navigate('cards')}>Otevřít odměnu – lízni {r.policy.draw}, ponech {r.policy.keep}</button><p>Před líznutím můžeš zahrát karty ze současné ruky.</p></div>)}</>}</section>}
    {tab==='cards'&&!hunter&&view.cardVersion===2&&<section className="phone-section"><CardsPanel view={view} send={run} photos={photos}/></section>}
-   {tab==='cards'&&!hunter&&view.cardVersion!==2&&<section className="phone-section"><h2>Karetní ruka <span>{view.hand?.length??0}/{view.handLimit}</span></h2><p>Časové bonusy v ruce: {view.bonusSeconds??0} s {view.phase==='finished'?'· započteno na konci kola':'· vyhodnotí se na konci kola'}</p>{view.hand?.length===0&&<p>Ruka je zatím prázdná. Karty získáte za odpověď.</p>}
+   {tab==='cards'&&!hunter&&view.cardVersion!==2&&<section className="phone-section"><Rewards view={view} send={run}/><h2>Karetní ruka <span>{view.hand?.length??0}/{view.handLimit}</span></h2><p>Časové bonusy v ruce: {view.bonusSeconds??0} s {view.phase==='finished'?'· započteno na konci kola':'· vyhodnotí se na konci kola'}</p>{view.hand?.length===0&&<p>Ruka je zatím prázdná. Karty získáte za odpověď.</p>}
     {view.hand?.map(({instanceId,definition:d})=><article className={`hand-card ${d.type}`} key={instanceId}><span>{d.icon} {d.type==='time_bonus'?'ČASOVÝ BONUS':d.type==='curse'?'PROKLETÍ':'POWERUP'}</span><h3>{d.name}</h3><p>{d.description}</p><div className="two-actions">{d.type!=='time_bonus'&&<button onClick={()=>void run({type:'play_card',cardId:instanceId})}>Zahrát kartu</button>}<button onClick={()=>void run({type:'discard_card',cardId:instanceId})}>Odhodit kartu</button></div></article>)}
-    {view.finalScoreMs!==undefined&&<div className="answer-card"><span>Výsledný čas v testovacím kole včetně bonusů</span><strong>{formatTime(view.finalScoreMs)}</strong></div>}<Rewards view={view} send={run}/>
+    {view.finalScoreMs!==undefined&&<div className="answer-card"><span>Výsledný čas v testovacím kole včetně bonusů</span><strong>{formatTime(view.finalScoreMs)}</strong></div>}
     <h3>Moje aktivní prokletí</h3>{view.curses.map(c=><div className="curse-card" key={c.id}><strong>{c.name}</strong><p>{c.state==='active'?'Aktivní':c.state==='fulfilled'?'Splněné':'Ukončené'}</p></div>)}
    </section>}
    {tab==='curses'&&hunter&&view.cardVersion===2&&<section className="phone-section"><CursePanel view={view} send={run} photos={photos}/></section>}
    {tab==='curses'&&hunter&&view.cardVersion!==2&&<section className="phone-section"><h2>Prokletí <span>{active.length}</span></h2>{active.length===0&&<p>Žádné aktivní prokletí.</p>}{view.curses.map(c=><article className="curse-card" key={c.id}><span>{c.icon} {c.state==='active'?'AKTIVNÍ':c.state==='fulfilled'?'SPLNĚNÉ':'UKONČENÉ'}</span><h3>{c.name}</h3><p>{c.description}</p><p>{c.condition}</p>{c.expiresAt!==undefined&&c.state==='active'&&<strong>{formatTime(c.expiresAt-view.now)}</strong>}{c.state==='active'&&c.manual&&<button onClick={()=>void run({type:'fulfill_curse',curseId:c.id})}>Potvrdit splnění prokletí</button>}</article>)}</section>}
    {tab==='history'&&<section className="phone-section"><h2>Historie hry</h2>{view.questions.filter(q=>q.state==='answered'&&q.photoId).map(q=><article className="answer-card" key={q.id}><span>{q.definition.label}</span><Photo id={q.photoId!} photos={photos}/></article>)}<ol className="game-history">{[...view.events].reverse().map(e=><li key={e.id}><time>{formatTime(e.at-(view.startedAt??(view.now-view.elapsedMs)))}</time><p>{e.text}</p></li>)}</ol></section>}
+   </>}
   </main>
-  <nav className="phone-nav" aria-label={`Navigace ${hunter?'hledačů':'schovaného'}`}>{tabs.map(([id,icon,label])=><button key={id} aria-pressed={tab===id} onClick={()=>{setTab(id);setError('');}}><span>{icon}{id==='curses'&&active.length>0&&<b>{active.length}</b>}{id==='incoming'&&pending&&<b>1</b>}</span>{label}</button>)}</nav>
+  <nav className="phone-nav" aria-label={`Navigace ${hunter?'hledačů':'schovaného'}`}>{tabs.map(([id,icon,label])=><button key={id} aria-pressed={tab===id} disabled={prestart} onClick={()=>navigate(id)}><span>{icon}{id==='curses'&&active.length>0&&<b>{active.length}</b>}{id==='incoming'&&pending&&<b>1</b>}{id==='cards'&&((view.rewards?.some(r=>r.state!=='claimed'))||active.some(c=>c.hangman))&&<b aria-label={view.rewards?.some(r=>r.state==='offered')?'Nedokončené dobírání':view.rewards?.some(r=>r.state!=='claimed')?`${view.rewards.filter(r=>r.state!=='claimed').length} čekajících odměn`:'Aktivní Hangman'}>{view.rewards?.some(r=>r.state==='offered')?'!':view.rewards?.filter(r=>r.state!=='claimed').length||active.length}</b>}</span>{label}</button>)}</nav>
  </article>;
 }
 function MoveDestination({view,send,selected,onSelected}:{view:RoleView;send(command:Command):Promise<void>;selected:string;onSelected(value:string):void}){

@@ -9,3 +9,7 @@ export { activeCurse } from './card-effects';
 export * from './spatial-questions';
 
 export * from './deductions';
+
+export * from './lobby';
+export * from './hangman';
+export * from './indicators';

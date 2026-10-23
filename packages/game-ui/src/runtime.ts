@@ -9,7 +9,7 @@ export class LocalGameSession {
   constructor(public state:GameState,public readonly environment:GameEnvironment,private save:(state:GameState)=>void){if(state.mode!=='simulation')throw new Error('Lokální transport je určený pouze pro simulaci.');}
   dispatch(actor:Role|'clock',command:Command,at=this.state.now){const next=transition(this.state,{id:crypto.randomUUID(),at,actor,command},this.environment);this.save(next);this.state=next;this.listeners.forEach(fn=>fn());}
   transport(role:Role):GameTransport {let lastState:GameState|undefined,cached:RoleView;return {getView:()=>{if(lastState!==this.state){lastState=this.state;cached=viewForRole(this.state,role,this.environment);}return cached;},subscribe:listener=>{this.listeners.add(listener);return ()=>this.listeners.delete(listener);},send:async command=>{this.dispatch(role,command);}};}
-  advance(ms:number){if(!Number.isFinite(ms)||ms<0)throw new Error('Neplatný posun času.');if(this.state.phase==='finished')return;const now=this.state.now+ms;
+  advance(ms:number){if(!Number.isFinite(ms)||ms<0)throw new Error('Neplatný posun času.');if(['finished','awaiting_map_consent','awaiting_ready'].includes(this.state.phase))return;const now=this.state.now+ms;
     // This provider simulates continuous observations of explicitly set points.
     // Split jumps at deadlines, so a +5 min step cannot pretend a late GPS fix
     // existed at the earlier Move/hiding deadline. Real GPS is never interpolated.

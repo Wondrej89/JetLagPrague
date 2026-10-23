@@ -23,7 +23,7 @@ export function deckRules(size: GameSize): GameRules {
     ...catalogue.curses.map(c => ({ id: c.id, name: c.name, type: 'curse' as const, icon: '☾', effect: 'curse' as const,
       description: c.summary, mechanics: curseRules(c.id,size) })),
   ];
-  return { ...simulationRules(), id: `${catalogue.version}:${size}`, cardVersion: 2, questionVersion: 2, mapVersion:1, moveVersion:2, automaticDeductionMap:false, questions:questionRegistry(), size,
+  return { ...simulationRules(), id: `${catalogue.version}:${size}`, cardVersion: 2, questionVersion: 2, mapVersion:1, moveVersion:2, hangmanVersion:1, manualHangmanResponses:false, automaticDeductionMap:false, questions:questionRegistry(), size,
     label: `100 karet · ${size} · pravidla z dodané tabulky; rozporné a nedodané mechanismy jsou WIP`, testOnly: true, cards,
     deck: [...catalogue.bonuses.flatMap(c => Array<string>(c.count).fill(c.id)),
       ...catalogue.powerups.flatMap(c => Array<string>(c.count).fill(c.id)), ...catalogue.curses.map(c => c.id)] };

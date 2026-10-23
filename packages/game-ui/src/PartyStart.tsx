@@ -1,0 +1,10 @@
+import type {Command,RoleView} from '../../game-core/src/index';
+export function PartyStart({view,send}:{view:RoleView;send(c:Command):Promise<void>}){
+ const lobby=view.lobby!,role=view.role,other=role==='hunter'?'hider':'hunter',choice=lobby.choices[role],hunter=role==='hunter';
+ return <section className="phone-section party-start" aria-label="Začátek partie">
+ <p>Nová partie · {view.gameId}</p>
+ {view.phase==='awaiting_map_consent'?<><h2>Automatické zakreslování odpovědí</h2><p>Souhlasíte s tím, že hledači uvidí na mapě polygony vyznačující výsledky geografických otázek?</p><p>Při zapnutí této funkce bude hra automaticky označovat oblasti, ve kterých se schovaný podle odpovědí může nebo nemůže nacházet. Hra tak bude přehlednější a jednodušší.</p>
+ {choice===undefined?<><button className="primary phone-wide" onClick={()=>void send({type:'map_consent',enabled:true})}>Ano, souhlasím</button><button className="phone-wide" onClick={()=>void send({type:'map_consent',enabled:false})}>Ne, hrát bez zakreslování</button></>:<p role="status">Vaše volba: {choice?'Ano':'Bez zakreslování'}. Čekáme na rozhodnutí druhé role.</p>}
+ <p>Druhá role: {lobby.choices[other]===undefined?'zatím nerozhodla':lobby.choices[other]?'souhlasí':'hra bez zakreslování'}.</p></>:<><h2>Jste připraveni začít?</h2><p className="agreement-result" role="status">Výsledek dohody: <strong>{view.automaticDeductionMap?'Automatické zakreslování zapnuto':'Hrajeme bez automatického zakreslování'}</strong>. Obě rozhodnutí jsou uložená a během partie se nemění.</p><p>{hunter?'Připravte se na začátek hry. Schovaný bude mít 45 minut na výběr stanoviště.':'Po spuštění hry začne běžet čas. Máš 45 minut na přesun a výběr stanoviště.'}</p><button className="primary phone-wide" disabled={lobby.ready[role]} onClick={()=>void send({type:'ready'})}>{lobby.ready[role]?'Připraveno':'Jsem připraven'}</button><p role="status">Druhá role: {lobby.ready[other]?'připravena':'čekáme na připravenost'}. Čas začne až po potvrzení obou.</p></>}
+ </section>;
+}

@@ -4,7 +4,7 @@ Nové funkce používají sdílený `Game Core`, `Geo Resolver`, `Game UI` a pů
 
 ## Zapnutí v nové simulaci
 
-Zvolte Small / Medium / Large, režim **Automatické zakreslování zapnuto/vypnuto** a výslovně potvrďte rozhodnutí za hledače i schovaného. Výchozí volba je vypnuto. Nastavení se ukládá do `GameRules` jako `automaticDeductionMap` a `deductionConsent` s autoritou `simulator`. Změny ovládání nové hry nemění rozehranou partii. Pro novou konfiguraci založte novou simulaci.
+Zvolte Small / Medium / Large a založte novou partii. Přímo na **každém telefonu** potvrďte Ano / Bez zakreslování. Zapne se pouze po dvou Ano; oba telefony zobrazí výsledek dohody. Potom každý samostatně potvrdí **Jsem připraven**. Teprve druhé potvrzení spustí herní čas. Rozhodnutí jsou uložená v `lobby.choices`, v `GameRules.automaticDeductionMap` a `deductionConsent` s autoritou `simulator`; po startu se nemění. Nastavení v administraci slouží rychlým testovacím scénářům a nenahrazuje rozhodnutí rolí při standardní nové hře. [Podrobnosti](GAME_UX_HANGMAN.md).
 
 Historické exporty zůstávají čitelné. Starým hrám se automatická dedukce ani nový protokol Move potichu nezapínají. Nové hry mají `mapVersion: 1` a `moveVersion: 2`; uložená starší pravidla se nepřepisují.
 
