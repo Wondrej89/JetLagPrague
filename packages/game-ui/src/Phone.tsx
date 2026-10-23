@@ -20,8 +20,10 @@ export function GamePhone({transport,apiKey,basemap,photos,release}:{transport:G
 }
 export function PhoneScreen({view,apiKey,basemap,photos,send,release}:{view:RoleView;release?:GameDataRelease;apiKey?:string;basemap?:StaticBasemap;photos:PhotoRepository;send(command:Command):Promise<void>}){
  const [tab,setTab]=useState('map'),[group,setGroup]=useState<QuestionType|null>(null),[search,setSearch]=useState(''),[error,setError]=useState(''),[busy,setBusy]=useState(false);
+ const scroll=useRef<HTMLElement>(null),[focusAction,setFocusAction]=useState<{id:string;kind:string;nonce:number}|null>(null);
+ useEffect(()=>{if(!focusAction)return;const selector=focusAction.kind==='hangman'?'[data-curse-id]':focusAction.kind==='reward'||focusAction.kind==='drawing'?'[data-reward-id]':null;if(!selector)return;const frame=requestAnimationFrame(()=>{const target=[...(scroll.current?.querySelectorAll<HTMLElement>(selector)??[])].find(el=>(focusAction.kind==='hangman'?el.dataset.curseId:el.dataset.rewardId)===focusAction.id);target?.scrollIntoView({block:'start',behavior:'instant'});});return()=>cancelAnimationFrame(frame);},[focusAction,tab]);
  const prestart=view.phase==='awaiting_map_consent'||view.phase==='awaiting_ready';
- const navigate=(id:string)=>{setTab(id);setGroup(null);setSearch('');setError('');};
+ const navigate=(id:string)=>{setTab(id);setGroup(null);setSearch('');setError('');setFocusAction(null);if(scroll.current)scroll.current.scrollTop=0;};
  const hunter=view.role==='hunter',pending=view.questions.find(q=>q.state==='pending'||q.state==='error'),last=[...view.questions].reverse().find(q=>q.state==='answered');
  const run=async(command:Command)=>{setError('');try{await send(command);}catch(error){setError(error instanceof Error?error.message:'Akce selhala.');}};
  const tabs=hunter?[['map','⌖','Mapa'],['questions','?','Otázky'],['curses','☾','Prokletí'],['history','≡','Historie']]:[['map','⌖','Úkryt'],['incoming','?','Otázka'],['cards','▤','Karty'],['history','≡','Historie']];
@@ -46,11 +48,11 @@ export function PhoneScreen({view,apiKey,basemap,photos,send,release}:{view:Role
   <header className="phone-top"><span className="phone-brand">J<span>JETLAG / PRAHA</span></span><span className="role-badge">{hunter?'HLEDAČI':'SCHOVANÝ'}</span></header>
   <div className="phone-clock"><span>Celkový čas hry<strong>{view.connected===false?'—:—:—':formatGameTime(view.elapsedMs)}</strong></span><span className={`phase-label ${view.phase}`}>{view.connected===false?'Čeká na partii':prestart?'Před začátkem':view.phase==='hiding'?'Výběr stanoviště':view.phase==='needs_station'?'Nutné řešení':view.phase==='finished'?'Konec kola':view.move?.stage==='moving'?'Move · pauza':'Hledání běží'}</span></div>
   {view.phase==='hiding'&&<div className="hiding-countdown">Čas na výběr stanoviště: <strong>{formatTime(view.hideRemainingMs)}</strong></div>}
-  <main className="phone-scroll">
+  <main className="phone-scroll" ref={scroll}>
    {error&&<p role="alert" className="phone-alert">{error}</p>}
    {!hunter&&view.proximityActive&&<div className="phone-alert proximity" role="status">Hledači jsou poblíž! Dostali se do vzdálenosti 400 metrů od tvého stanoviště.</div>}
    {prestart&&view.lobby?<PartyStart view={view} send={run}/>:<>
-   <Indicators view={view} navigate={target=>{navigate(target);if(target==='questions'&&pending)setGroup(pending.definition.type);}} send={run}/>
+   <Indicators view={view} navigate={(target,indicator)=>{navigate(target);if(target==='questions'&&pending)setGroup(pending.definition.type);setFocusAction({id:indicator.id,kind:indicator.kind,nonce:performance.now()});}} send={run}/>
    {tab==='map'&&<>
     <div className="phone-map"><GameMap release={release} view={view} storageKey={`jetlag-public-map:${view.gameId}:${view.role}`} markers={markers} apiKey={apiKey} basemap={basemap} center={publicPoint??(!hunter&&!station&&selectedStop?selectedStop.point:own?.point)} circle={hunter?null:moving?(view.stops??[]).find(s=>s.id===(moveSelection||view.move?.selectedStopId))?.point??null:station?.point??selectedStop?.point}/></div>
     <section className="phone-section"><div className="section-title"><h2>{hunter?'Praha je vaše mapa':'Moje stanoviště'}</h2><span>⌖</span></div>
