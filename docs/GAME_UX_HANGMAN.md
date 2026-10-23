@@ -27,7 +27,7 @@ Oba telefony ukazují **Celkový čas hry: HH:MM:SS**, před oboustrannou připr
 
 Autoritativní čas a role DTO oddělují skutečný interval od startu (`wallElapsedMs`), započítávaný čas (`elapsedMs`), pauzy Move (`pausedMs`), bonusy (`bonusMs`), penalizace (`penaltyMs`) a jednotlivé termíny úkolů. Bonusy se do hlavních hodin nepřičítají; uplatní se ve výsledku. Move zachovává celý dvacetiminutový odpočet i předchozí pravidla uzamčení a obnovy času.
 
-Simulátor ponechává vlastní ovládání rychlosti a pauzy. Před startem neposouvá herní hodiny ani přes tlačítko +5 minut; po připravenosti lze použít **Spustit čas** nebo časové kroky. Nejde o časový server ani běh hodin na pozadí zavřeného prohlížeče.
+Simulátor ponechává vlastní ovládání rychlosti a pauzy. Před startem neposouvá herní hodiny ani přes tlačítko +5 minut; druhé potvrzení připravenosti automaticky rozběhne i čas simulátoru. Potom jej lze výslovně pozastavit, změnit rychlost nebo používat časové kroky. Reload zachová uloženou pauzu a znovu nespouští již zahájenou partii. Nejde o časový server ani běh hodin na pozadí zavřeného prohlížeče.
 
 ## Navigace, odměny a upozornění
 

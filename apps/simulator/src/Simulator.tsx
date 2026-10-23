@@ -21,6 +21,8 @@ export function Simulator(){
  const [size,setSize]=useState<GameSize|''>(''),[diagnosticCard,setDiagnosticCard]=useState('');
  const [basemap,setBasemap]=useState<StaticBasemap>(),[mapNote,setMapNote]=useState(import.meta.env.VITE_MAPY_API_KEY?'Načítám pevný podklad Prahy…':'Chybí klientský klíč Mapy.com; geometrie a špendlíky fungují bez podkladu.');
  useEffect(()=>{if(!import.meta.env.VITE_MAPY_API_KEY)return;let cancelled=false;void loadBasemap(import.meta.env.VITE_MAPY_API_KEY).then(({basemap,missing})=>{if(cancelled)return;setBasemap(basemap);setMapNote(missing?'Část pevného podkladu Mapy.com není dostupná. Geometrie a špendlíky zůstávají funkční.':'Podklad Mapy.com: pevný rozsah Prahy, detail do zoomu 13. Pohyb simulovaných hráčů se neposílá poskytovateli map.');});return()=>{cancelled=true;};},[]);
+ const previousParty=useRef<{id:string;phase:GameState['phase']}|null>(null);
+ useEffect(()=>{if(!state)return;const previous=previousParty.current;if(previous?.id===state.id&&previous.phase==='awaiting_ready'&&state.phase==='hiding'&&state.lobby?.startedAt!==undefined)setPaused(false);previousParty.current={id:state.id,phase:state.phase};},[state]);
  const settings=useRef({paused,speed,scenario});settings.current={paused,speed,scenario};
  const env=useMemo(()=>release?createGeoResolver(release):null,[release]);
  const bind=(next:GameState,environment:GameEnvironment)=>{const active=new LocalGameSession(next,environment,value=>{void saveSimulation({version:1,state:value,...settings.current}).catch(e=>setError(`Uložení selhalo: ${e.message}`));});setSession(active);setSessionSerial(n=>n+1);setState(next);return active;};
