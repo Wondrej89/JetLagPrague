@@ -25,7 +25,7 @@ Mapy.com slouží pouze jako podklad. Simulátor načte jednu pevnou sadu dlažd
 
 Matching, Measuring a Radar zachovávají dosavadní pravidla a odměny. **Thermometer a Tentacles mají funkční geografický průběh a odměny 2 → 1 / 4 → 2**. Nové otázky vyžadují založení nové simulace; historická rozehraná pravidla se nepřepisují. Neověřené karetní účinky a složení balíčku jsou výslovně testovací konfigurace. Historický PID zůstává označen jako neověřená reference, nikoli zdroj pro ostrou hru. [Úplný návod, architektura, pravidla a omezení](docs/GAME_MVP.md).
 
-Ověření webového simulátoru zahrnuje produkční sestavení pod `/JetLagPrague/`, celý průchod otázka → odpověď → odměna → reload, fotografie a soukromý import/export, skutečné přesuny špendlíků, časovače, oddělené prohlížeče, zachování editorových úložišť a audit všech síťových požadavků. GitHub Actions spouští E2E proti přesnému artefaktu před jeho nasazením. **Lint, typecheck, produkční build, 360 jednotkových testů a 76 E2E scénářů prošly.** Dva jednotkové a dva E2E audity jsou výslovně přeskočené kvůli nedodaným původním archivům GTFS a parků. Sedm historických publikací, administrativní zdroje a kontrolní součty PID zůstaly platné.
+Ověření webového simulátoru zahrnuje produkční sestavení pod `/JetLagPrague/`, celý průchod otázka → odpověď → odměna → reload, fotografie a soukromý import/export, skutečné přesuny špendlíků, časovače, oddělené prohlížeče, zachování editorových úložišť a audit všech síťových požadavků. GitHub Actions spouští E2E proti přesnému artefaktu před jeho nasazením. **Lint, typecheck, produkční build, 417 jednotkových testů a 89 E2E scénářů prošly.** Dva jednotkové a dva E2E audity jsou výslovně přeskočené kvůli nedodaným původním archivům GTFS a parků. Sedm historických publikací, administrativní zdroje a kontrolní součty PID zůstaly platné.
 
 ## Thermometer a Tentacles
 
@@ -42,6 +42,18 @@ Odměny podporují obecné N → K. U Tentacles se uloží nabídka **4 karet**,
 Simulátor přidává 15 scénářů včetně přiblížení/vzdálení, přesné hranice, změny GPS, nenalezených kandidátů, odměn, Chalice, Veto, Randomize a reloadu. A/B mají odlišné špendlíky; soukromé vzdálenosti A–H/B–H jsou jen v diagnostice správce. Scénář rovnosti dvou skutečných knihoven výslovně používá diagnostický GPS cíl ve sférickém středu dvojice; běžná hra má pevnou zastávku. Přesné syntetické hraniční a polygonové případy jsou v jednotkových testech, nikoli ve veřejném katalogu.
 
 Pravidla a převody vycházejí z tohoto zadání a [referenčního webu](https://jetlag.denull.ru/en/rules/questions/); přímé načtení webu 22. 10. 2026 blokovalo prostředí HTTP 403. **Zvýšená karetní cena opakované otázky dosud není implementována** a zůstává samostatnou nedokončenou mechanikou; tato změna ji nevydává za hotovou. Editor, katalogy a původní Matching/Measuring/Radar zůstávají zachované. Historický PID stále omezuje použití na referenční simulaci.
+
+## Herní mapa, dedukce a Move
+
+Mapa hledačů má panely **Vrstvy** a **Dedukce**. Veřejné vrstvy používají přesně uzamčený publikovaný katalog, podporují vyhledávání, detail objektu, zvýraznění a samostatnou výplň/hrany polygonů. Chybějící golfová hřiště, aquaparky a Vltava se nevydávají za dostupná data. Zobrazení vrstev funguje i během rozpracované otázky a při vypnuté automatické dedukci.
+
+**Automatické zakreslování je výchozí vypnuté.** Před novou simulací oba týmy výslovně potvrdí zvolený režim. Radar, Measuring, Thermometer a prostorové Matching vytvářejí auditovatelné podmínky z neměnných snapshotů. Podmínky o stanovišti se kombinují v rámci stejné etapy; skutečná GPS je oddělená, navíc se neslučují její různé okamžiky. Zelená znamená potvrzenou možnost, červená vyloučení a neutrální plocha nejistotu.
+
+**Vykreslení je konzervativní aproximace s buňkami do 64 m**, metrickou projekcí a rezervou 2 m; není to přesná matematická hranice ani tvrzení o přesnosti GPS. Geografické odpovědi používají plná zdrojová data. Výpočty běží ve sdíleném workeru s prostorovým indexem a omezenou cache; pan/zoom je neopakuje.
+
+**Nový Move trvá celých 20 minut.** Odhalí pouze původní zastávku, odhodí ruku, pozastaví herní čas schovaného, zablokuje otázky a simulované přesuny hledačů. Schovaný může podle GPS vybrat jinou způsobilou zastávku do 400 m; předběžné potvrzení nezkrátí pauzu. Po limitu se cíl uzamkne nebo se vyžádá jednoznačná volba ze zmrazených kandidátů. Staré dedukce se archivují a vznikne nová etapa. Historie, původní zastávka a audit zůstávají zachované. Move je zakázaný v ručně potvrzeném endgame.
+
+Přidáno **20 mapových/Move scénářů**, včetně výslovně syntetické diagnostiky konfliktu mimo herní historii. Pro nové protokoly založte novou simulaci; historické exporty si ponechávají uložená pravidla. [Úplný popis, přesnost, soukromí a omezení](docs/GAME_MAP.md).
 
 ## Vodní plochy
 

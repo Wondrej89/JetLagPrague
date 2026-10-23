@@ -10,7 +10,7 @@ export interface QuestionDefinition {
   resolver: 'poi_matching' | 'poi_measuring' | 'same_area' | 'radar' | 'thermometer' | 'tentacles' | 'manual' | 'photo' | 'unsupported';
   answerMode: 'automatic' | 'manual' | 'photo'; rewardPolicy: RewardPolicy | null; timeoutSeconds: number | null;
   availability: 'ready' | 'manual' | 'missing_data' | 'unsupported'; requirements: string[];
-  spatialVersion?: 2; toleranceMeters?: number; sourceRule?: string;
+  distanceMode?: 'geometry'; spatialVersion?: 2; toleranceMeters?: number; sourceRule?: string;
   target: TargetPolicy; radiusMeters?: number; minMoveMeters?: number; configured?: boolean; testOnly?: boolean;
 }
 export interface CardDefinition {
@@ -20,6 +20,7 @@ export interface CardDefinition {
   curse?: { durationMs?: number; condition: string; blocksQuestions: boolean; manual: boolean };
 }
 export interface GameRules {
+  mapVersion?: 1; moveVersion?: 2; automaticDeductionMap?: boolean; deductionConsent?: { hunter: boolean; hider: boolean; authority: 'simulator' };
   cardVersion?: 2; questionVersion?: 2; size?: GameSize;
   id: string; label: string; testOnly: boolean; hideMs: number; radiusMeters: number; gpsMaxAgeMs: number; gpsMaxAccuracyM: number;
   handLimit: number; veto: { enabled: boolean; reward: boolean }; randomize: { enabled: boolean; restartTimer: boolean };
@@ -29,6 +30,7 @@ export interface Stop { id: string; name: string; point: Point }
 export interface PublicPoi { id: string; name: string; point: Point }
 export type QuestionPhase = 'awaiting_second_measurement' | 'awaiting_response' | 'answered' | 'error';
 export interface QuestionInstance {
+  epochId?: string;
   phase?: QuestionPhase; responseStartedAt?: number; secondCapturedAt?: number; answerPoi?: PublicPoi; errorCode?: 'thermometer_tie';
   manualResolution?: { at: number; note: string };
   rewardModifierIds?: string[]; id: string; definition: QuestionDefinition; askedAt: number; deadline: number | null;
@@ -38,7 +40,14 @@ export interface QuestionInstance {
 export interface Reward { id: string; questionId: string; policy: RewardPolicy; state: 'pending' | 'offered' | 'claimed'; offer: string[] }
 export interface Curse { id: string; cardId: string; name: string; description: string; icon: string; activatedAt: number; expiresAt?: number; condition: string; blocksQuestions: boolean; manual: boolean; target: 'hunter'; state: 'active' | CurseStage; effects?: CurseEffect[]; evidence?: Evidence[]; casterPoint?: Point; setup?: CurseSetup; castRollStart?:number; guesses?: string[]; maskedWord?: string }
 export interface GameEvent { id: string; at: number; type: string; audience: 'all' | Role; text: string }
+export interface Deduction {
+  id: string; questionId: string; epochId: string; releaseId: string; geometryTarget: TargetPolicy;
+  operation: 'include' | 'exclude'; sourceType: 'radar' | 'measuring' | 'matching' | 'thermometer';
+  result: string; createdAt: number; status: 'active' | 'archived';
+  parameters: { definitionId: string; resolver: QuestionDefinition['resolver']; category: string; hunterPoint: Point; secondPoint?: Point; radiusMeters?: number; minMoveMeters?:number; toleranceMeters: number; distanceMode?: 'geometry' };
+}
 export interface GameState {
+  epochId?: string; deductions?: Deduction[]; endgame?: boolean;
   version: 1 | 2; cardState?: CardRuntime; id: string; releaseId: string; mode: 'simulation'|'live'; rules: GameRules; startedAt: number; now: number;
   phase: 'hiding' | 'needs_station' | 'seeking' | 'finished'; hideDeadline: number;
   players: Record<Role, { id: string; name: string }>;
@@ -48,7 +57,8 @@ export interface GameState {
 }
 export type Command =
   | { type: 'tick' }
-  | { type: 'location'; role: Role; fix: Fix | null }
+  | { type: 'declare_endgame'; confirmed: boolean }
+  | { type: 'location'; role: Role; fix: Fix | null; observation?: boolean }
   | { type: 'walking'; value: boolean }
   | { type: 'select_station'; stopId: string }
   | { type: 'lock_station'; stopId: string }
@@ -88,12 +98,13 @@ export interface GameEnvironment {
   namedWaterDistance?(point: Point): { state: 'known'; meters: number } | { state: 'unknown'; reason: string };
 }
 export interface RoleView {
+  automaticDeductionMap?: boolean; epochId?: string; deductions?: Deduction[]; endgame?: boolean; revealedStations?: Stop[];
   blockedCategories?: QuestionType[]; questionConfirmations?: {id: string; text: string}[];
   cardVersion?: 2; size?: GameSize; drawCount?: number; discardCount?: number; move?: CardRuntime['move'];
   rolls?: CardRuntime['rolls']; penalties?: CardRuntime['penalties']; doors?:CardRuntime['doors'];
   startedAt?:number; connected?:boolean; gameId: string; releaseId: string; role: Role; phase: GameState['phase']; elapsedMs: number; now: number; hideRemainingMs: number;
   proximityActive?:boolean; finalScoreMs?:number; ownFix: Fix | null; gpsIssue:string|null; canAsk: boolean; blockingReason: string; walking?: boolean; station?: Stop | null; provisionalStopId?: string | null; stops?: Stop[];
-  questions: { phase?: QuestionPhase; responseStartedAt?: number; answerPoi?: PublicPoi; manualTie?: boolean; measurement?: { first: Point; second?: Point; movement: number | null; remaining: number | null; canFinish: boolean }; id: string; definition: QuestionDefinition; state: QuestionInstance['state']; askedAt: number; deadline: number | null; answer?: string; error?: string; photoId?: string; draftPhotoId?:string; secondCaptured: boolean }[];
+  questions: { epochId?:string; phase?: QuestionPhase; responseStartedAt?: number; answerPoi?: PublicPoi; manualTie?: boolean; measurement?: { first: Point; second?: Point; movement: number | null; remaining: number | null; canFinish: boolean }; id: string; definition: QuestionDefinition; state: QuestionInstance['state']; askedAt: number; deadline: number | null; answer?: string; error?: string; photoId?: string; draftPhotoId?:string; secondCaptured: boolean }[];
   availableQuestions: (QuestionDefinition & { reason: string })[];
   hand?: { instanceId: string; definition: CardDefinition }[]; handLimit?: number; overflow?: number; bonusSeconds?: number;
   rewards?: Reward[]; rewardCards?: Record<string, CardDefinition>; curses: Curse[]; events: GameEvent[];

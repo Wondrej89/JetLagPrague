@@ -68,7 +68,7 @@ describe('Typed powerups, roles and atomic transitions',()=>{
   expect(()=>h.send('hunter',{type:'ask',questionId:'radar:800'})).toThrow('Move');
   expect(()=>h.send('hunter',{type:'location',role:'hunter',fix:{point:destination.point,at:h.state.now,accuracy:5}})).toThrow('nesmí pohybovat');
   expect(()=>h.send('hider',{type:'complete_move',stopId:destination.id,confirmed:true})).toThrow('GPS');expect(h.state.station!.id).toBe(origin);
-  const at=h.state.now+60000;h.send('hider',{type:'location',role:'hider',fix:{point:destination.point,at,accuracy:5}},at);h.send('hider',{type:'complete_move',stopId:destination.id,confirmed:true});expect(h.state.station!.id).toBe(destination.id);expect(scoreGame(h.state).pausedMs).toBe(60000);expect(scoreGame(h.state).totalMs).toBe(0);readGameState(h.state,f.env);
+  const at=h.state.now+60000;h.send('hider',{type:'location',role:'hider',fix:{point:destination.point,at,accuracy:5}},at);h.send('hider',{type:'complete_move',stopId:destination.id,confirmed:true});expect(h.state.station!.id).toBe(origin);expect(h.state.cardState!.move!.stage).toBe('moving');const deadline=h.state.cardState!.move!.deadline;h.send('hider',{type:'location',role:'hider',fix:{point:destination.point,at:deadline,accuracy:5}},deadline);expect(h.state.station!.id).toBe(destination.id);expect(scoreGame(h.state).pausedMs).toBe(20*60000);expect(scoreGame(h.state).totalMs).toBe(0);readGameState(h.state,f.env);
  });
 });
 describe('Casting costs and concurrent curse lifecycles',()=>{

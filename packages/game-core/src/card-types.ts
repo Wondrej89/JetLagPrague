@@ -1,4 +1,4 @@
-import type { Point, QuestionType, Role } from './types';
+import type { Fix, Point, QuestionType, Role } from './types';
 
 export type GameSize = 'small' | 'medium' | 'large';
 export type RollCondition = 'any' | 'even' | 'five_or_six';
@@ -47,7 +47,7 @@ export interface CurseEffect {
   expiresAt?: number; remainingQuestions?: number; selectedCategory?: QuestionType; startedAt?: number; submittedAt?: number; remainingSteps?: number;
 }
 export interface CurseSetup {animalCategory?:string;targetPoint?:Point;rockCount?:number;durationSeconds?:number;nextStopId?:string;questionIds?:string[];country?:string;secretWord?:string}
-export interface MoveProcess {hunterPoint?:Point;cardId:string;origin:{id:string;name:string;point:Point};startedAt:number;deadline:number;stage:'moving'|'needs_destination'|'completed';endedAt?:number;destinationId?:string;candidates?:{id:string;name:string;point:Point}[]}
+export interface MoveProcess {version?:2; epochId?:string; lastFix?:Fix; selectionFix?:Fix; selectedAt?:number; selectedStopId?:string; lockedAt?:number; completionFix?:Fix;hunterPoint?:Point;cardId:string;origin:{id:string;name:string;point:Point};startedAt:number;deadline:number;stage:'moving'|'needs_destination'|'completed';endedAt?:number;destinationId?:string;candidates?:{id:string;name:string;point:Point}[]}
 export interface CardRuntime {
   moveHistory:MoveProcess[];
   doors: {curseId:string;spaceId:string;rollId:string;passed:boolean;retryAt:number;at:number}[];

@@ -19,7 +19,7 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
     if(d.resolver==='same_area')return release.data.administrativeAreas.some(a=>a.kind===d.category)?{state:'ready',reason:'Přesné publikované administrativní hranice.'}:{state:'missing_data',reason:'Chybí publikované administrativní hranice.'};
     if(d.resolver==='tentacles'&&(!d.radiusMeters||!d.configured))return {state:'unsupported',reason:'Work in progress – není schválen dosah a varianta.'};
     if(d.resolver==='tentacles'&&d.category==='metro_line')return {state:'missing_data',reason:'Chybí publikovaná liniová geometrie metra; zastávky ji nenahrazují.'};
-    return release.data.pois.some(p=>p.category===d.category&&p.status==='approved')?{state:'ready',reason:d.resolver==='tentacles'?'Schválené publikované POI; u polygonů vzdálenost ke skutečné ploše.':d.category==='waterbody'?'Vzdálenost k polygonu vodní plochy.':'Vzdálenost k publikovanému referenčnímu bodu.'}:{state:'missing_data',reason:'Katalog neobsahuje schválené objekty této kategorie.'};
+    return release.data.pois.some(p=>p.category===d.category&&p.status==='approved')?{state:'ready',reason:d.resolver==='tentacles'?'Schválené publikované POI; u polygonů vzdálenost ke skutečné ploše.':d.category==='waterbody'||d.distanceMode==='geometry'?'Vzdálenost k publikované geometrii (Point nebo plocha polygonu).':'Vzdálenost k publikovanému referenčnímu bodu.'}:{state:'missing_data',reason:'Katalog neobsahuje schválené objekty této kategorie.'};
   }
   function resolve(q:QuestionInstance):Resolution{
     const d=q.definition,a=q.hunterFix.point,b=q.targetPoint,check=availability(d);
@@ -28,11 +28,11 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
     if(!containsGamePoint(a,release.data.gameArea.geometry)||!containsGamePoint(b,release.data.gameArea.geometry))return {state:'unknown',reason:'Rozhodná poloha leží mimo herní oblast.'};
     if(d.resolver==='radar'){const distance=distanceMeters(a,b);return {state:'known',answer:distance<=d.radiusMeters!+1e-6?'ANO':'NE',details:{...base,distanceMeters:distance,radiusMeters:d.radiusMeters!}};}
     if(d.resolver==='poi_matching'){
-      const result=matchingPois(a,b,d.category,release.data.pois);if(result.state==='unknown')return result;
+      const result=matchingPois(a,b,d.category,release.data.pois,d.distanceMode);if(result.state==='unknown')return result;
       return {state:'known',answer:result.matches?'ANO':'NE',details:{...base,hunterPoi:result.first.poi.id,targetPoi:result.second.poi.id,hunterDistance:result.first.distanceMeters,targetDistance:result.second.distanceMeters}};
     }
     if(d.resolver==='poi_measuring'){
-      const result=measuringPois(a,b,d.category,release.data.pois);if(result.state==='unknown')return result;
+      const result=measuringPois(a,b,d.category,release.data.pois,d.distanceMode);if(result.state==='unknown')return result;
       return {state:'known',answer:result.comparison==='equal'?'STEJNĚ':result.comparison==='second-closer'?'BLÍŽ':'DÁL',details:{...base,hunterPoi:result.first.poi.id,targetPoi:result.second.poi.id,hunterDistance:result.first.distanceMeters,targetDistance:result.second.distanceMeters}};
     }
     if(d.resolver==='same_area'){

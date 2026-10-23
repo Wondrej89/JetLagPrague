@@ -1,4 +1,5 @@
-import type { CardDefinition, Command, Curse, GameEnvironment, GameState, QuestionDefinition, QuestionInstance, Role } from './types';
+import {nextDeductionEpoch} from './deductions';
+import type { CardDefinition, Command, Curse, GameEnvironment, GameState, Fix, QuestionDefinition, QuestionInstance, Role } from './types';
 import type { CastingProof, CurseEffect, RollCondition } from './card-types';
 import { preparedEffects } from './curse-rules';
 import { cardDefinition, nextRandom, pendingQuestion, validFix } from './engine';
@@ -22,13 +23,14 @@ export function refreshCurse(c: Curse) {
   else if (active.some(e => e.expiresAt !== undefined)) c.state = 'timed';
   else c.state = 'ongoing';
 }
-function finishMove(s:GameState,stop:{id:string;name:string;point:[number,number]},endedAt:number){const m=s.cardState!.move!;s.station=structuredClone(stop);s.provisionalStopId=stop.id;m.stage='completed';m.destinationId=stop.id;m.endedAt=endedAt;event(s,'move_completed','Nové stanoviště bylo geograficky ověřeno a uzamčeno. Hledači mohou pokračovat.');event(s,'move_destination',`Nové stanoviště: ${stop.name}.`,'hider');}
+function finishMove(s:GameState,stop:{id:string;name:string;point:[number,number]},endedAt:number,completionFix?:Fix,lockedAt=s.now){const m=s.cardState!.move!;s.station=structuredClone(stop);s.provisionalStopId=stop.id;m.stage='completed';m.destinationId=stop.id;m.endedAt=endedAt;if(m.version===2){m.lockedAt=lockedAt;m.completionFix=structuredClone(completionFix??s.fixes.hider);}event(s,'move_completed','Nové stanoviště bylo geograficky ověřeno a uzamčeno. Hledači mohou pokračovat.');event(s,'move_destination',`Nové stanoviště: ${stop.name}.`,'hider');}
 export function updateCardTime(s: GameState,env:GameEnvironment) {
   const move=s.cardState?.move;
   if(move?.stage==='moving'&&s.now>=move.deadline){
-    const fix=s.fixes.hider;move.endedAt=move.deadline;
-    move.candidates=validFix(fix,s.now,s.rules)&&env.insideArea(fix.point)?env.stops.filter(stop=>stop.id!==move.origin.id&&env.distance(fix.point,stop.point)<=s.rules.radiusMeters):[];
-    if(move.candidates.length===1)finishMove(s,move.candidates[0],move.deadline);else{move.stage='needs_destination';event(s,'move_choice_required','Limit 20 minut přesunu skončil. Schovaný musí zvolit stanoviště způsobilé v rozhodný okamžik.','hider');}
+    const fix=move.version===2?move.lastFix:s.fixes.hider;move.endedAt=move.deadline;
+    move.candidates=validFix(fix,move.version===2?move.deadline:s.now,s.rules)&&env.insideArea(fix.point)?env.stops.filter(stop=>stop.id!==move.origin.id&&env.distance(fix.point,stop.point)<=s.rules.radiusMeters+1e-6):[];
+    const selected=move.candidates.find(stop=>stop.id===move.selectedStopId);
+    if(selected||move.candidates.length===1)finishMove(s,selected??move.candidates[0],move.deadline,fix,move.deadline);else{move.stage='needs_destination';event(s,'move_choice_required','Limit 20 minut přesunu skončil. Schovaný musí zvolit stanoviště způsobilé v rozhodný okamžik.','hider');}
   }
   for (const curse of s.curses) if (curse.effects && curse.state !== 'casting') {
     for (const e of curse.effects) if (e.state === 'active' && e.expiresAt !== undefined && s.now >= e.expiresAt) {
@@ -119,11 +121,13 @@ export function playNewPowerup(s: GameState, card: CardDefinition, command: Extr
     draw(s, 1); s.effects.push({ cardId: command.cardId, value: 1, at: s.now,lifetime:'game' });
   } else if (card.effect === 'move') {
     check(s.phase === 'seeking' && s.station, 'Move vyžaduje uzamčené stanoviště.');
+    check(!s.endgame, 'Move nelze zahrát během endgame.');
     check(card.mechanics?.move && card.mechanics.move.durationMs > 0, 'Move: chybí schválená doba a úplná pravidla přesunu.');
     check(validFix(s.fixes.hunter,s.now,s.rules),'Move vyžaduje aktuální přesnou GPS hledačů pro uzamčení jejich polohy.');
     discard(s,s.hand.filter(id=>id!==command.cardId));
     if(runtime.move)runtime.moveHistory.push(runtime.move);
-    runtime.move = {hunterPoint:[...s.fixes.hunter.point], cardId: command.cardId, origin: structuredClone(s.station), startedAt: s.now,
+    nextDeductionEpoch(s);
+    runtime.move = {epochId:s.epochId,...(s.rules.moveVersion===2?{version:2 as const,...(validFix(s.fixes.hider,s.now,s.rules)?{lastFix:structuredClone(s.fixes.hider)}:{})}:{}),hunterPoint:[...s.fixes.hunter.point], cardId: command.cardId, origin: structuredClone(s.station), startedAt: s.now,
       deadline: s.now + card.mechanics.move.durationMs, stage: 'moving' };
     event(s, 'move_started', `Move: dosavadní zastávka schovaného je ${s.station.name}. Hledači se po dobu přesunu (nejvýše 20 minut) nesmí pohybovat. Čas schovaného je pozastaven.`);
   }
@@ -273,11 +277,12 @@ export function cardCommand(s: GameState, c: Command, env: GameEnvironment, acto
     const curse=s.curses.find(x=>x.id===c.curseId),e=curse?.effects?.find(e=>e.id===c.effectId);
     check(e?.state==='active'&&e.spec.kind==='step_budget'&&c.confirmed&&Number.isInteger(c.count)&&c.count>0&&c.count<=(e.remainingSteps??0),'Počet kroků není povolen aktuálním hodem.');e.remainingSteps!-=c.count;event(s,'steps_reported',`Hráč ručně oznámil ${c.count} kroků; zbývá ${e.remainingSteps}.`);
   } else if (c.type === 'complete_move') {
-    const move=s.cardState.move;check(move&&move.stage!=='completed'&&c.confirmed===true,'Přesun není rozpracovaný nebo chybí potvrzení.');
+    const move=s.cardState.move;if(move?.stage==='completed'&&c.confirmed&&move.destinationId===c.stopId)return true;check(move&&move.stage!=='completed'&&c.confirmed===true,'Přesun není rozpracovaný nebo chybí potvrzení.');
     let stop=env.stops.find(x=>x.id===c.stopId);check(stop&&stop.id!==move.origin.id,'Vyberte jiné stanoviště.');
     if(move.stage==='needs_destination'){stop=move.candidates?.find(x=>x.id===c.stopId);check(stop,'Zastávka nebyla způsobilá při vypršení 20 minut. Bez spolehlivé polohy nelze cíl odhadnout.');}
-    else {const fix=s.fixes.hider;check(validFix(fix,s.now,s.rules)&&env.insideArea(fix.point)&&env.distance(fix.point,stop.point)<=s.rules.radiusMeters,'Cíl přesunu není ověřen přesnou aktuální GPS v povoleném okruhu.');}
-    finishMove(s,stop,move.endedAt??s.now);
+    else {const fix=s.fixes.hider;check(validFix(fix,s.now,s.rules)&&env.insideArea(fix.point)&&env.distance(fix.point,stop.point)<=s.rules.radiusMeters+1e-6,'Cíl přesunu není ověřen přesnou aktuální GPS v povoleném okruhu.');}
+    if(move.version===2 && move.stage==='moving'){move.selectedStopId=stop.id;move.selectionFix=structuredClone(s.fixes.hider);move.selectedAt=s.now;event(s,'move_selected','Nové stanoviště bylo předběžně potvrzeno; uzamkne se po uplynutí 20 minut.','hider');}
+    else {if(move.version===2){const fix=s.fixes.hider;check(validFix(fix,s.now,s.rules)&&env.insideArea(fix.point)&&env.distance(fix.point,stop.point)<=s.rules.radiusMeters+1e-6,'Potvrzení cíle vyžaduje aktuální GPS v povoleném 400m okruhu.');}finishMove(s,stop,move.endedAt??s.now,s.fixes.hider,s.now);}
   }
   return true;
 }

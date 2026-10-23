@@ -328,13 +328,13 @@ export function nearestApprovedPoi<T extends GeographicPoi>(point: Position, cat
   const ties = candidates.filter(p => p.distanceMeters - minimum <= POI_DISTANCE_TOLERANCE_METERS).sort((a, b) => a.poi.id < b.poi.id ? -1 : a.poi.id > b.poi.id ? 1 : 0);
   return { state: 'known', ...ties[0], tiedIds: ties.map(p => p.poi.id) };
 }
-export function matchingPois<T extends GeographicPoi>(a: Position, b: Position, category: string, pois: readonly T[]) {
-  const first = nearestApprovedPoi(a, category, pois), second = nearestApprovedPoi(b, category, pois);
+export function matchingPois<T extends GeographicPoi>(a: Position, b: Position, category: string, pois: readonly T[], mode: 'category' | 'geometry' = 'category') {
+  const first = nearestApprovedPoi(a, category, pois, mode), second = nearestApprovedPoi(b, category, pois, mode);
   if (first.state === 'unknown' || second.state === 'unknown') return { state: 'unknown' as const, reason: 'Nejbližší POI nelze určit.' };
   return { state: 'known' as const, matches: first.poi.id === second.poi.id, first, second };
 }
-export function measuringPois<T extends GeographicPoi>(a: Position, b: Position, category: string, pois: readonly T[]) {
-  const first = nearestApprovedPoi(a, category, pois), second = nearestApprovedPoi(b, category, pois);
+export function measuringPois<T extends GeographicPoi>(a: Position, b: Position, category: string, pois: readonly T[], mode: 'category' | 'geometry' = 'category') {
+  const first = nearestApprovedPoi(a, category, pois, mode), second = nearestApprovedPoi(b, category, pois, mode);
   if (first.state === 'unknown' || second.state === 'unknown') return { state: 'unknown' as const, reason: 'Vzdálenost k POI nelze určit.' };
   const deltaMeters = first.distanceMeters - second.distanceMeters;
   return { state: 'known' as const, first, second, deltaMeters, comparison: Math.abs(deltaMeters) <= POI_DISTANCE_TOLERANCE_METERS ? 'equal' as const : deltaMeters < 0 ? 'first-closer' as const : 'second-closer' as const };

@@ -10,9 +10,11 @@ export class LocalGameSession {
   dispatch(actor:Role|'clock',command:Command,at=this.state.now){const next=transition(this.state,{id:crypto.randomUUID(),at,actor,command},this.environment);this.save(next);this.state=next;this.listeners.forEach(fn=>fn());}
   transport(role:Role):GameTransport {let lastState:GameState|undefined,cached:RoleView;return {getView:()=>{if(lastState!==this.state){lastState=this.state;cached=viewForRole(this.state,role,this.environment);}return cached;},subscribe:listener=>{this.listeners.add(listener);return ()=>this.listeners.delete(listener);},send:async command=>{this.dispatch(role,command);}};}
   advance(ms:number){if(!Number.isFinite(ms)||ms<0)throw new Error('Neplatný posun času.');if(this.state.phase==='finished')return;const now=this.state.now+ms;
-    // Simulated providers continuously report the explicitly set positions. A
-    // missing fix stays missing. Browser GPS uses real timestamped measurements.
-    for(const role of ['hider','hunter'] as const){const fix=this.state.fixes[role];if(fix)this.dispatch(role,{type:'location',role,fix:{...fix,at:now}},now);}
-    this.dispatch('clock',{type:'tick'},now);
+    // This provider simulates continuous observations of explicitly set points.
+    // Split jumps at deadlines, so a +5 min step cannot pretend a late GPS fix
+    // existed at the earlier Move/hiding deadline. Real GPS is never interpolated.
+    const deadlines=[...(this.state.phase==='hiding'?[this.state.hideDeadline]:[]),...(this.state.cardState?.move?.stage==='moving'?[this.state.cardState.move.deadline]:[])];
+    const instants=[...new Set([...deadlines.filter(at=>at>this.state.now&&at<=now),now])].sort((a,b)=>a-b);
+    for(const at of instants){for(const role of ['hider','hunter'] as const){const fix=this.state.fixes[role];if(fix)this.dispatch(role,{type:'location',role,fix:{...fix,at},observation:true},at);}this.dispatch('clock',{type:'tick'},at);}
   }
 }

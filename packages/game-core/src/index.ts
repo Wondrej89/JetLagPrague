@@ -7,3 +7,5 @@ export * from './deck';
 export { activeCurse } from './card-effects';
 
 export * from './spatial-questions';
+
+export * from './deductions';
