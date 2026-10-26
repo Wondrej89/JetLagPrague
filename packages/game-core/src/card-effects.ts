@@ -176,6 +176,7 @@ function payCost(s: GameState, curse: Curse, proof: CastingProof, env: GameEnvir
   discard(s, ids);return noEffect;
 }
 function activate(s: GameState, curse: Curse, env:GameEnvironment, noEffect=false) {
+  curse.noEffect=noEffect;
   const specs=preparedEffects(s,cardDefinition(s,curse.cardId).id,curse.setup??{},env);
   curse.effects = specs.map((spec, i): CurseEffect => {
     const effect: CurseEffect = { id: `${curse.id}:effect:${i}`, spec: structuredClone(spec), state: spec.kind==='round_obligation'&&!spec.endsWithTask&&specs.some(e=>e.kind==='task')?'waiting_task':'active' };
@@ -236,7 +237,7 @@ export function cardCommand(s: GameState, c: Command, env: GameEnvironment, acto
       effect.state = effect.spec.approvalByHider?'awaiting_review':'fulfilled';effect.submittedAt=s.now; event(s, 'task_confirmed', `${curse.name}: úkol potvrdil hráč, bez automatického ověření obsahu.`);
     } else {
       check(effect.spec.kind === 'round_obligation', 'Tento efekt není průběžná povinnost.'); effect.state = 'failed';
-      s.cardState.penalties.push({ curseId: curse.id, seconds: effect.spec.penaltySeconds, at: s.now, verification: 'player_confirmed' });
+      s.cardState.penalties.push({ curseId: curse.id, effectId:effect.id, seconds: effect.spec.penaltySeconds, at: s.now, verification: 'player_confirmed' });
       event(s, 'curse_violated', `${curse.name}: hráč oznámil porušení povinnosti. ${effect.spec.penaltySeconds === null ? 'Výši penalizace nelze určit.' : `Penalizace ${effect.spec.penaltySeconds} s.`}`);
     }
     refreshCurse(curse);

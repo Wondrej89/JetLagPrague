@@ -15,3 +15,6 @@ export * from './hangman';
 export * from './indicators';
 
 export * from './location-view';
+
+export * from './match-types';
+export * from './match';

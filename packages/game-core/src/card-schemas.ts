@@ -31,6 +31,6 @@ export const runtimeSchema=z.object({
  doors:z.array(z.object({curseId:id,spaceId:id,rollId:id,passed:z.boolean(),retryAt:time,at:time}).strict()).max(10000),
  copies:z.array(z.object({instanceId:id,definitionId:id,sourceInstanceId:id,createdBy:id}).strict()).max(5000),
  rolls:z.array(z.object({id,at:time,actor:z.enum(['hider','hunter']),source:z.enum(['seeded_simulation','manual']),kind:z.enum(['dice','category']),values:z.array(z.number().int().min(1).max(6)).max(2),condition:z.enum(['any','even','five_or_six']),passed:z.boolean(),category:category.optional(),usedBy:id.optional()}).strict()).max(10000),
- penalties:z.array(z.object({curseId:id,seconds:z.number().nonnegative().nullable(),at:time,verification:z.literal('player_confirmed')}).strict()).max(5000),
+ penalties:z.array(z.object({curseId:id,effectId:id.optional(),seconds:z.number().nonnegative().nullable(),at:time,verification:z.literal('player_confirmed')}).strict()).max(5000),
  move:moveSchema.nullable(),
 }).strict();

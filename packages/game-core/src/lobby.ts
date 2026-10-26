@@ -1,10 +1,11 @@
+import {initializeMatch} from './match';
 import {createGame} from './engine';
 import type {Command,GameState,Role} from './types';
 /** A new party starts here. createGame retains the historical/scenario API. */
 export function createLobbyGame(options:Parameters<typeof createGame>[0]):GameState {
  if(options.mode==='live')throw new Error('Úvod ostré hry vyžaduje autorizovaný serverový transport.');
  const rules={...structuredClone(options.rules),uxVersion:1 as const,automaticDeductionMap:false};delete rules.deductionConsent;
- const s=createGame({...options,rules});s.phase='awaiting_map_consent';s.lobby={choices:{},ready:{hunter:false,hider:false}};s.events=[];s.sequence=0;return s;
+ const s=createGame({...options,rules});initializeMatch(s);s.phase='awaiting_map_consent';s.lobby={choices:{},ready:{hunter:false,hider:false}};s.events=[];s.sequence=0;return s;
 }
 export const awaitingStart=(s:Pick<GameState,'phase'>)=>s.phase==='awaiting_map_consent'||s.phase==='awaiting_ready';
 export function lobbyCommand(s:GameState,c:Command,actor:Role|'clock'):boolean {

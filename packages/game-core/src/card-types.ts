@@ -55,6 +55,6 @@ export interface CardRuntime {
   rolls: { id: string; at: number; actor: Role; source: 'seeded_simulation' | 'manual';
     kind: 'dice' | 'category'; values: number[]; condition: RollCondition; passed: boolean;
     category?: QuestionType; usedBy?: string }[];
-  penalties: { curseId: string; seconds: number | null; at: number; verification: 'player_confirmed' }[];
+  penalties: { curseId: string; effectId?:string; seconds: number | null; at: number; verification: 'player_confirmed' }[];
   move: MoveProcess | null;
 }

@@ -19,3 +19,26 @@
 
 .play-pin.gps-stale{border-style:dashed;box-shadow:0 0 0 3px #dfac51;background:#426c90}.hunter-location{border:1px solid #9bbfdd;background:#edf5fd;border-radius:12px;padding:12px;margin:12px 0}.hunter-location[data-location-status=stale],.hunter-location[data-location-status=inaccurate]{border-color:#d9b263;background:#fff6e5}.hunter-location p{font-size:12px;overflow-wrap:anywhere}.game-map-toolbar{flex-wrap:wrap;max-width:calc(100% - 78px)}.game-map-toolbar button{white-space:normal}
 .game-map-toolbar{pointer-events:none}.game-map-toolbar button{pointer-events:auto}
+
+/* One phone stays with its team across the two-round match. */
+.role-badge small { display: block; margin-top: 3px; font-size: 9px; font-weight: 500; }
+.role-badge { max-width: 58%; overflow-wrap: anywhere; text-align: right; }
+.team-name-form { margin: 14px 0 22px; padding-bottom: 16px; border-bottom: 1px solid var(--line, #d7dce3); }
+.found-button { margin-top: 16px; color: #fff; background: #283e32; border-color: #283e32; font-weight: 700; }
+.match-eyebrow { font-size: 12px; color: #626b68; overflow-wrap: anywhere; }
+.round-review h2, .round-results h2 { font-size: 24px; line-height: 1.2; }
+.round-review label { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0; }
+.round-review input[type=checkbox], .round-review input[type=radio] { width: auto; flex: 0 0 auto; margin-top: 3px; }
+.settlement-check { min-width: 0; margin: 20px 0; padding: 12px; border: 1px solid #bdc9c1; border-radius: 10px; }
+.settlement-check legend { font-weight: 700; }
+.settlement-check[disabled] { opacity: 1; }
+.round-score dl { margin: 18px 0; }
+.round-score dl > div { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; }
+.round-score dt { font-size: 13px; }
+.round-score dd { margin: 0; font-variant-numeric: tabular-nums; font-weight: 700; white-space: nowrap; }
+.round-score .score-total { margin-top: 8px; padding-top: 16px; border-top: 2px solid #283e32; }
+.score-total dd { font-size: 23px; }
+.match-comparison { width: 100%; border-collapse: collapse; font-size: 13px; }
+.match-comparison th, .match-comparison td { padding: 10px 4px; border-bottom: 1px solid #d7dce3; text-align: left; overflow-wrap: anywhere; }
+.match-comparison td { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.match-winner { padding: 16px; background: #e5efe7; border-radius: 10px; font-size: 19px; font-weight: 700; overflow-wrap: anywhere; }

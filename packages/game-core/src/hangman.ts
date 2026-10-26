@@ -70,27 +70,29 @@ export function publicHangman(h:HangmanState):HangmanState {
  const copy=structuredClone(h);delete copy.secretWord;for(const a of copy.history)delete a.secretWord;return copy;
 }
 export function validateHangman(s:GameState,c:Curse){
+ // Finding confirmation freezes game deadlines; a rejected claim resumes them.
+ const now=s.roundEnd&&s.roundEnd.status!=='rejected'?s.roundEnd.reportedAt:s.now;
  const h=c.hangman;if(!h)return;
  check(c.cardId.startsWith('curse-hidden-hangman@')&&h.curseId===c.id&&s.rules.hangmanVersion===1,'Neplatná identita Hangmana.');
  check(h.manualResponses===(s.rules.manualHangmanResponses??false),'Nekonzistentní režim Hangmana.');
  check(new Set(h.history.map(a=>a.id)).size===h.history.length,'Duplicitní pokus Hangmana.');
  let losses=0;for(const [i,a] of h.history.entries()){
-  check(a.secretWord&&isCzechWord(a.secretWord)&&a.secretWord===normalizeCzech(a.secretWord)&&a.startedAt>=c.activatedAt&&a.startedAt<=s.now,'Neplatné soukromé slovo nebo čas pokusu.');
+  check(a.secretWord&&isCzechWord(a.secretWord)&&a.secretWord===normalizeCzech(a.secretWord)&&a.startedAt>=c.activatedAt&&a.startedAt<=now,'Neplatné soukromé slovo nebo čas pokusu.');
   check(new Set(a.guesses.map(g=>g.letter)).size===a.guesses.length,'Opakovaný tip v auditu.');let previous=a.startedAt,wrong=0;const used:string[]=[];
-  for(const g of a.guesses){check(g.at>=previous&&g.at<=s.now&&[...g.letter].length===1&&alphabet.test(g.letter)&&g.correct===a.secretWord.includes(g.letter)&&wrong<7&&!([...a.secretWord].every(l=>used.includes(l))),'Neplatný audit tipů Hangmana.');previous=g.at;used.push(g.letter);if(!g.correct)wrong++;}
+  for(const g of a.guesses){check(g.at>=previous&&g.at<=now&&[...g.letter].length===1&&alphabet.test(g.letter)&&g.correct===a.secretWord.includes(g.letter)&&wrong<7&&!([...a.secretWord].every(l=>used.includes(l))),'Neplatný audit tipů Hangmana.');previous=g.at;used.push(g.letter);if(!g.correct)wrong++;}
   const won=[...a.secretWord].every(l=>used.includes(l));check(a.outcome===(won?'won':wrong===7?'lost':'playing'),'Nesouhlasí výsledek Hangmana.');
   if(a.outcome!=='playing')check(a.endedAt===previous,'Neplatný konec pokusu.');else check(a.endedAt===undefined&&i===h.history.length-1,'Neplatný rozpracovaný pokus.');
   if(a.outcome==='lost')losses++;
   if(i>0)check(h.history[i-1].outcome==='lost'&&a.startedAt>=h.history[i-1].endedAt!+600000,'Pokus obešel desetiminutové čekání.');
  }
  check(h.losses===losses,'Nesouhlasí počet proher.');const a=h.history.at(-1);
- if(h.state==='awaiting_word')check(!h.secretWord&&!h.guessedLetters.length&&!h.wrongGuesses&&h.revealed.every(l=>l==='')&&!h.pendingResponse&&(!a||a.outcome==='lost'&&s.now>=a.endedAt!+600000)&&h.losses<3,'Neplatné čekání na slovo.');
+ if(h.state==='awaiting_word')check(!h.secretWord&&!h.guessedLetters.length&&!h.wrongGuesses&&h.revealed.every(l=>l==='')&&!h.pendingResponse&&(!a||a.outcome==='lost'&&now>=a.endedAt!+600000)&&h.losses<3,'Neplatné čekání na slovo.');
  else if(!(h.state==='cancelled'&&h.resolution==='round_ended'&&!h.secretWord)) {check(a&&h.secretWord===a.secretWord&&JSON.stringify(h.guessedLetters)===JSON.stringify(a.guesses.map(g=>g.letter))&&h.wrongGuesses===a.guesses.filter(g=>!g.correct).length&&JSON.stringify(h.revealed)===JSON.stringify([...a.secretWord!].map(l=>h.guessedLetters.includes(l)?l:'')),'Nekonzistentní odhalená písmena.');}
  if(h.state==='guessing')check(a?.outcome==='playing'&&!h.cooldownUntil&&!h.resolution,'Neplatné hádání.');
- if(h.state==='cooldown')check(a?.outcome==='lost'&&h.cooldownUntil===a.endedAt!+600000&&s.now<h.cooldownUntil&&!h.pendingResponse,'Neplatný cooldown.');
+ if(h.state==='cooldown')check(a?.outcome==='lost'&&h.cooldownUntil===a.endedAt!+600000&&now<h.cooldownUntil&&!h.pendingResponse,'Neplatný cooldown.');
  if(h.state==='won')check(a?.outcome==='won'&&h.resolution==='guessed','Neplatná výhra.');
- if(h.state==='cancelled')check(h.resolution==='round_ended'&&s.phase==='finished'||h.resolution==='loss_limit'&&losses===3&&s.now>=a!.endedAt!+600000||h.resolution==='response_timeout'&&h.manualResponses&&h.responseTimeout&&h.responseTimeout.deadline===h.responseTimeout.guessedAt+30000&&s.now>=h.responseTimeout.deadline&&h.responseTimeout.guessedAt>=a!.startedAt&&!h.guessedLetters.includes(h.responseTimeout.letter),'Neplatné zrušení Hangmana.');
- if(h.pendingResponse)check(h.manualResponses&&h.state==='guessing'&&[...h.pendingResponse.letter].length===1&&alphabet.test(h.pendingResponse.letter)&&!h.guessedLetters.includes(h.pendingResponse.letter)&&h.pendingResponse.guessedAt>=a!.startedAt&&h.pendingResponse.guessedAt<=s.now&&h.pendingResponse.deadline===h.pendingResponse.guessedAt+30000&&s.now<h.pendingResponse.deadline,'Neplatná čekající reakce.');
+ if(h.state==='cancelled')check(h.resolution==='round_ended'&&s.phase==='finished'||h.resolution==='loss_limit'&&losses===3&&now>=a!.endedAt!+600000||h.resolution==='response_timeout'&&h.manualResponses&&h.responseTimeout&&h.responseTimeout.deadline===h.responseTimeout.guessedAt+30000&&now>=h.responseTimeout.deadline&&h.responseTimeout.guessedAt>=a!.startedAt&&!h.guessedLetters.includes(h.responseTimeout.letter),'Neplatné zrušení Hangmana.');
+ if(h.pendingResponse)check(h.manualResponses&&h.state==='guessing'&&[...h.pendingResponse.letter].length===1&&alphabet.test(h.pendingResponse.letter)&&!h.guessedLetters.includes(h.pendingResponse.letter)&&h.pendingResponse.guessedAt>=a!.startedAt&&h.pendingResponse.guessedAt<=now&&h.pendingResponse.deadline===h.pendingResponse.guessedAt+30000&&now<h.pendingResponse.deadline,'Neplatná čekající reakce.');
  if(h.responseTimeout)check(h.resolution==='response_timeout'&&[...h.responseTimeout.letter].length===1&&alphabet.test(h.responseTimeout.letter),'Neplatný audit vypršení reakce.');
  const done=h.state==='won'||h.state==='cancelled';
  check(c.state===(done?'fulfilled':'blocking')&&c.effects?.length===2&&c.effects[0].spec.kind==='task'&&c.effects[0].spec.blocksQuestions&&c.effects[0].state===(done?'fulfilled':'active')&&c.effects[1].spec.kind==='travel'&&c.effects[1].spec.preventBoarding===true&&c.effects[1].state===(done?'ended':'active'),'Neplatný životní cyklus účinků Hangmana.');
