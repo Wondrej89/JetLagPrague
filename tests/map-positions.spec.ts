@@ -56,3 +56,11 @@ test('the distance responds to both GPS observations and stays in the header acr
 test('a stale distance keeps its timestamp and fits a narrow phone without displaying GPS coordinates',async({page})=>{
  await page.setViewportSize({width:390,height:844});await create(page);await scenario(page,'different-hospital');const doc=await stored(page);doc.state.fixes.hunter!.at-=180000;doc.state.players.hider.name='W'.repeat(40);if(doc.state.match)doc.state.match.teams.find(t=>t.id===doc.state.match!.roleTeams.hider)!.name=doc.state.players.hider.name;await replaceStored(page,doc);await page.reload();await expect(phone(page)).toBeVisible({timeout:30000});await expect(phone(page).locator('.hunter-distance time')).toHaveAttribute('datetime',new Date(doc.state.fixes.hunter!.at).toISOString());await expect(phone(page)).not.toContainText(doc.state.fixes.hunter!.point[0].toFixed(6));await expect(phone(page).locator('.phone-team')).toHaveAttribute('title','W'.repeat(40));expect(await phone(page).evaluate(el=>el.scrollWidth<=el.clientWidth)).toBe(true);await phone(page).screenshot({path:'test-results/compact-seeking-mobile.png'});
 });
+
+test('resizing a phone and immediately leaving the map cancels delayed camera callbacks',async({page})=>{
+ const errors:string[]=[];page.on('pageerror',e=>errors.push(e.message));await create(page);await scenario(page,'different-hospital');const before=(await stored(page)).state;
+ // A real resize schedules Leaflet's debounced moveend. Leave the map in the
+ // same animation frame, before that 200ms callback is delivered.
+ await phone(page).evaluate(el=>new Promise<void>(resolve=>{el.closest<HTMLElement>('.phone-frame')!.style.height='720px';window.dispatchEvent(new Event('resize'));requestAnimationFrame(()=>{[...el.querySelectorAll<HTMLButtonElement>('.phone-nav button')].find(b=>b.textContent!.includes('Karty'))!.click();resolve();});}));
+ await expect(phone(page).locator('.phone-map')).toHaveCount(0);await page.waitForTimeout(300);expect(errors).toEqual([]);await phone(page).locator('.phone-nav button').filter({hasText:'Úkryt'}).click();await expect(map(page).locator('.play-map')).toBeVisible();await map(page).getByRole('button',{name:'Moje GPS',exact:true}).click();await expect.poll(()=>centerError(map(page),before.fixes.hider!.point)).toBeLessThan(1);expect((await stored(page)).state).toEqual(before);
+});

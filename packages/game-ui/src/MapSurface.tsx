@@ -15,7 +15,11 @@ export function MapSurface({markers,overlays,apiKey='',area,circle,center,focus,
  const container=useRef<HTMLDivElement>(null),map=useRef<L.Map|null>(null),items=useRef(new Map<string,L.Marker>()),dragging=useRef(new Set<string>()),latest=useRef({markers,onClick});latest.current={markers,onClick};
  useEffect(()=>{if(!container.current)return;const instance=L.map(container.current,{zoomControl:true,minZoom:MAPY_NATIVE_MIN_ZOOM,maxZoom:MAPY_NATIVE_MAX_ZOOM}).setView(initialCenter.current?[initialCenter.current[1],initialCenter.current[0]]:[50.08,14.43],initialCenter.current?14:12);map.current=instance;const camera=()=>{const c=instance.getCenter();container.current?.setAttribute('data-map-zoom',String(instance.getZoom()));container.current?.setAttribute('data-map-center',`${c.lng},${c.lat}`);};instance.on('zoomend moveend',camera);camera();L.control.scale({imperial:false}).addTo(instance);instance.on('click',(e:L.LeafletMouseEvent)=>latest.current.onClick?.([e.latlng.lng,e.latlng.lat]));
   const fit=new L.Control({position:'topright'});fit.onAdd=()=>{const button=L.DomUtil.create('button','play-fit-control');button.type='button';button.textContent='Zobrazit polohy';L.DomEvent.disableClickPropagation(button);button.onclick=()=>{const points=latest.current.markers.map(p=>L.latLng(p.point[1],p.point[0]));if(points.length)instance.fitBounds(L.latLngBounds(points),{padding:[28,28],maxZoom:15,animate:false});};return button;};fit.addTo(instance);
-  const markerItems=items.current,vectorItems=overlayItems.current;const resize=new ResizeObserver(()=>instance.invalidateSize());resize.observe(container.current);return()=>{resize.disconnect();markerItems.clear();vectorItems.clear();instance.remove();map.current=null;};
+  const markerItems=items.current,vectorItems=overlayItems.current;const resize=new ResizeObserver(()=>{if(map.current===instance)instance.invalidateSize();});resize.observe(container.current);return()=>{
+   // Leaflet can deliver a debounced moveend after remove(). Detached listeners
+   // must never read getCenter() on the destroyed map (its pane no longer exists).
+   map.current=null;resize.disconnect();instance.off('zoomend moveend',camera);markerItems.clear();vectorItems.clear();instance.remove();instance.off();
+  };
  },[]);
  useEffect(()=>{
   if(!map.current||!apiKey.trim())return;
