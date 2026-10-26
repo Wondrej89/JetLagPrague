@@ -13,3 +13,5 @@ export * from './deductions';
 export * from './lobby';
 export * from './hangman';
 export * from './indicators';
+
+export * from './location-view';

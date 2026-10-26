@@ -1,15 +1,17 @@
-import {useEffect,useMemo,useState} from 'react';
+import {useEffect,useMemo,useState,useRef} from 'react';
 import type {GameDataRelease} from '../../geo-core/src/index';
 import {publishedGameLayers} from '../../geo-resolver/src/catalog';
 import type {Point,RoleView,TargetPolicy} from '../../game-core/src/index';
-import {MapSurface,type MapOverlay} from './MapSurface';
+import {MapSurface,type MapOverlay,type MapFocus} from './MapSurface';
 import {useDeductionGeometry} from './use-deduction-geometry';
 
 const EMPTY_IDS:string[]=[];
 const EMPTY_DEDUCTIONS:import('../../game-core/src/index').Deduction[]=[];
 type MapProps=Parameters<typeof MapSurface>[0];
 export function GameMap({release,view,storageKey,...mapProps}:MapProps&{release?:GameDataRelease;view?:RoleView;storageKey?:string}){
- const [panel,setPanel]=useState<'layers'|'deductions'|null>(null),[search,setSearch]=useState(''),[selected,setSelected]=useState(''),[focus,setFocus]=useState<Point>();
+ const [panel,setPanel]=useState<'layers'|'deductions'|null>(null),[search,setSearch]=useState(''),[selected,setSelected]=useState(''),[focus,setFocus]=useState<MapFocus>();
+ const focusSequence=useRef(0),moveCamera=(point:Point)=>setFocus({point,requestId:++focusSequence.current});
+ useEffect(()=>{if(mapProps.focus)setFocus(mapProps.focus);},[mapProps.focus]);
  const [settings,setSettings]=useState(()=>{try{return JSON.parse(localStorage.getItem(storageKey??'jetlag-public-map')??'{}') as {visible?:string[];fill?:boolean;borders?:boolean;target?:TargetPolicy;gpsQuestionId?:string;possible?:boolean;excluded?:boolean};}catch{return {};}});
  const [individual,setIndividual]=useState<{epoch?:string;ids:string[]}>({ids:[]});
  const layers=useMemo(()=>release?publishedGameLayers(release):[],[release]);
@@ -41,8 +43,8 @@ export function GameMap({release,view,storageKey,...mapProps}:MapProps&{release?
  const matches=search?layers.flatMap(layer=>layer.features.filter(f=>String(f.properties?.name).toLocaleLowerCase('cs').includes(query)||String(f.id).toLocaleLowerCase('cs').includes(query)).map(feature=>({layer,feature}))).slice(0,25):[];
  const markers=[...mapProps.markers];for(const revealed of view?.revealedStations??[])if(!markers.some(m=>m.id==='revealed-'+revealed.id))markers.push({id:'revealed-'+revealed.id,role:'station',label:`Odhalené původní stanoviště: ${revealed.name}`,point:revealed.point});for(const d of deductions.filter(d=>d.sourceType==='thermometer'&&(d.status==='active'&&d.geometryTarget===target||ids.includes(d.id)))){markers.push({id:d.id+'-a',role:'measurement-a',label:'Thermometer A · uložené měření',point:d.parameters.hunterPoint});if(d.parameters.secondPoint)markers.push({id:d.id+'-b',role:'measurement-b',label:'Thermometer B · uložené měření',point:d.parameters.secondPoint});}
  return <div className="game-map-tools" data-testid="game-map-tools" data-deduction-state={geometry.loading?'loading':geometry.error?'error':geometry.combined?'ready':'none'} data-deduction-count={geometry.combined?.deductionIds.length??0} data-possible-empty={geometry.combined?.possible===null?'true':'false'}>
-  <MapSurface {...mapProps} markers={markers} center={focus??mapProps.center} overlays={overlays}/>
-  <div className="game-map-toolbar"><button aria-expanded={panel==='layers'} onClick={()=>setPanel(panel==='layers'?null:'layers')}>Vrstvy</button>{view?.role!=='hider'&&<button aria-expanded={panel==='deductions'} onClick={()=>setPanel(panel==='deductions'?null:'deductions')}>Dedukce</button>}</div>
+  <MapSurface {...mapProps} markers={markers} focus={focus} overlays={overlays}/>
+  <div className="game-map-toolbar">{view&&<button disabled={!view.ownFix} onClick={()=>{if(view.ownFix)moveCamera(view.ownFix.point);}}>Moje GPS</button>}{view?.role==='hider'&&<button disabled={!view.hunterLocation?.fix} onClick={()=>{if(view.hunterLocation?.fix)moveCamera(view.hunterLocation.fix.point);}}>Zobrazit hledače</button>}<button aria-expanded={panel==='layers'} onClick={()=>setPanel(panel==='layers'?null:'layers')}>Vrstvy</button>{view?.role!=='hider'&&<button aria-expanded={panel==='deductions'} onClick={()=>setPanel(panel==='deductions'?null:'deductions')}>Dedukce</button>}</div>
   {geometry.loading&&<p className="deduction-status" role="status">Počítám dedukční oblasti…</p>}
   {geometry.error&&<p className="deduction-status error" role="alert">{geometry.error} Výsledek nelze určit.</p>}
   {panel&&<section className="game-map-panel" aria-label={panel==='layers'?'Vrstvy mapy':'Dedukční mapa'}>
@@ -52,7 +54,7 @@ export function GameMap({release,view,storageKey,...mapProps}:MapProps&{release?
     <label><input type="checkbox" checked={settings.fill!==false} onChange={e=>setSettings(s=>({...s,fill:e.target.checked}))}/>Výplň polygonů</label><label><input type="checkbox" checked={settings.borders!==false} onChange={e=>setSettings(s=>({...s,borders:e.target.checked}))}/>Hranice polygonů</label>
     {layers.map(layer=><div className="game-layer-row" key={layer.id}><label><input type="checkbox" checked={visible.includes(layer.id)} disabled={layer.state==='missing'} onChange={()=>toggleLayer(layer.id)}/><span style={{color:layer.color}}>{layer.icon}</span> {layer.label} <b>{layer.features.length}</b></label><small>{layer.note}</small></div>)}
     <label>Hledat objekt v publikovaném katalogu<input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Název nebo ID"/></label>
-    {matches.map(({layer,feature})=><button className="map-search-result" key={String(feature.id)} onClick={()=>{setSelected(layer.id+'|'+String(feature.id));setSettings(s=>({...s,visible:[...new Set([...visible,layer.id])]}));if(Array.isArray(feature.properties?.point))setFocus(feature.properties.point as Point);setPanel(null);}}>{feature.properties?.name} · {layer.label}</button>)}
+    {matches.map(({layer,feature})=><button className="map-search-result" key={String(feature.id)} onClick={()=>{setSelected(layer.id+'|'+String(feature.id));setSettings(s=>({...s,visible:[...new Set([...visible,layer.id])]}));if(Array.isArray(feature.properties?.point))moveCamera(feature.properties.point as Point);setPanel(null);}}>{feature.properties?.name} · {layer.label}</button>)}
    </>:<>
     <p>{view?.questions.length??0} otázek · {deductions.filter(d=>d.status==='active').length} aktivních dedukcí</p>
     <p>{view?.automaticDeductionMap?'Automatické zakreslování odsouhlasené oběma rolemi.':'Automatické zakreslování je vypnuté. Historie i veřejné vrstvy zůstávají dostupné.'}</p>
@@ -64,7 +66,7 @@ export function GameMap({release,view,storageKey,...mapProps}:MapProps&{release?
     <p>Neutrální plocha znamená nejistotu, nikoli vyloučení. Zobrazení používá buňky 64 m a konzervativní vzdálenostní meze s rezervou 2 m; nejde o přesnou matematickou hranici.</p>
     {!!geometry.combined?.metricErrorMeters&&<p>Další rezerva geometrické metriky: {geometry.combined.metricErrorMeters.toFixed(2)} m. Nejisté hranice zůstávají neutrální.</p>}
     {geometry.combined?.limited&&<p role="status">Dosažen výpočetní limit; nevyhodnocené buňky zůstaly neutrální.</p>}
-    {[...deductions].reverse().map(d=><article className={`deduction-row ${d.status}`} key={d.id}><label><input type="checkbox" checked={ids.includes(d.id)} onChange={e=>{setIndividual({epoch:view?.epochId,ids:e.target.checked?[...ids,d.id]:ids.filter(id=>id!==d.id)});if(e.target.checked)setFocus(d.parameters.hunterPoint);}}/>{d.sourceType} · {view?.questions.find(q=>q.id===d.questionId)?.definition.label??d.parameters.category} · {d.result}</label><small>{layers.find(layer=>layer.id===d.parameters.category)?.label??(d.parameters.category==='distance'?'Vzdálenost':d.parameters.category)}{d.parameters.radiusMeters?` · ${d.parameters.radiusMeters} m`:d.parameters.minMoveMeters?` · přesun ${d.parameters.minMoveMeters} m`:''} · {d.geometryTarget==='station'?'stanoviště':'GPS'} · {new Date(d.createdAt).toLocaleString('cs-CZ')} · {d.status==='active'?'aktivní':'archivováno po Move'}</small></article>)}
+    {[...deductions].reverse().map(d=><article className={`deduction-row ${d.status}`} key={d.id}><label><input type="checkbox" checked={ids.includes(d.id)} onChange={e=>{setIndividual({epoch:view?.epochId,ids:e.target.checked?[...ids,d.id]:ids.filter(id=>id!==d.id)});if(e.target.checked)moveCamera(d.parameters.hunterPoint);}}/>{d.sourceType} · {view?.questions.find(q=>q.id===d.questionId)?.definition.label??d.parameters.category} · {d.result}</label><small>{layers.find(layer=>layer.id===d.parameters.category)?.label??(d.parameters.category==='distance'?'Vzdálenost':d.parameters.category)}{d.parameters.radiusMeters?` · ${d.parameters.radiusMeters} m`:d.parameters.minMoveMeters?` · přesun ${d.parameters.minMoveMeters} m`:''} · {d.geometryTarget==='station'?'stanoviště':'GPS'} · {new Date(d.createdAt).toLocaleString('cs-CZ')} · {d.status==='active'?'aktivní':'archivováno po Move'}</small></article>)}
     {view?.questions.filter(q=>q.state==='answered'&&!deductions.some(d=>d.questionId===q.id)).map(q=><p key={q.id}>{q.definition.label}: {q.answer} · bez automatického prostorového zakreslení</p>)}
     <p>Přepínače mění pouze zobrazení. Platnost uložených odpovědí ani průnik všech aktivních podmínek se nemění.</p>
    </>}

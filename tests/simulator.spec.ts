@@ -1,7 +1,6 @@
 import {expect,test,type Page} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 import type {SavedSimulation} from '../apps/simulator/src/storage';
-import {atlasTiles} from '../apps/simulator/src/basemap';
 // Exercise the actual minified Pages app, not a separate development-only entry.
 const base='http://127.0.0.1:4175/JetLagPrague/simulator/';
 async function stored(page:Page):Promise<SavedSimulation>{return page.evaluate(()=>new Promise((resolve,reject)=>{const r=indexedDB.open('jetlag-praha:simulator:v1',1);r.onsuccess=()=>{const db=r.result,tx=db.transaction('games','readonly'),get=tx.objectStore('games').get('current');get.onsuccess=()=>{db.close();resolve(get.result);};tx.onerror=()=>reject(tx.error);};r.onerror=()=>reject(r.error);}));}
@@ -67,7 +66,7 @@ test('Pages sandbox je oddělený mezi prohlížeči a nedotkne se editorového 
  expect(await page.evaluate(()=>localStorage.getItem('jetlag-praha:world:v1'))).toBe('EDITOR_UNCHANGED');expect(await page.evaluate(()=>new Promise(resolve=>{const r=indexedDB.open('jetlag-praha-editor',1);r.onsuccess=()=>{const db=r.result,get=db.transaction('drafts').objectStore('drafts').get('world');get.onsuccess=()=>{db.close();resolve(get.result);};};}))).toEqual({sentinel:'EDITOR_UNCHANGED'});
 });
 
-test('produkční sandbox nikam neodesílá GPS, fotografie, ruku ani diagnostiku; mapa žádá pouze pevný veřejný atlas',async({page})=>{
+test('produkční sandbox neposílá soukromý herní stav; Mapy.com načítají dynamické dlaždice podle kamery',async({page})=>{
  const network:{url:string;method:string;body:string|null;headers:Record<string,string>}[]=[],sockets:string[]=[],errors:string[]=[];
  page.on('request',r=>{if(/^https?:/.test(r.url()))network.push({url:r.url(),method:r.method(),body:r.postData(),headers:r.headers()});});page.on('websocket',socket=>sockets.push(socket.url()));page.on('pageerror',e=>errors.push(e.message));
  await page.addInitScript(()=>{
@@ -77,10 +76,10 @@ test('produkční sandbox nikam neodesílá GPS, fotografie, ruku ani diagnostik
   const open=indexedDB.open.bind(indexedDB);indexedDB.open=(...args:Parameters<IDBFactory['open']>)=>{if(args[0]!=='jetlag-praha:simulator:v1')throw new Error('Foreign database');return open(...args);};
  });
  const png=Buffer.from(await page.evaluate(()=>{const c=document.createElement('canvas');c.width=4;c.height=4;c.getContext('2d')!.fillRect(0,0,4,4);return c.toDataURL('image/png').split(',')[1];}),'base64');
- await page.route('https://api.mapy.com/**',r=>r.fulfill({contentType:r.request().url().includes('logo.svg')?'image/svg+xml':'image/png',body:r.request().url().includes('logo.svg')?'<svg xmlns="http://www.w3.org/2000/svg"/>':png}));
+ await page.route('https://api.mapy.com/**',r=>r.fulfill({contentType:r.request().url().includes('logo.svg')?'image/svg+xml':'image/png',headers:{'Access-Control-Allow-Origin':'*'},body:r.request().url().includes('logo.svg')?'<svg xmlns="http://www.w3.org/2000/svg"/>':png}));
  await page.goto(base);await ready(page);await expect(page.getByTestId('basemap-status')).not.toContainText('Načítám',{timeout:30000});
  const tileRequests=()=>network.filter(item=>new URL(item.url).pathname.startsWith('/v1/maptiles/')).map(item=>new URL(item.url).pathname);
- const initialTiles=tileRequests();if(initialTiles.length)expect([...initialTiles].sort()).toEqual(atlasTiles().map(id=>'/v1/maptiles/basic/256/'+id).sort());
+ const initialTiles=tileRequests();expect(initialTiles.every(path=>/^\/v1\/maptiles\/basic\/256(?:@2x)?\/\d+\/\d+\/\d+$/.test(path))).toBe(true);
  await expect(page.getByText('Testovací simulace – nejde o skutečnou multiplayerovou hru',{exact:true})).toBeVisible();await expect(page.getByRole('link',{name:/Přihlásit|Publikovat/})).toHaveCount(0);
  await scenario(page,'reward');await tab(page,'hider','Karty');await hider(page).locator('.offered-card').first().click();
  await page.getByLabel('Longitude hunter',{exact:true}).fill('14.555123456');await page.getByLabel('Latitude hunter',{exact:true}).fill('50.12223456');await page.getByRole('button',{name:'Nastavit GPS hledačů',exact:true}).click();
@@ -89,11 +88,10 @@ test('produkční sandbox nikam neodesílá GPS, fotografie, ruku ani diagnostik
  const photo=await page.evaluate(()=>{const c=document.createElement('canvas');c.width=4;c.height=4;c.getContext('2d')!.fillRect(0,0,4,4);return c.toDataURL('image/png').split(',')[1];});
  await hider(page).getByLabel('Připojit fotografii').setInputFiles({name:'PRIVATE_PHOTO_CANARY.png',mimeType:'image/png',buffer:Buffer.from(photo,'base64')});await expect(hider(page).getByAltText('Fotografie od schovaného')).toBeVisible();await hider(page).getByRole('button',{name:'Odeslat fotografii'}).click();await expect(hunter(page).getByAltText('Fotografie od schovaného')).toBeVisible();
  const before=await stored(page),download=page.waitForEvent('download');await page.getByRole('button',{name:'Uložit scénář',exact:true}).click();const exported=JSON.parse(await readFile((await (await download).path())!,'utf8'));expect(exported.state.hand).toEqual(before.state.hand);expect(Object.keys(exported.photos)).toHaveLength(1);
- expect(tileRequests()).toEqual(initialTiles); // No viewport-dependent fetches.
+ // Camera changes legitimately request different public tiles; game state is never a request payload.
  await page.reload();await ready(page);await expect.poll(async()=>(await stored(page)).state.questions.at(-1)?.photoId).toBe(before.state.questions.at(-1)?.photoId);expect((await stored(page)).state.hand).toEqual(before.state.hand);
- const allowedTiles=new Set(atlasTiles().map(id=>'/v1/maptiles/basic/256/'+id));
  for(const item of network){expect(item.method).toBe('GET');expect(item.body).toBeNull();const url=new URL(item.url);
-  if(url.origin==='https://api.mapy.com'){expect(url.pathname==='/img/api/logo.svg'||allowedTiles.has(url.pathname)).toBe(true);expect([...url.searchParams.keys()].every(k=>k==='apikey')).toBe(true);}
+  if(url.origin==='https://api.mapy.com'){expect(url.pathname==='/img/api/logo.svg'||/^\/v1\/maptiles\/basic\/256(?:@2x)?\/(?:[0-9]|1[0-9]|20)\/\d+\/\d+$/.test(url.pathname)).toBe(true);expect([...url.searchParams.keys()].every(k=>k==='apikey')).toBe(true);}
   else{expect(url.origin).toBe(new URL(base).origin);expect(/^\/JetLagPrague\/(?:simulator\/(?:$|assets\/[\w.-]+)|releases\/(?:current\.json|release-[a-f0-9]{64}\.json))$/.test(url.pathname)).toBe(true);expect(url.search).toBe('');}
  }
  expect(JSON.stringify(network)).not.toMatch(/14\.555123456|50\.12223456|PRIVATE_PHOTO_CANARY|photo:|data:image|Authorization/);expect(sockets).toEqual([]);expect(errors).toEqual([]);
@@ -130,7 +128,7 @@ test('fotografická cena a úkol Zoologist přežijí reload; splnění ověřuj
 
 test('Move v telefonech odhalí jen dosavadní zastávku, zastaví hledače a nezapočítá čas přesunu',async({page})=>{
  const {gameFixture}=await import('../packages/game-core/src/test-fixtures');const fixture=await gameFixture();await page.goto(base);await ready(page);await scenario(page,'power-move');const before=(await stored(page)).state,origin=before.station!,destination=fixture.env.stops.find(s=>fixture.env.distance(s.point,origin.point)>1000)!;
- await expect(hunter(page).getByRole('status')).toContainText(origin.name);expect(before.hand).toEqual([]);await page.getByLabel('Longitude hunter',{exact:true}).fill(String(destination.point[0]));await page.getByRole('button',{name:'Nastavit GPS hledačů',exact:true}).click();await expect(page.locator('.sim-error')).toContainText('nesmí pohybovat');expect((await stored(page)).state.fixes.hunter!.point).toEqual(before.fixes.hunter!.point);
+ await expect(hunter(page).locator('[data-indicator=move]')).toContainText(origin.name);expect(before.hand).toEqual([]);await page.getByLabel('Longitude hunter',{exact:true}).fill(String(destination.point[0]));await page.getByRole('button',{name:'Nastavit GPS hledačů',exact:true}).click();await expect(page.locator('.sim-error')).toContainText('nesmí pohybovat');expect((await stored(page)).state.fixes.hunter!.point).toEqual(before.fixes.hunter!.point);
  await page.getByRole('button',{name:'+5 minut',exact:true}).click();await page.getByLabel('Longitude hider',{exact:true}).fill(String(destination.point[0]));await page.getByLabel('Latitude hider',{exact:true}).fill(String(destination.point[1]));await page.getByRole('button',{name:'Nastavit GPS schovaného',exact:true}).click();await tab(page,'hider','Karty');await hider(page).getByLabel('Cíl Move').selectOption(destination.id);await hider(page).getByRole('button',{name:'Potvrdit cíl přesunu a ověřit GPS'}).click();await expect.poll(async()=>(await stored(page)).state.cardState!.move!.stage).toBe('moving');expect((await stored(page)).state.station!.id).toBe(origin.id);for(let i=0;i<3;i++)await page.getByRole('button',{name:'+5 minut',exact:true}).click();await expect.poll(async()=>(await stored(page)).state.cardState!.move!.stage).toBe('completed');expect((await stored(page)).state.cardState!.move!.endedAt!-before.now).toBe(20*60000);await page.reload();await ready(page);expect((await stored(page)).state.station!.id).toBe(destination.id);
 });
 

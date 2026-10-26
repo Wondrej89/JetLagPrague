@@ -30,7 +30,7 @@ Při importu/reloadu se kontroluje vazba dedukcí na původní otázky, odpověd
 
 Hunter DTO neobsahuje skrytou GPS, cílový bod otázky, novou zastávku Move, průběžnou GPS přesunu, ruku ani soukromé fotografie. Schovanému se neposílají nové dedukční parametry s historickými polohami hledačů. Správcovská mapa simulátoru má jako dosud úplné místní diagnostické polohy, mimo telefony.
 
-Worker dostane pouze veřejný katalog a sanitizované dedukce. Žádná skrytá poloha se nepoužívá k zakreslení oblasti hledačům. Výpočet ani historie se neodesílají na server. Pevný atlas Mapy.com zůstává stejný; pohyb simulovaných hráčů nevyvolává nové mapové požadavky podle jejich soukromé polohy.
+Worker dostane pouze veřejný katalog a sanitizované dedukce. Žádná skrytá poloha se nepoužívá k zakreslení oblasti hledačům. Výpočet ani historie se neodesílají na server. Podklad používá přímé dynamické Mapy.com dlaždice podle výřezu a zoomu. Schovaný dostává aktuální GPS hledačů v odděleném rolovém poli; jeho vlastní poloha se hledačům nepředává. [Mapy a rolové GPS](MAPS_AND_ROLE_GPS.md).
 
 ## Prostorové podmínky
 

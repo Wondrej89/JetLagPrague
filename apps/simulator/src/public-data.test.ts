@@ -1,6 +1,5 @@
 import {describe,it,expect,vi} from 'vitest';
 import {publicReleaseFetch,releaseBase} from './public-data';
-import {atlasTiles,ATLAS_ZOOM,loadBasemap} from './basemap';
 
 describe('read-only browser sandbox',()=>{
  it('resolves the public catalog on Pages and on the local dev server',()=>{
@@ -17,15 +16,5 @@ describe('read-only browser sandbox',()=>{
   await expect(get(new URL('current.json',base),{method:'POST'})).rejects.toThrow('pouze číst');
   await expect(get(new Request(new URL('current.json',base),{method:'POST'}))).rejects.toThrow('pouze číst');
   expect(fetcher).toHaveBeenCalledTimes(1);
- });
- it('loads the same finite Prague atlas once for all maps; no player coordinates enter tile URLs',async()=>{
-  const ids=atlasTiles();expect(new Set(ids).size).toBe(ids.length);expect(ids.length).toBeGreaterThan(50);expect(ids.length).toBeLessThan(200);expect(ids.every(id=>id.startsWith(`${ATLAS_ZOOM}/`))).toBe(true);
-  const fetcher=vi.fn<typeof fetch>().mockImplementation(async()=>new Response(new Blob(['image'],{type:'image/png'})));vi.stubGlobal('fetch',fetcher);
-  try{
-   const first=await loadBasemap('public-client-key'),second=await loadBasemap('public-client-key');expect(first).toBe(second);expect(first.missing).toBe(0);expect(first.basemap.tiles.size).toBe(ids.length);expect(fetcher).toHaveBeenCalledTimes(ids.length);
-   expect(fetcher.mock.calls.map(([url])=>String(url))).toEqual(ids.map(id=>`https://api.mapy.com/v1/maptiles/basic/256/${id}?apikey=public-client-key`));
-   expect(fetcher.mock.calls.every(([,options])=>options?.method==='GET'&&options?.credentials==='omit'&&!options?.body)).toBe(true);
-   first.basemap.tiles.forEach(url=>URL.revokeObjectURL(url));
-  }finally{vi.unstubAllGlobals();}
  });
 });

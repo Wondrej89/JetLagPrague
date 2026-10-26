@@ -106,6 +106,8 @@ export interface GameEnvironment {
   namedWaterDistance?(point: Point): { state: 'known'; meters: number } | { state: 'unknown'; reason: string };
 }
 export interface RoleView {
+  /** Supplied only to the hider, through the role-filtered transport. */
+  hunterLocation?: import('./location-view').SharedLocation;
   hangmanVersion?:1; lobby?: GameState['lobby']; indicators?: import('./indicators').GameIndicator[];
   wallElapsedMs?: number; pausedMs?: number; bonusMs?: number; penaltyMs?: number;
   acknowledgedNotices?: string[];
