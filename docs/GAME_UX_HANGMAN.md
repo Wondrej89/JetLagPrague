@@ -23,7 +23,7 @@ Administrátorské testovací scénáře smějí nastavit dokumentované simulov
 
 ## Čas
 
-Oba telefony ukazují **Celkový čas hry: HH:MM:SS**, před oboustrannou připraveností nulu. Během schovávání navíc souběžně běží **Čas na výběr stanoviště: MM:SS**. Celkový čas se při uzamčení stanoviště ani uplynutí 45 minut neresetuje: 45 + 30 minut je **01:15:00**.
+Oba telefony ukazují celkový čas hry v kompaktní horní liště jako **Čas HH:MM:SS**, před oboustrannou připraveností nulu. Během schovávání navíc souběžně běží **Schovávání MM:SS**. Celkový čas se při uzamčení stanoviště ani uplynutí 45 minut neresetuje: 45 + 30 minut je **01:15:00**.
 
 Autoritativní čas a role DTO oddělují skutečný interval od startu (`wallElapsedMs`), započítávaný čas (`elapsedMs`), pauzy Move (`pausedMs`), bonusy (`bonusMs`), penalizace (`penaltyMs`) a jednotlivé termíny úkolů. Bonusy se do hlavních hodin nepřičítají; uplatní se ve výsledku. Move zachovává celý dvacetiminutový odpočet i předchozí pravidla uzamčení a obnovy času.
 

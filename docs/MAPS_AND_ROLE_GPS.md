@@ -19,7 +19,7 @@ Mapy.com nyní vidí požadavky podle výřezu a zoomu. Z polohy požadovaných 
 `RoleView.hunterLocation` je určeno **pouze schovanému**. `viewForRole()` ho odvozuje z aktuálního pozorování hledačů a konfigurace GPS. Obsahuje `fix` (bod, původní čas, přesnost), `status` a vysvětlení. Phone ani mapové komponenty nečtou administrátorský `GameState`.
 
 - `current`: platná aktuální poloha; modrá značka H.
-- `stale`: skutečná poslední známá poloha, označená jako neaktuální; původní čas i přesnost zůstávají viditelné.
+- `stale`: skutečná poslední známá poloha, označená jako neaktuální; původní čas zůstává viditelný, přesnost je zachovaná v rolových datech.
 - `inaccurate`: pozorovaný bod s výslovným upozorněním na nepřesnost.
 - `unavailable`: GPS není dostupná, žádná náhradní značka se nevytváří.
 - `invalid`: neplatné souřadnice, čas nebo přesnost; bod se nepředává k zobrazení.
@@ -28,12 +28,20 @@ Hranice stáří a přesnosti se přebírají z uložených pravidel konkrétní
 
 Přesun GPS hledačů formulářem nebo tažením v simulátoru aktualizuje sdílený stav a oba odpovídající role pohledy. Během Move platí původní zákaz simulovaného pohybu. Výslovně zapnutá diagnostická pozorování skutečného posunu se dál auditují; schovaný vidí zaznamenanou polohu, pravidla tím nejsou zrušena. V budoucím multiplayeru musí rolové pohledy poskytovat autorizovaný server; místní transport zůstává simulátorem.
 
+## Rozhraní telefonu
+
+Horní lišta nemá aplikační logo. Dva krátké řádky obsahují jméno týmu, roli a kolo, hlavní čas hry a při schovávání souběžný odpočet. Při schovávání zabírá přibližně 60 px i na úzkém telefonu. Mapa využívá většinu zbývající výšky; informace o stanovišti a herní akce jsou dostupné posunutím obsahu pod mapu. Důležitá upozornění a příchozí otázky zůstávají zachované. Logo a atribuce poskytovatele Mapy.com zůstávají na mapě.
+
+Během přípravy, schovávání a čekání na stanoviště se v telefonu nezobrazuje poloha hledačů, jejich značka ani tlačítko pro její centrování. Od fáze hledání má schovaný pod časovačem stručné **Hledači jsou X m daleko**. Vzdálenost se počítá geograficky mezi jeho vlastní GPS a rolově předanou GPS hledačů, nikoliv od uzamčené zastávky. Souřadnice hráčů se v telefonních panelech nevypisují; diagnostika správce a souřadnice veřejných POI zůstávají dostupné.
+
+U staré polohy se text změní na **Hledači naposledy X m daleko**, doplněný původním datem a časem pozorování. Nepřesná GPS je označená a má rovněž timestamp. Bez polohy hledačů nebo bez spolehlivé vlastní GPS se vzdálenost neodhaduje; zobrazí se důvod nedostupnosti. Zastávka ani nula nenahrazují chybějící měření. Informace zůstává v horní liště také při otevření karet nebo otázek. Vlastní a sdílené GPS, herní časování a pravidla způsobilosti se touto změnou nemění.
+
 ## Kamera
 
-Na mapě telefonu je **Moje GPS**. Schovaný má také **Zobrazit hledače**, které centruje poslední známý dostupný bod. Při chybějící poloze je tlačítko zakázané. Tlačítka fungují opakovaně i po ručním posunutí mapy. Posun značek zachovává úroveň přiblížení; tlačítka, veřejné POI, dedukční vrstvy a dosavadní mapové interakce používají společnou mapovou komponentu. Nastavení kamery není herní příkaz.
+Na mapě telefonu je **Moje GPS**. Schovaný má během hledání také **Zobrazit hledače**, které centruje poslední známý dostupný bod. Při chybějící poloze je tlačítko zakázané. Tlačítka fungují opakovaně i po ručním posunutí mapy. Posun značek zachovává úroveň přiblížení; tlačítka, veřejné POI, dedukční vrstvy a dosavadní mapové interakce používají společnou mapovou komponentu. Nastavení kamery není herní příkaz.
 
 ## Ověření
 
-Jednotkové testy ověřují rolovou izolaci, aktuální a poslední známou GPS, přesnost, neplatné hodnoty, obnovu uloženého stavu a Move. E2E ověřují tři značky schovaného, přesun formulářem i skutečným tažením, výpadek a stáří GPS, opakované centrování, nativní dlaždice do zoomu 20, HiDPI, geografické zarovnání POI a dedukcí i veřejný mobilní pohled.
+Jednotkové testy ověřují rolovou izolaci, aktuální a poslední známou GPS, přesnost, neplatné hodnoty, obnovu uloženého stavu a Move. E2E ověřují kompaktní lištu, větší mapu na úzkém telefonu, skrytí informací o hledačích při schovávání, vzdálenost mezi skutečnými GPS body a zachování timestampu při reloadu, tři značky schovaného během hledání, přesun formulářem i skutečným tažením, výpadek a stáří GPS, opakované centrování, nativní dlaždice do zoomu 20, HiDPI, geografické zarovnání POI a dedukcí i veřejný mobilní pohled.
 
 Pro lokální E2E bez vlastního klíče lze použít pouze testovací klientskou hodnotu při buildu: `VITE_MAPY_API_KEY=public-map-tiles-test-client npm run build` a následně `PLAYWRIGHT_SKIP_BUILD=1 npm run test:e2e`. Testy API odpovědi nahrazují; takový klíč neposkytuje přístup k živé službě. Publikační workflow stále sestavuje aplikaci s vlastním existujícím Actions secretem. Zdroje geodat, kontrolní součty a uložené světy se nemění.
