@@ -1,17 +1,17 @@
 {
   "format": "jetlag-praha-pid-catalog",
   "schemaVersion": 2,
-  "file": "snapshot-85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee.json.gz",
-  "checksum": "85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee",
-  "serviceDate": "2026-10-20",
-  "downloadedAt": "2026-10-20T06:41:57.913Z",
+  "file": "snapshot-0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1.json.gz",
+  "checksum": "0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1",
+  "serviceDate": "2026-11-02",
+  "downloadedAt": "2026-11-02T13:30:30.398Z",
   "quality": {
     "status": "verified",
     "issues": [
       "689 skupin má místní nejednoznačnost; tyto uzly vyžadují revizi, ostatní zůstávají ověřené."
     ],
     "unmappedActiveIds": [],
-    "groupsGeneratedAt": "2026-10-19T03:52:56",
+    "groupsGeneratedAt": "2026-11-02T03:52:33",
     "reviewGroupIds": [
       "asw:4942:cis:42297:cat:301003:p:2945/451",
       "gtfs-stop:U100V1",
@@ -706,9 +706,19 @@
   },
   "versions": [
     {
+      "file": "snapshot-0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1.json.gz",
+      "id": "pid:2026-11-02:0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1",
+      "checksum": "0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1",
+      "serviceDate": "2026-11-02",
+      "adapterVersion": "pid-gtfs-v1",
+      "preparedAt": "2026-11-02T13:31:02.735Z",
+      "downloadedAt": "2026-11-02T13:30:30.398Z",
+      "quality": "verified"
+    },
+    {
       "file": "snapshot-85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee.json.gz",
-      "id": "pid:2026-10-20:85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee",
       "checksum": "85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee",
+      "id": "pid:2026-10-20:85fa5e12fd100ceb07ea8236a708bc79bb56278a794a0a4faf065f1f278d5aee",
       "serviceDate": "2026-10-20",
       "adapterVersion": "pid-gtfs-v1",
       "preparedAt": "2026-10-20T06:42:29.674Z",
