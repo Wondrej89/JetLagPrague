@@ -187,13 +187,14 @@ it('publishes only verified approved library points in schema 4; all prior categ
   const broken=structuredClone(release);broken.data.pois.find(poi=>poi.category==='library')!.library!.verification!.point=[0,0];await expect(verifyGameDataRelease(broken)).rejects.toThrow('Knihovna');
 });
 
-// This fixture audit parses and validates all geometries in four large immutable
-// files. Its I/O and CPU budget is intentionally separate from the small POI test.
-it('verifies the unchanged artifacts and checksums of all historical schema 1–3 publications', { timeout: 15000 }, async () => {
+// Shared audit for every POI category: parse all immutable release geometries
+// and verify their checksums once, independently of the small category tests.
+// A bounded 30 s budget allows for CPU contention on the shared CI runner.
+it('verifies the unchanged artifacts and checksums of all historical schema 1–6 publications', { timeout: 30000 }, async () => {
   const history=readGameReleaseIndex(JSON.parse(await readFile('data/releases/current.json','utf8')));
   const schemas=new Set<number>();
   for(const prior of history.versions) { const release=await readGameReleaseArtifact(await readFile(`data/releases/${prior.file}`,'utf8'),prior);schemas.add(release.schemaVersion); }
-  expect([...schemas]).toEqual(expect.arrayContaining([1,2,3]));
+  expect([...schemas]).toEqual(expect.arrayContaining([1,2,3,4,5,6]));
 });
 
 it('adds all 45 verified default points to an immutable schema 4 release without changing any prior data', { timeout: 15000 }, async () => {

@@ -2,7 +2,7 @@ import {describe,it,expect} from 'vitest';
 import {readFile} from 'node:fs/promises';
 import input from '../../../data/raw/embassies-selection.json' with {type:'json'};
 import catalog from '../../../apps/editor/src/data/embassy-catalog.json' with {type:'json'};
-import {buildGameDataRelease,canonicalJson,createGameDataRelease,createManualEmbassy,decidePoi,decideUnlocatedEmbassy,defaultPoiConfiguration,embassyId,exportWorld,importEmbassyGps,importWorld,isEmbassyLocationVerified,locateEmbassy,matchingPois,measuringPois,nearestApprovedPoi,readDefaultGameArea,readGameReleaseArtifact,readGameReleaseIndex,removeManualEmbassy,resolvePois,resolveUnlocatedEmbassies,sha256,unlocatedEmbassySchema,validatePoiConfiguration,verifyGameDataRelease,withPublishedEmbassies,type EmbassyVerification} from './index';
+import {buildGameDataRelease,canonicalJson,createGameDataRelease,createManualEmbassy,decidePoi,decideUnlocatedEmbassy,defaultPoiConfiguration,embassyId,exportWorld,importEmbassyGps,importWorld,isEmbassyLocationVerified,locateEmbassy,matchingPois,measuringPois,nearestApprovedPoi,readDefaultGameArea,removeManualEmbassy,resolvePois,resolveUnlocatedEmbassies,sha256,unlocatedEmbassySchema,validatePoiConfiguration,verifyGameDataRelease,withPublishedEmbassies,type EmbassyVerification} from './index';
 import {questionRegistry} from '../../game-core/src/registry';
 import {createGeoResolver} from '../../geo-resolver/src/index';
 import {releaseTestInput,releaseTestAirports,releaseTestDate} from './game-release-test-fixtures';
@@ -64,11 +64,13 @@ describe('Diplomatic selection and address-specific POI approval',()=>{
   const csv=Object.keys(row).join(',')+'\n'+Object.values(row).map(v=>'"'+String(v).replaceAll('"','""')+'"').join(',');
   const imported=importEmbassyGps(configuration(),csv,'csv',prague.geometry,true);expect(imported.count).toBe(1);expect(resolvePois([],imported.configuration)[0]).toMatchObject({point,status:'review'});
  });
- it('publishes approved offices with schema 7 and source metadata, serves Matching/Measuring, and validates all historical publications unchanged',async()=>{
+ it('publishes approved offices with schema 7 and source metadata, serves Matching/Measuring, and rejects older schemas for embassy data',async()=>{
   const {world,snapshot}=await releaseTestInput();world.poi=withPublishedEmbassies(world.poi!,[],rows);world.poi=locateEmbassy(world.poi,rows[0],point,verification(rows[0].address));world.poi=decidePoi(world.poi,resolvePois([],world.poi).find(p=>p.id===rows[0].id)!,{status:'approved'});
   const release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);expect(release.schemaVersion).toBe(7);expect(release.data.pois.filter(p=>p.category==='embassy')).toHaveLength(1);expect(await verifyGameDataRelease(release)).toEqual(release);
   const resolver=createGeoResolver(release),definitions=questionRegistry().filter(q=>q.category==='embassy');expect(definitions.map(q=>q.id)).toEqual(['matching:embassy','measuring:embassy']);for(const d of definitions)expect(resolver.availability(d)).toMatchObject({state:'ready'});
   for(const schemaVersion of [1,2,3,4,5,6] as const)await expect(createGameDataRelease(release.data,{publishedAt:releaseTestDate,kind:'reference',schemaVersion})).rejects.toThrow('schéma 7');
-  const history=readGameReleaseIndex(JSON.parse(await readFile('data/releases/current.json','utf8')));for(const entry of history.versions)await readGameReleaseArtifact(await readFile(`data/releases/${entry.file}`,'utf8'),entry);
+  // All immutable artifacts are verified by the shared historical-release
+  // audit in library.test.ts, with a separate budget for full Prague geometry.
+  // Keep this small category test inside the default unit-test timeout.
  });
 });
