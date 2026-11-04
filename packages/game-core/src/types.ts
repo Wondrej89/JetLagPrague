@@ -20,7 +20,7 @@ export interface CardDefinition {
   curse?: { durationMs?: number; condition: string; blocksQuestions: boolean; manual: boolean };
 }
 export interface GameRules {
-  uxVersion?: 1; hangmanVersion?: 1; manualHangmanResponses?: boolean;
+  stationSelectionVersion?: 1; uxVersion?: 1; hangmanVersion?: 1; manualHangmanResponses?: boolean;
   mapVersion?: 1; moveVersion?: 2; automaticDeductionMap?: boolean; deductionConsent?: { hunter: boolean; hider: boolean; authority: 'simulator' };
   cardVersion?: 2; questionVersion?: 2; size?: GameSize;
   id: string; label: string; testOnly: boolean; hideMs: number; radiusMeters: number; gpsMaxAgeMs: number; gpsMaxAccuracyM: number;

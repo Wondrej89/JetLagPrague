@@ -1,0 +1,2945 @@
+{
+  "records": [],
+  "unlocated": [
+    {
+      "id": "embassy:af:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:af:embassy",
+      "name": "Velvyslanectví – Afghánistán",
+      "address": "U Nesypky 1473/5, Praha 5",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Afghánistán",
+        "countryCode": "af",
+        "officeType": "embassy",
+        "selectionRow": 2,
+        "sourcePage": 15,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:af:embassy",
+          "name": "Velvyslanectví – Afghánistán",
+          "country": "Afghánistán",
+          "countryCode": "af",
+          "officeType": "embassy",
+          "address": "U Nesypky 1473/5, Praha 5",
+          "sourceRow": 2,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 15",
+          "sourcePage": 15
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:al:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:al:embassy",
+      "name": "Velvyslanectví – Albánie",
+      "address": "Sněmovní 173/9, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Albánie",
+        "countryCode": "al",
+        "officeType": "embassy",
+        "selectionRow": 3,
+        "sourcePage": 16,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:al:embassy",
+          "name": "Velvyslanectví – Albánie",
+          "country": "Albánie",
+          "countryCode": "al",
+          "officeType": "embassy",
+          "address": "Sněmovní 173/9, Praha 1",
+          "sourceRow": 3,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 16",
+          "sourcePage": 16
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:dz:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:dz:embassy",
+      "name": "Velvyslanectví – Alžírsko",
+      "address": "V Tišině 10/483, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Alžírsko",
+        "countryCode": "dz",
+        "officeType": "embassy",
+        "selectionRow": 4,
+        "sourcePage": 17,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:dz:embassy",
+          "name": "Velvyslanectví – Alžírsko",
+          "country": "Alžírsko",
+          "countryCode": "dz",
+          "officeType": "embassy",
+          "address": "V Tišině 10/483, Praha 6",
+          "sourceRow": 4,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 17",
+          "sourcePage": 17
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:ar:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:ar:embassy",
+      "name": "Velvyslanectví – Argentina",
+      "address": "Panská 895/6, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Argentina",
+        "countryCode": "ar",
+        "officeType": "embassy",
+        "selectionRow": 5,
+        "sourcePage": 21,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:ar:embassy",
+          "name": "Velvyslanectví – Argentina",
+          "country": "Argentina",
+          "countryCode": "ar",
+          "officeType": "embassy",
+          "address": "Panská 895/6, Praha 1",
+          "sourceRow": 5,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 21",
+          "sourcePage": 21
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:am:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:am:embassy",
+      "name": "Velvyslanectví – Arménie",
+      "address": "Na Pískách 1411/95, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Arménie",
+        "countryCode": "am",
+        "officeType": "embassy",
+        "selectionRow": 6,
+        "sourcePage": 22,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:am:embassy",
+          "name": "Velvyslanectví – Arménie",
+          "country": "Arménie",
+          "countryCode": "am",
+          "officeType": "embassy",
+          "address": "Na Pískách 1411/95, Praha 6",
+          "sourceRow": 6,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 22",
+          "sourcePage": 22
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:au:honorary_consulate",
+      "category": "embassy",
+      "sourceId": "embassy:au:honorary_consulate",
+      "name": "Honorární konzulát – Austrálie",
+      "address": "Klimentská 10, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Austrálie",
+        "countryCode": "au",
+        "officeType": "honorary_consulate",
+        "selectionRow": 7,
+        "sourcePage": 23,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:au:honorary_consulate",
+          "name": "Honorární konzulát – Austrálie",
+          "country": "Austrálie",
+          "countryCode": "au",
+          "officeType": "honorary_consulate",
+          "address": "Klimentská 10, Praha 1",
+          "sourceRow": 7,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 23",
+          "sourcePage": 23
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:bs:honorary_consulate",
+      "category": "embassy",
+      "sourceId": "embassy:bs:honorary_consulate",
+      "name": "Honorární konzulát – Bahamy",
+      "address": "Benešovská 1864/21, Praha 10",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Bahamy",
+        "countryCode": "bs",
+        "officeType": "honorary_consulate",
+        "selectionRow": 8,
+        "sourcePage": 28,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:bs:honorary_consulate",
+          "name": "Honorární konzulát – Bahamy",
+          "country": "Bahamy",
+          "countryCode": "bs",
+          "officeType": "honorary_consulate",
+          "address": "Benešovská 1864/21, Praha 10",
+          "sourceRow": 8,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 28",
+          "sourcePage": 28
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:be:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:be:embassy",
+      "name": "Velvyslanectví – Belgie",
+      "address": "Valdštejnská 6, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Belgie",
+        "countryCode": "be",
+        "officeType": "embassy",
+        "selectionRow": 9,
+        "sourcePage": 33,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:be:embassy",
+          "name": "Velvyslanectví – Belgie",
+          "country": "Belgie",
+          "countryCode": "be",
+          "officeType": "embassy",
+          "address": "Valdštejnská 6, Praha 1",
+          "sourceRow": 9,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 33",
+          "sourcePage": 33
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:bt:honorary_consulate",
+      "category": "embassy",
+      "sourceId": "embassy:bt:honorary_consulate",
+      "name": "Honorární konzulát – Bhútán",
+      "address": "Patočkova 2472/81, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Bhútán",
+        "countryCode": "bt",
+        "officeType": "honorary_consulate",
+        "selectionRow": 10,
+        "sourcePage": 35,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:bt:honorary_consulate",
+          "name": "Honorární konzulát – Bhútán",
+          "country": "Bhútán",
+          "countryCode": "bt",
+          "officeType": "honorary_consulate",
+          "address": "Patočkova 2472/81, Praha 6",
+          "sourceRow": 10,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 35",
+          "sourcePage": 35
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:ba:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:ba:embassy",
+      "name": "Velvyslanectví – Bosna a Hercegovina",
+      "address": "Opletalova 27, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Bosna a Hercegovina",
+        "countryCode": "ba",
+        "officeType": "embassy",
+        "selectionRow": 11,
+        "sourcePage": 37,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:ba:embassy",
+          "name": "Velvyslanectví – Bosna a Hercegovina",
+          "country": "Bosna a Hercegovina",
+          "countryCode": "ba",
+          "officeType": "embassy",
+          "address": "Opletalova 27, Praha 1",
+          "sourceRow": 11,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 37",
+          "sourcePage": 37
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:br:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:br:embassy",
+      "name": "Velvyslanectví – Brazílie",
+      "address": "Panská 5, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Brazílie",
+        "countryCode": "br",
+        "officeType": "embassy",
+        "selectionRow": 12,
+        "sourcePage": 39,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:br:embassy",
+          "name": "Velvyslanectví – Brazílie",
+          "country": "Brazílie",
+          "countryCode": "br",
+          "officeType": "embassy",
+          "address": "Panská 5, Praha 1",
+          "sourceRow": 12,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 39",
+          "sourcePage": 39
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:by:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:by:embassy",
+      "name": "Velvyslanectví – Bělorusko",
+      "address": "Sádky 626, Praha 7",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Bělorusko",
+        "countryCode": "by",
+        "officeType": "embassy",
+        "selectionRow": 13,
+        "sourcePage": 31,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:by:embassy",
+          "name": "Velvyslanectví – Bělorusko",
+          "country": "Bělorusko",
+          "countryCode": "by",
+          "officeType": "embassy",
+          "address": "Sádky 626, Praha 7",
+          "sourceRow": 13,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 31",
+          "sourcePage": 31
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:cl:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:cl:embassy",
+      "name": "Velvyslanectví – Chile",
+      "address": "Václavské náměstí 1306/55, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Chile",
+        "countryCode": "cl",
+        "officeType": "embassy",
+        "selectionRow": 14,
+        "sourcePage": 49,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:cl:embassy",
+          "name": "Velvyslanectví – Chile",
+          "country": "Chile",
+          "countryCode": "cl",
+          "officeType": "embassy",
+          "address": "Václavské náměstí 1306/55, Praha 1",
+          "sourceRow": 14,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 49",
+          "sourcePage": 49
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:hr:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:hr:embassy",
+      "name": "Velvyslanectví – Chorvatsko",
+      "address": "V Průhledu 9, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Chorvatsko",
+        "countryCode": "hr",
+        "officeType": "embassy",
+        "selectionRow": 15,
+        "sourcePage": 58,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:hr:embassy",
+          "name": "Velvyslanectví – Chorvatsko",
+          "country": "Chorvatsko",
+          "countryCode": "hr",
+          "officeType": "embassy",
+          "address": "V Průhledu 9, Praha 6",
+          "sourceRow": 15,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 58",
+          "sourcePage": 58
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:ee:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:ee:embassy",
+      "name": "Velvyslanectví – Estonsko",
+      "address": "Velkopřevorské náměstí 484/3, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Estonsko",
+        "countryCode": "ee",
+        "officeType": "embassy",
+        "selectionRow": 16,
+        "sourcePage": 70,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:ee:embassy",
+          "name": "Velvyslanectví – Estonsko",
+          "country": "Estonsko",
+          "countryCode": "ee",
+          "officeType": "embassy",
+          "address": "Velkopřevorské náměstí 484/3, Praha 1",
+          "sourceRow": 16,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 70",
+          "sourcePage": 70
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:fi:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:fi:embassy",
+      "name": "Velvyslanectví – Finsko",
+      "address": "Hellichova 1, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Finsko",
+        "countryCode": "fi",
+        "officeType": "embassy",
+        "selectionRow": 17,
+        "sourcePage": 72,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:fi:embassy",
+          "name": "Velvyslanectví – Finsko",
+          "country": "Finsko",
+          "countryCode": "fi",
+          "officeType": "embassy",
+          "address": "Hellichova 1, Praha 1",
+          "sourceRow": 17,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 72",
+          "sourcePage": 72
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:in:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:in:embassy",
+      "name": "Velvyslanectví – Indie",
+      "address": "Milady Horákové 60/93, Praha 7",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Indie",
+        "countryCode": "in",
+        "officeType": "embassy",
+        "selectionRow": 18,
+        "sourcePage": 94,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:in:embassy",
+          "name": "Velvyslanectví – Indie",
+          "country": "Indie",
+          "countryCode": "in",
+          "officeType": "embassy",
+          "address": "Milady Horákové 60/93, Praha 7",
+          "sourceRow": 18,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 94",
+          "sourcePage": 94
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:id:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:id:embassy",
+      "name": "Velvyslanectví – Indonésie",
+      "address": "Nad Buďánkami II/7, Praha 5",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Indonésie",
+        "countryCode": "id",
+        "officeType": "embassy",
+        "selectionRow": 19,
+        "sourcePage": 95,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:id:embassy",
+          "name": "Velvyslanectví – Indonésie",
+          "country": "Indonésie",
+          "countryCode": "id",
+          "officeType": "embassy",
+          "address": "Nad Buďánkami II/7, Praha 5",
+          "sourceRow": 19,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 95",
+          "sourcePage": 95
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:is:honorary_consulate",
+      "category": "embassy",
+      "sourceId": "embassy:is:honorary_consulate",
+      "name": "Honorární konzulát – Island",
+      "address": "Za Poříčskou bránou 21/365, Praha 8",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Island",
+        "countryCode": "is",
+        "officeType": "honorary_consulate",
+        "selectionRow": 20,
+        "sourcePage": 93,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:is:honorary_consulate",
+          "name": "Honorární konzulát – Island",
+          "country": "Island",
+          "countryCode": "is",
+          "officeType": "honorary_consulate",
+          "address": "Za Poříčskou bránou 21/365, Praha 8",
+          "sourceRow": 20,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 93",
+          "sourcePage": 93
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:il:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:il:embassy",
+      "name": "Velvyslanectví – Izrael",
+      "address": "Badeniho 2, Praha 7",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Izrael",
+        "countryCode": "il",
+        "officeType": "embassy",
+        "selectionRow": 21,
+        "sourcePage": 99,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:il:embassy",
+          "name": "Velvyslanectví – Izrael",
+          "country": "Izrael",
+          "countryCode": "il",
+          "officeType": "embassy",
+          "address": "Badeniho 2, Praha 7",
+          "sourceRow": 21,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 99",
+          "sourcePage": 99
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:kr:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:kr:embassy",
+      "name": "Velvyslanectví – Jižní Korea",
+      "address": "Pelléova 15, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Jižní Korea",
+        "countryCode": "kr",
+        "officeType": "embassy",
+        "selectionRow": 22,
+        "sourcePage": 110,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:kr:embassy",
+          "name": "Velvyslanectví – Jižní Korea",
+          "country": "Jižní Korea",
+          "countryCode": "kr",
+          "officeType": "embassy",
+          "address": "Pelléova 15, Praha 6",
+          "sourceRow": 22,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 110",
+          "sourcePage": 110
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:kz:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:kz:embassy",
+      "name": "Velvyslanectví – Kazachstán",
+      "address": "Pod Hradbami 662/9, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Kazachstán",
+        "countryCode": "kz",
+        "officeType": "embassy",
+        "selectionRow": 23,
+        "sourcePage": 106,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:kz:embassy",
+          "name": "Velvyslanectví – Kazachstán",
+          "country": "Kazachstán",
+          "countryCode": "kz",
+          "officeType": "embassy",
+          "address": "Pod Hradbami 662/9, Praha 6",
+          "sourceRow": 23,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 106",
+          "sourcePage": 106
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:co:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:co:embassy",
+      "name": "Velvyslanectví – Kolumbie",
+      "address": "Ječná 550/1, Praha 2",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Kolumbie",
+        "countryCode": "co",
+        "officeType": "embassy",
+        "selectionRow": 24,
+        "sourcePage": 53,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:co:embassy",
+          "name": "Velvyslanectví – Kolumbie",
+          "country": "Kolumbie",
+          "countryCode": "co",
+          "officeType": "embassy",
+          "address": "Ječná 550/1, Praha 2",
+          "sourceRow": 24,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 53",
+          "sourcePage": 53
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:cu:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:cu:embassy",
+      "name": "Velvyslanectví – Kuba",
+      "address": "Jinonická 14, Praha 5",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Kuba",
+        "countryCode": "cu",
+        "officeType": "embassy",
+        "selectionRow": 25,
+        "sourcePage": 59,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:cu:embassy",
+          "name": "Velvyslanectví – Kuba",
+          "country": "Kuba",
+          "countryCode": "cu",
+          "officeType": "embassy",
+          "address": "Jinonická 14, Praha 5",
+          "sourceRow": 25,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 59",
+          "sourcePage": 59
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:lb:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:lb:embassy",
+      "name": "Velvyslanectví – Libanon",
+      "address": "Lazarská 6, Praha 2",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Libanon",
+        "countryCode": "lb",
+        "officeType": "embassy",
+        "selectionRow": 26,
+        "sourcePage": 116,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:lb:embassy",
+          "name": "Velvyslanectví – Libanon",
+          "country": "Libanon",
+          "countryCode": "lb",
+          "officeType": "embassy",
+          "address": "Lazarská 6, Praha 2",
+          "sourceRow": 26,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 116",
+          "sourcePage": 116
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:ly:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:ly:embassy",
+      "name": "Velvyslanectví – Libye",
+      "address": "Nad Šárkou 781/56, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Libye",
+        "countryCode": "ly",
+        "officeType": "embassy",
+        "selectionRow": 27,
+        "sourcePage": 118,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:ly:embassy",
+          "name": "Velvyslanectví – Libye",
+          "country": "Libye",
+          "countryCode": "ly",
+          "officeType": "embassy",
+          "address": "Nad Šárkou 781/56, Praha 6",
+          "sourceRow": 27,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 118",
+          "sourcePage": 118
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:mt:honorary_consulate",
+      "category": "embassy",
+      "sourceId": "embassy:mt:honorary_consulate",
+      "name": "Honorární konzulát – Malta",
+      "address": "V Jámě 699/1, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Malta",
+        "countryCode": "mt",
+        "officeType": "honorary_consulate",
+        "selectionRow": 28,
+        "sourcePage": 127,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:mt:honorary_consulate",
+          "name": "Honorární konzulát – Malta",
+          "country": "Malta",
+          "countryCode": "mt",
+          "officeType": "honorary_consulate",
+          "address": "V Jámě 699/1, Praha 1",
+          "sourceRow": 28,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 127",
+          "sourcePage": 127
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:mu:honorary_consulate",
+      "category": "embassy",
+      "sourceId": "embassy:mu:honorary_consulate",
+      "name": "Honorární konzulát – Mauricius",
+      "address": "Maiselova 25/4, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Mauricius",
+        "countryCode": "mu",
+        "officeType": "honorary_consulate",
+        "selectionRow": 29,
+        "sourcePage": 129,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:mu:honorary_consulate",
+          "name": "Honorární konzulát – Mauricius",
+          "country": "Mauricius",
+          "countryCode": "mu",
+          "officeType": "honorary_consulate",
+          "address": "Maiselova 25/4, Praha 1",
+          "sourceRow": 29,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 129",
+          "sourcePage": 129
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:hu:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:hu:embassy",
+      "name": "Velvyslanectví – Maďarsko",
+      "address": "Pod Hradbami 17, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Maďarsko",
+        "countryCode": "hu",
+        "officeType": "embassy",
+        "selectionRow": 30,
+        "sourcePage": 91,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:hu:embassy",
+          "name": "Velvyslanectví – Maďarsko",
+          "country": "Maďarsko",
+          "countryCode": "hu",
+          "officeType": "embassy",
+          "address": "Pod Hradbami 17, Praha 6",
+          "sourceRow": 30,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 91",
+          "sourcePage": 91
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:mx:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:mx:embassy",
+      "name": "Velvyslanectví – Mexiko",
+      "address": "V Jirchářích 151/10, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Mexiko",
+        "countryCode": "mx",
+        "officeType": "embassy",
+        "selectionRow": 31,
+        "sourcePage": 130,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:mx:embassy",
+          "name": "Velvyslanectví – Mexiko",
+          "country": "Mexiko",
+          "countryCode": "mx",
+          "officeType": "embassy",
+          "address": "V Jirchářích 151/10, Praha 1",
+          "sourceRow": 31,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 130",
+          "sourcePage": 130
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:mm:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:mm:embassy",
+      "name": "Velvyslanectví – Myanmar",
+      "address": "Václavské náměstí 1282/51, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Myanmar",
+        "countryCode": "mm",
+        "officeType": "embassy",
+        "selectionRow": 32,
+        "sourcePage": 138,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:mm:embassy",
+          "name": "Velvyslanectví – Myanmar",
+          "country": "Myanmar",
+          "countryCode": "mm",
+          "officeType": "embassy",
+          "address": "Václavské náměstí 1282/51, Praha 1",
+          "sourceRow": 32,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 138",
+          "sourcePage": 138
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:na:honorary_consulate",
+      "category": "embassy",
+      "sourceId": "embassy:na:honorary_consulate",
+      "name": "Honorární konzulát – Namibie",
+      "address": "Palackého 715/15, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Namibie",
+        "countryCode": "na",
+        "officeType": "honorary_consulate",
+        "selectionRow": 33,
+        "sourcePage": 139,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:na:honorary_consulate",
+          "name": "Honorární konzulát – Namibie",
+          "country": "Namibie",
+          "countryCode": "na",
+          "officeType": "honorary_consulate",
+          "address": "Palackého 715/15, Praha 1",
+          "sourceRow": 33,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 139",
+          "sourcePage": 139
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:no:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:no:embassy",
+      "name": "Velvyslanectví – Norsko",
+      "address": "Hellichova 1/458, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Norsko",
+        "countryCode": "no",
+        "officeType": "embassy",
+        "selectionRow": 34,
+        "sourcePage": 148,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:no:embassy",
+          "name": "Velvyslanectví – Norsko",
+          "country": "Norsko",
+          "countryCode": "no",
+          "officeType": "embassy",
+          "address": "Hellichova 1/458, Praha 1",
+          "sourceRow": 34,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 148",
+          "sourcePage": 148
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:de:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:de:embassy",
+      "name": "Velvyslanectví – Německo",
+      "address": "Vlašská 19, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Německo",
+        "countryCode": "de",
+        "officeType": "embassy",
+        "selectionRow": 35,
+        "sourcePage": 80,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:de:embassy",
+          "name": "Velvyslanectví – Německo",
+          "country": "Německo",
+          "countryCode": "de",
+          "officeType": "embassy",
+          "address": "Vlašská 19, Praha 1",
+          "sourceRow": 35,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 80",
+          "sourcePage": 80
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:om:honorary_consulate",
+      "category": "embassy",
+      "sourceId": "embassy:om:honorary_consulate",
+      "name": "Honorární konzulát – Omán",
+      "address": "Legerova 1854/22, Praha 2",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Omán",
+        "countryCode": "om",
+        "officeType": "honorary_consulate",
+        "selectionRow": 36,
+        "sourcePage": 149,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:om:honorary_consulate",
+          "name": "Honorární konzulát – Omán",
+          "country": "Omán",
+          "countryCode": "om",
+          "officeType": "honorary_consulate",
+          "address": "Legerova 1854/22, Praha 2",
+          "sourceRow": 36,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 149",
+          "sourcePage": 149
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:ps:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:ps:embassy",
+      "name": "Velvyslanectví – Palestina",
+      "address": "Internacionální 1307/12, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Palestina",
+        "countryCode": "ps",
+        "officeType": "embassy",
+        "selectionRow": 37,
+        "sourcePage": 151,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:ps:embassy",
+          "name": "Velvyslanectví – Palestina",
+          "country": "Palestina",
+          "countryCode": "ps",
+          "officeType": "embassy",
+          "address": "Internacionální 1307/12, Praha 6",
+          "sourceRow": 37,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 151",
+          "sourcePage": 151
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:pl:consular_department",
+      "category": "embassy",
+      "sourceId": "embassy:pl:consular_department",
+      "name": "Konzulární oddělení – Polsko",
+      "address": "Truhlářská 13–15, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Polsko",
+        "countryCode": "pl",
+        "officeType": "consular_department",
+        "selectionRow": 38,
+        "sourcePage": 157,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:pl:consular_department",
+          "name": "Konzulární oddělení – Polsko",
+          "country": "Polsko",
+          "countryCode": "pl",
+          "officeType": "consular_department",
+          "address": "Truhlářská 13–15, Praha 1",
+          "sourceRow": 38,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 157",
+          "sourcePage": 157
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:pl:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:pl:embassy",
+      "name": "Velvyslanectví – Polsko",
+      "address": "Valdštejnská 8, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Polsko",
+        "countryCode": "pl",
+        "officeType": "embassy",
+        "selectionRow": 39,
+        "sourcePage": 157,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:pl:embassy",
+          "name": "Velvyslanectví – Polsko",
+          "country": "Polsko",
+          "countryCode": "pl",
+          "officeType": "embassy",
+          "address": "Valdštejnská 8, Praha 1",
+          "sourceRow": 39,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 157",
+          "sourcePage": 157
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:pk:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:pk:embassy",
+      "name": "Velvyslanectví – Pákistán",
+      "address": "Střešovická 56/854, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Pákistán",
+        "countryCode": "pk",
+        "officeType": "embassy",
+        "selectionRow": 40,
+        "sourcePage": 150,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:pk:embassy",
+          "name": "Velvyslanectví – Pákistán",
+          "country": "Pákistán",
+          "countryCode": "pk",
+          "officeType": "embassy",
+          "address": "Střešovická 56/854, Praha 6",
+          "sourceRow": 40,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 150",
+          "sourcePage": 150
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:at:consular_department",
+      "category": "embassy",
+      "sourceId": "embassy:at:consular_department",
+      "name": "Konzulární oddělení – Rakousko",
+      "address": "Drtinova 4, Praha 5",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Rakousko",
+        "countryCode": "at",
+        "officeType": "consular_department",
+        "selectionRow": 41,
+        "sourcePage": 24,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:at:consular_department",
+          "name": "Konzulární oddělení – Rakousko",
+          "country": "Rakousko",
+          "countryCode": "at",
+          "officeType": "consular_department",
+          "address": "Drtinova 4, Praha 5",
+          "sourceRow": 41,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 24",
+          "sourcePage": 24
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:at:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:at:embassy",
+      "name": "Velvyslanectví – Rakousko",
+      "address": "Viktora Huga 10, Praha 5",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Rakousko",
+        "countryCode": "at",
+        "officeType": "embassy",
+        "selectionRow": 42,
+        "sourcePage": 24,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:at:embassy",
+          "name": "Velvyslanectví – Rakousko",
+          "country": "Rakousko",
+          "countryCode": "at",
+          "officeType": "embassy",
+          "address": "Viktora Huga 10, Praha 5",
+          "sourceRow": 42,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 24",
+          "sourcePage": 24
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:ru:consular_department",
+      "category": "embassy",
+      "sourceId": "embassy:ru:consular_department",
+      "name": "Konzulární oddělení – Rusko",
+      "address": "Ukrajinských hrdinů 4, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Rusko",
+        "countryCode": "ru",
+        "officeType": "consular_department",
+        "selectionRow": 43,
+        "sourcePage": 164,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:ru:consular_department",
+          "name": "Konzulární oddělení – Rusko",
+          "country": "Rusko",
+          "countryCode": "ru",
+          "officeType": "consular_department",
+          "address": "Ukrajinských hrdinů 4, Praha 6",
+          "sourceRow": 43,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 164",
+          "sourcePage": 164
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:ru:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:ru:embassy",
+      "name": "Velvyslanectví – Rusko",
+      "address": "Ukrajinských hrdinů 6, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Rusko",
+        "countryCode": "ru",
+        "officeType": "embassy",
+        "selectionRow": 44,
+        "sourcePage": 164,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:ru:embassy",
+          "name": "Velvyslanectví – Rusko",
+          "country": "Rusko",
+          "countryCode": "ru",
+          "officeType": "embassy",
+          "address": "Ukrajinských hrdinů 6, Praha 6",
+          "sourceRow": 44,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 164",
+          "sourcePage": 164
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:rw:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:rw:embassy",
+      "name": "Velvyslanectví – Rwanda",
+      "address": "Nad Šárkou 1512/63, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Rwanda",
+        "countryCode": "rw",
+        "officeType": "embassy",
+        "selectionRow": 45,
+        "sourcePage": 165,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:rw:embassy",
+          "name": "Velvyslanectví – Rwanda",
+          "country": "Rwanda",
+          "countryCode": "rw",
+          "officeType": "embassy",
+          "address": "Nad Šárkou 1512/63, Praha 6",
+          "sourceRow": 45,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 165",
+          "sourcePage": 165
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:sm:honorary_consulate_general",
+      "category": "embassy",
+      "sourceId": "embassy:sm:honorary_consulate_general",
+      "name": "Honorární generální konzulát – San Marino",
+      "address": "Thunovská 19, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "San Marino",
+        "countryCode": "sm",
+        "officeType": "honorary_consulate_general",
+        "selectionRow": 46,
+        "sourcePage": 167,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:sm:honorary_consulate_general",
+          "name": "Honorární generální konzulát – San Marino",
+          "country": "San Marino",
+          "countryCode": "sm",
+          "officeType": "honorary_consulate_general",
+          "address": "Thunovská 19, Praha 1",
+          "sourceRow": 46,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 167",
+          "sourcePage": 167
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:kp:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:kp:embassy",
+      "name": "Velvyslanectví – Severní Korea",
+      "address": "Na Větru 395/18, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Severní Korea",
+        "countryCode": "kp",
+        "officeType": "embassy",
+        "selectionRow": 47,
+        "sourcePage": 109,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:kp:embassy",
+          "name": "Velvyslanectví – Severní Korea",
+          "country": "Severní Korea",
+          "countryCode": "kp",
+          "officeType": "embassy",
+          "address": "Na Větru 395/18, Praha 6",
+          "sourceRow": 47,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 109",
+          "sourcePage": 109
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:mk:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:mk:embassy",
+      "name": "Velvyslanectví – Severní Makedonie",
+      "address": "Na Větru 4, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Severní Makedonie",
+        "countryCode": "mk",
+        "officeType": "embassy",
+        "selectionRow": 48,
+        "sourcePage": 147,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:mk:embassy",
+          "name": "Velvyslanectví – Severní Makedonie",
+          "country": "Severní Makedonie",
+          "countryCode": "mk",
+          "officeType": "embassy",
+          "address": "Na Větru 4, Praha 6",
+          "sourceRow": 48,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 147",
+          "sourcePage": 147
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:sg:honorary_consulate_general",
+      "category": "embassy",
+      "sourceId": "embassy:sg:honorary_consulate_general",
+      "name": "Honorární generální konzulát – Singapur",
+      "address": "Opletalova 27, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Singapur",
+        "countryCode": "sg",
+        "officeType": "honorary_consulate_general",
+        "selectionRow": 49,
+        "sourcePage": 173,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:sg:honorary_consulate_general",
+          "name": "Honorární generální konzulát – Singapur",
+          "country": "Singapur",
+          "countryCode": "sg",
+          "officeType": "honorary_consulate_general",
+          "address": "Opletalova 27, Praha 1",
+          "sourceRow": 49,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 173",
+          "sourcePage": 173
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:sk:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:sk:embassy",
+      "name": "Velvyslanectví – Slovensko",
+      "address": "Pelléova 87/12, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Slovensko",
+        "countryCode": "sk",
+        "officeType": "embassy",
+        "selectionRow": 50,
+        "sourcePage": 174,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:sk:embassy",
+          "name": "Velvyslanectví – Slovensko",
+          "country": "Slovensko",
+          "countryCode": "sk",
+          "officeType": "embassy",
+          "address": "Pelléova 87/12, Praha 6",
+          "sourceRow": 50,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 174",
+          "sourcePage": 174
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:ae:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:ae:embassy",
+      "name": "Velvyslanectví – Spojené arabské emiráty",
+      "address": "Rybná 682/14, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Spojené arabské emiráty",
+        "countryCode": "ae",
+        "officeType": "embassy",
+        "selectionRow": 51,
+        "sourcePage": 201,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:ae:embassy",
+          "name": "Velvyslanectví – Spojené arabské emiráty",
+          "country": "Spojené arabské emiráty",
+          "countryCode": "ae",
+          "officeType": "embassy",
+          "address": "Rybná 682/14, Praha 1",
+          "sourceRow": 51,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 201",
+          "sourcePage": 201
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:va:apostolic_nunciature",
+      "category": "embassy",
+      "sourceId": "embassy:va:apostolic_nunciature",
+      "name": "Apoštolská nunciatura – Svatý stolec",
+      "address": "Voršilská 140/12, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Svatý stolec",
+        "countryCode": "va",
+        "officeType": "apostolic_nunciature",
+        "selectionRow": 52,
+        "sourcePage": 89,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:va:apostolic_nunciature",
+          "name": "Apoštolská nunciatura – Svatý stolec",
+          "country": "Svatý stolec",
+          "countryCode": "va",
+          "officeType": "apostolic_nunciature",
+          "address": "Voršilská 140/12, Praha 1",
+          "sourceRow": 52,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 89",
+          "sourcePage": 89
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:sy:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:sy:embassy",
+      "name": "Velvyslanectví – Sýrie",
+      "address": "Českomalínská 20/7, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Sýrie",
+        "countryCode": "sy",
+        "officeType": "embassy",
+        "selectionRow": 53,
+        "sourcePage": 188,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:sy:embassy",
+          "name": "Velvyslanectví – Sýrie",
+          "country": "Sýrie",
+          "countryCode": "sy",
+          "officeType": "embassy",
+          "address": "Českomalínská 20/7, Praha 6",
+          "sourceRow": 53,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 188",
+          "sourcePage": 188
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:tr:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:tr:embassy",
+      "name": "Velvyslanectví – Turecko",
+      "address": "Sibiřské náměstí 730/1, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Turecko",
+        "countryCode": "tr",
+        "officeType": "embassy",
+        "selectionRow": 54,
+        "sourcePage": 194,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:tr:embassy",
+          "name": "Velvyslanectví – Turecko",
+          "country": "Turecko",
+          "countryCode": "tr",
+          "officeType": "embassy",
+          "address": "Sibiřské náměstí 730/1, Praha 6",
+          "sourceRow": 54,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 194",
+          "sourcePage": 194
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:ua:consular_department",
+      "category": "embassy",
+      "sourceId": "embassy:ua:consular_department",
+      "name": "Konzulární oddělení – Ukrajina",
+      "address": "Charlese de Gaulla 915/27, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Ukrajina",
+        "countryCode": "ua",
+        "officeType": "consular_department",
+        "selectionRow": 55,
+        "sourcePage": 199,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:ua:consular_department",
+          "name": "Konzulární oddělení – Ukrajina",
+          "country": "Ukrajina",
+          "countryCode": "ua",
+          "officeType": "consular_department",
+          "address": "Charlese de Gaulla 915/27, Praha 6",
+          "sourceRow": 55,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 199",
+          "sourcePage": 199
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:ua:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:ua:embassy",
+      "name": "Velvyslanectví – Ukrajina",
+      "address": "Charlese de Gaulla 916/29, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Ukrajina",
+        "countryCode": "ua",
+        "officeType": "embassy",
+        "selectionRow": 56,
+        "sourcePage": 199,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:ua:embassy",
+          "name": "Velvyslanectví – Ukrajina",
+          "country": "Ukrajina",
+          "countryCode": "ua",
+          "officeType": "embassy",
+          "address": "Charlese de Gaulla 916/29, Praha 6",
+          "sourceRow": 56,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 199",
+          "sourcePage": 199
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:uy:honorary_consulate",
+      "category": "embassy",
+      "sourceId": "embassy:uy:honorary_consulate",
+      "name": "Honorární konzulát – Uruguay",
+      "address": "Nekázanka 883/8, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Uruguay",
+        "countryCode": "uy",
+        "officeType": "honorary_consulate",
+        "selectionRow": 57,
+        "sourcePage": 206,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:uy:honorary_consulate",
+          "name": "Honorární konzulát – Uruguay",
+          "country": "Uruguay",
+          "countryCode": "uy",
+          "officeType": "honorary_consulate",
+          "address": "Nekázanka 883/8, Praha 1",
+          "sourceRow": 57,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 206",
+          "sourcePage": 206
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:us:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:us:embassy",
+      "name": "Velvyslanectví – USA",
+      "address": "Tržiště 15, Praha 1",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "USA",
+        "countryCode": "us",
+        "officeType": "embassy",
+        "selectionRow": 58,
+        "sourcePage": 203,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:us:embassy",
+          "name": "Velvyslanectví – USA",
+          "country": "USA",
+          "countryCode": "us",
+          "officeType": "embassy",
+          "address": "Tržiště 15, Praha 1",
+          "sourceRow": 58,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 203",
+          "sourcePage": 203
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:uz:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:uz:embassy",
+      "name": "Velvyslanectví – Uzbekistán",
+      "address": "Koperníkova 2204/10, Praha 2",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Uzbekistán",
+        "countryCode": "uz",
+        "officeType": "embassy",
+        "selectionRow": 59,
+        "sourcePage": 207,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:uz:embassy",
+          "name": "Velvyslanectví – Uzbekistán",
+          "country": "Uzbekistán",
+          "countryCode": "uz",
+          "officeType": "embassy",
+          "address": "Koperníkova 2204/10, Praha 2",
+          "sourceRow": 59,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 207",
+          "sourcePage": 207
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:az:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:az:embassy",
+      "name": "Velvyslanectví – Ázerbájdžán",
+      "address": "Na Zátorce 783/17, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Ázerbájdžán",
+        "countryCode": "az",
+        "officeType": "embassy",
+        "selectionRow": 60,
+        "sourcePage": 27,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:az:embassy",
+          "name": "Velvyslanectví – Ázerbájdžán",
+          "country": "Ázerbájdžán",
+          "countryCode": "az",
+          "officeType": "embassy",
+          "address": "Na Zátorce 783/17, Praha 6",
+          "sourceRow": 60,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 27",
+          "sourcePage": 27
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    },
+    {
+      "id": "embassy:cn:embassy",
+      "category": "embassy",
+      "sourceId": "embassy:cn:embassy",
+      "name": "Velvyslanectví – Čína",
+      "address": "Pelléova 18, Praha 6",
+      "point": null,
+      "geometry": null,
+      "embassy": {
+        "country": "Čína",
+        "countryCode": "cn",
+        "officeType": "embassy",
+        "selectionRow": 61,
+        "sourcePage": 50,
+        "officialSourceUrl": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf"
+      },
+      "source": {
+        "id": "diplomatic-selection-2026-10-22",
+        "provider": "Pracovní výběr správce podle diplomatické listiny MZV",
+        "url": "https://mzv.gov.cz/file/442309/DL2026_10_22.pdf",
+        "license": {
+          "name": "Licence výběru a diplomatické listiny nedoložena",
+          "url": null
+        },
+        "dataDate": "2026-10-22",
+        "retrievedAt": "2026-10-31T00:00:00.000Z",
+        "rawChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26",
+        "verification": "user_supplied",
+        "note": "Ručně dodaný pracovní výběr, nikoli úplný registr. Souřadnice nejsou součástí Excelu. Odkaz na MZV pochází z metodiky souboru; obsah PDF nebyl nezávisle ověřen."
+      },
+      "status": "review",
+      "reviewedAt": null,
+      "note": "Poloha není doložena. Vyžaduje přesný adresní bod a kontrolu adresy; odhad podle ulice nestačí.",
+      "attributes": {
+        "original": {
+          "id": "embassy:cn:embassy",
+          "name": "Velvyslanectví – Čína",
+          "country": "Čína",
+          "countryCode": "cn",
+          "officeType": "embassy",
+          "address": "Pelléova 18, Praha 6",
+          "sourceRow": 61,
+          "sourceText": "MZV diplomatická listina 22. 10. 2026, s. 50",
+          "sourcePage": 50
+        },
+        "sourceFile": "prazska_diplomaticka_zastoupeni_pracovni.xlsx",
+        "sourceChecksum": "503de00a80fe4098d99f9d2f863e36ddbde0b989709895dc69a0a5d1683eed26"
+      }
+    }
+  ]
+}

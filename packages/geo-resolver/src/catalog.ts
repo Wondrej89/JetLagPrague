@@ -3,7 +3,7 @@ import type {GameDataRelease} from '../../geo-core/src/index';
 export interface GameLayer {id:string;label:string;icon:string;color:string;state:'approved'|'reference'|'missing';note:string;features:Feature<Geometry>[]}
 export const CATEGORY_METADATA:Record<string,{label:string;icon:string;color:string}>= {
  pid:{label:'Zastávky PID',icon:'▣',color:'#287c88'},rail:{label:'Železniční stanice',icon:'🚆',color:'#475669'},
- airport:{label:'Letiště',icon:'✈',color:'#386ab2'},zoo:{label:'Zoo',icon:'🐾',color:'#9a6a28'},hospital:{label:'Nemocnice',icon:'✚',color:'#c34453'},
+ embassy:{label:'Ambasády a konzuláty',icon:'⚑',color:'#326e70'},airport:{label:'Letiště',icon:'✈',color:'#386ab2'},zoo:{label:'Zoo',icon:'🐾',color:'#9a6a28'},hospital:{label:'Nemocnice',icon:'✚',color:'#c34453'},
  cinema:{label:'Kina',icon:'▸',color:'#8e4b90'},library:{label:'Knihovny',icon:'▤',color:'#8d663c'},golf:{label:'Golfová hřiště',icon:'⚑',color:'#66883a'},
  aquapark:{label:'Aquaparky',icon:'≋',color:'#278d9b'},park:{label:'Parky',icon:'♣',color:'#3f894c'},waterbody:{label:'Vodní plochy',icon:'≈',color:'#3284b0'},
  vltava:{label:'Vltava',icon:'〰',color:'#315fc3'},municipal:{label:'Městské části',icon:'⬡',color:'#ad713b'},cadastral:{label:'Katastrální území',icon:'▧',color:'#8061a5'},

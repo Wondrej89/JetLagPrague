@@ -90,9 +90,10 @@ export function transition(input:GameState,envelope:Envelope,env:GameEnvironment
   if(cardCommand(s,c,env,actor)){s.processedCommands.push(envelope.id);return s;}
   if(c.type==='declare_endgame'){requireValue(s.phase==='seeking' && c.confirmed && (!s.cardState?.move || s.cardState.move.stage==='completed'),'Potvrďte endgame až po dokončení Move.');s.endgame=true;emit(s,'endgame','Hráči ručně potvrdili zahájení endgame.');}
   else if(c.type==='select_station'){
-    requireValue(s.phase==='hiding','Předběžné stanoviště lze měnit pouze během 45 minut.');requireValue(env.stops.some(p=>p.id===c.stopId),'Zastávka není v publikovaném katalogu.');s.provisionalStopId=c.stopId;emit(s,'station_selected','Předběžné stanoviště vybráno.','hider');
+    requireValue(s.phase==='hiding','Předběžné stanoviště lze měnit pouze během 45 minut.');requireValue(env.stops.some(p=>p.id===c.stopId),'Zastávka není v publikovaném katalogu.');if(s.rules.stationSelectionVersion===1)requireValue(eligibleStops(s,env).some(p=>p.id===c.stopId),'Zastávka není způsobilá podle aktuální GPS.');s.provisionalStopId=c.stopId;emit(s,'station_selected','Předběžné stanoviště vybráno.','hider');
   }else if(c.type==='lock_station'){
     requireValue(s.phase==='hiding'||s.phase==='needs_station','Stanoviště už je uzamčené.');
+    requireValue(s.rules.stationSelectionVersion!==1||s.phase!=='hiding','Během schovávání potvrďte předběžnou volbu; hledání začne až po 45 minutách.');
     const candidates=s.phase==='needs_station'?(s.deadlineCandidates??[]):eligibleStops(s,env);
     const stop=candidates.find(p=>p.id===c.stopId);requireValue(stop,'Zastávka není způsobilá podle GPS a limitu.');lock(s,stop);
   }else if(c.type==='walking'){requireValue(c.value||!s.curses.some(c=>c.effects?.some(e=>e.state==='active'&&e.spec.kind==='travel'&&e.spec.preventBoarding)),'Aktivní prokletí zakazuje nástup do další dopravy.');s.walking=c.value;emit(s,'travel_mode',c.value?'Hledači jsou pěšky.':'Hledači jsou v dopravním prostředku.');updateTime(s,env);

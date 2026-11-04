@@ -1,6 +1,6 @@
 import {readFile} from 'node:fs/promises';
 import catalog from '../../editor/src/data/poi-catalog.json' with { type: 'json' };
-import { addLibrary, verifyLibraryDecision, resolvePois, withPublishedWaterbodies, withPublishedCinemas, withPublishedHospitals, withPublishedLibraries, withPublishedZoos, decidePoi, poiSchema, parkDatasetSchema } from '../../../packages/geo-core/src/index';
+import { createManualEmbassy, addLibrary, verifyLibraryDecision, resolvePois, withPublishedWaterbodies, withPublishedCinemas, withPublishedHospitals, withPublishedLibraries, withPublishedZoos, decidePoi, poiSchema, parkDatasetSchema } from '../../../packages/geo-core/src/index';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { generateKeyPairSync } from 'node:crypto';
 import worker, { MAX_PUBLISH_BYTES, PublisherCoordinator, type Storage, type PublisherEnvironment } from './index';
@@ -128,7 +128,8 @@ describe('Server authorization and immutable publication',()=>{
     world.poi=withPublishedWaterbodies(world.poi!,water);
     const excluded=water.records.find(p=>p.name==='Biotop Radotín')!;
     world.poi=decidePoi(world.poi,excluded,{status:'excluded'});
-    release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    const built=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    release=await createGameDataRelease(built.data,{publishedAt:releaseTestDate,kind:built.kind,schemaVersion:6});
     expect((await send('/publish',{expectedCommit:head,release})).status).toBe(202);
     const changes=vi.mocked(GitHubClient.prototype.commit).mock.calls[0][1],artifact=JSON.parse(changes[0].text);
     expect(changes).toHaveLength(2);expect(artifact.schemaVersion).toBe(6);
@@ -136,6 +137,20 @@ describe('Server authorization and immutable publication',()=>{
     expect(artifact.data.pois.some((p:{id:string})=>p.id===excluded.id)).toBe(false);
     expect(artifact.data.pois.some((p:{name:string})=>p.name==='Zoo Praha')).toBe(false);
     expect(artifact.data.pois.find((p:{name:string})=>p.name==='Biotop Lhotka')).toMatchObject({waterbody:{globalIds:['{9E842A20-F83B-4DEB-BC50-DF8139372FF8}']},geometry:water.records.find(p=>p.name==='Biotop Lhotka')!.geometry});
+  });
+  it('publishes only approved address-verified embassies in schema 7 through the authorized GitHub path',async()=>{
+    const {world,snapshot}=await releaseTestInput(),before=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    const point:[number,number]=[14.41,50.09],office=createManualEmbassy(point,{name:'Synthetic embassy',address:'Synthetic address',country:'Test',officeType:'embassy'});
+    world.poi!.manual.push(office,{...office,id:'synthetic-excluded',status:'excluded'});
+    world.poi=decidePoi(world.poi!,office,{status:'approved',embassyVerification:{point,inputAddress:office.address!,method:'manual_review',checkedAt:releaseTestDate,sourceUrl:'https://example.org/test',dataDate:null,rawChecksum:null,note:'PRIVATE VERIFICATION NOTE'}});
+    release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);
+    expect((await send('/publish',{expectedCommit:head,release})).status).toBe(202);
+    const changes=vi.mocked(GitHubClient.prototype.commit).mock.calls[0][1],artifact=JSON.parse(changes[0].text);
+    expect(artifact.schemaVersion).toBe(7);expect(changes).toHaveLength(2);
+    expect(artifact.data.pois.filter((p:{category:string})=>p.category==='embassy')).toHaveLength(1);
+    expect(artifact.data.pois.find((p:{id:string})=>p.id===office.id)).toMatchObject({name:office.name,address:office.address,point,embassy:{officeType:'embassy',verification:{point,inputAddress:office.address,note:''}}});
+    expect(changes[0].text).not.toContain('PRIVATE VERIFICATION NOTE');
+    expect(artifact.data.pois.filter((p:{category:string})=>p.category!=='embassy')).toEqual(before.data.pois);expect(artifact.data.pidSnapshot).toEqual(before.data.pidSnapshot);
   });
   it('rejects duplicate content, immutable file collision, stale SHA, unverified PID and historical releases',async()=>{
     await seedIndex(release);expect((await send('/publish',{expectedCommit:head,release})).status).toBe(409);

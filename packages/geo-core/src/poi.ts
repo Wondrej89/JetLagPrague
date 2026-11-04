@@ -1,3 +1,4 @@
+import {embassyMetadataSchema,embassyVerificationSchema,isEmbassyLocationVerified,type EmbassyMetadata} from './embassy-model';
 import { z } from 'zod';
 import { booleanPointInPolygon, featureCollection, feature, union, pointToPolygonDistance } from '@turf/turf';
 import type { Point, Position } from 'geojson';
@@ -31,7 +32,7 @@ const geometrySchema = z.unknown().transform((value, ctx): Point | AreaGeometry 
   } catch (error) { ctx.addIssue({ code: 'custom', message: (error as Error).message }); return z.NEVER; }
 });
 export const poiSchema = z.object({
-  id, category: id, name: text, address: text.optional(), point: pointSchema, geometry: geometrySchema, library: libraryMetadataSchema.optional(), waterbody: waterbodyMetadataSchema.optional(),
+  id, category: id, name: text, address: text.optional(), point: pointSchema, geometry: geometrySchema, library: libraryMetadataSchema.optional(), waterbody: waterbodyMetadataSchema.optional(), embassy: embassyMetadataSchema.optional(),
   sourceId: id, source: poiSourceSchema, status: poiStatusSchema,
   reviewedAt: z.iso.datetime().nullable(), note: text,
   sourceIdentity: z.object({ key: id, fingerprint: z.string(), method: z.enum(['attribute-derived', 'manual']), reviewRequired: z.boolean() }).optional(),
@@ -39,8 +40,9 @@ export const poiSchema = z.object({
   attributes: z.record(z.string(), z.json()), memberIds: z.array(id).optional(),
 }).superRefine((poi, ctx) => {
   if (poi.category === 'waterbody' && (!isArea(poi.geometry) || !poi.waterbody)) ctx.addIssue({ code: 'custom', message: 'Vodní plocha vyžaduje Polygon/MultiPolygon a původní GLOBALID.' });
-  if (!['zoo', 'hospital', 'library', 'cinema'].includes(poi.category)) return;
-  if (poi.geometry.type !== 'Point' || canonicalJson(poi.geometry.coordinates) !== canonicalJson(poi.point)) ctx.addIssue({ code: 'custom', message: `${poi.category === 'zoo' ? 'Zoo' : poi.category === 'library' ? 'Knihovna' : poi.category === 'cinema' ? 'Kino' : 'Nemocnice'} musí mít geometrii Point shodnou s referenčním bodem.` });
+  if (!['zoo', 'hospital', 'library', 'cinema', 'embassy'].includes(poi.category)) return;
+  if (poi.geometry.type !== 'Point' || canonicalJson(poi.geometry.coordinates) !== canonicalJson(poi.point)) ctx.addIssue({ code: 'custom', message: `${poi.category === 'zoo' ? 'Zoo' : poi.category === 'library' ? 'Knihovna' : poi.category === 'cinema' ? 'Kino' : poi.category === 'embassy' ? 'Ambasáda' : 'Nemocnice'} musí mít geometrii Point shodnou s referenčním bodem.` });
+  if (poi.category === 'embassy' && (!poi.embassy || !poi.address?.trim() || poi.status === 'approved' && !isEmbassyLocationVerified(poi))) ctx.addIssue({ code: 'custom', message: 'Ambasáda vyžaduje adresu, metadata úřadu a pro schválení ověřený referenční bod.' });
   if (poi.category === 'cinema' && (poi.address === undefined || (poi.status === 'approved' && (!poi.name.trim() || !poi.address.trim())))) ctx.addIssue({ code: 'custom', message: 'Schválené kino musí mít název a adresu.' });
   if (poi.category === 'zoo' && poi.address === undefined) ctx.addIssue({ code: 'custom', message: 'Zoo musí obsahovat adresu.' });
   if (poi.category === 'library' && (!poi.library || !poi.address?.trim())) ctx.addIssue({ code: 'custom', message: 'Knihovna musí mít adresu a metadata oficiálního detailu.' });
@@ -52,11 +54,13 @@ export type PoiSource = z.infer<typeof poiSourceSchema>;
  * no map marker and no participation in distance calculations or publication. */
 export const unlocatedLibrarySchema = z.object({ id, selectionKey: id, name: text.min(1), address: text.min(1), officialUrl: httpUrl.nullable(), point: z.null(), geometry: z.null(), source: poiSourceSchema, status: z.enum(['review', 'excluded']), reviewedAt: z.iso.datetime().nullable(), note: text });
 export type UnlocatedLibrary = z.infer<typeof unlocatedLibrarySchema>;
+export const unlocatedEmbassySchema = z.object({ id, category: z.literal('embassy'), sourceId: id, name: text.min(1), address: text.min(1), point: z.null(), geometry: z.null(), embassy: embassyMetadataSchema, source: poiSourceSchema, status: z.enum(['review','excluded']), reviewedAt: z.iso.datetime().nullable(), note: text, attributes: z.record(z.string(),z.json()) });
+export type UnlocatedEmbassy = z.infer<typeof unlocatedEmbassySchema>;
 export const parkDatasetSchema = z.object({
   source: poiSourceSchema, records: z.array(poiSchema).max(10000), importRecord: z.json().optional(), checksum: z.string().regex(/^[a-f0-9]{64}$/),
 });
 export type ParkDataset = z.infer<typeof parkDatasetSchema>;
-const decisionSchema = z.object({ id, name: text.optional(), address: text.optional(), point: pointSchema.optional(), status: poiStatusSchema.optional(), reviewedAt: z.iso.datetime().nullable(), note: text.optional(), libraryVerification: libraryVerificationSchema.nullable().optional() });
+const decisionSchema = z.object({ id, name: text.optional(), address: text.optional(), point: pointSchema.optional(), status: poiStatusSchema.optional(), reviewedAt: z.iso.datetime().nullable(), note: text.optional(), libraryVerification: libraryVerificationSchema.nullable().optional(), embassyVerification: embassyVerificationSchema.nullable().optional() });
 export type PoiDecision = z.infer<typeof decisionSchema>;
 export const parkHierarchySchema = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal('unknown')]);
 export type ParkHierarchy = z.infer<typeof parkHierarchySchema>;
@@ -70,9 +74,10 @@ export const poiConfigurationSchema = z.object({
   pointCatalog: z.array(poiSchema).max(10000).optional(),
   waterSources: z.array(parkDatasetSchema).max(20).optional(),
   waterStatusFilter: z.enum(['all', 'approved', 'review', 'excluded']).optional(),
+  unlocatedEmbassies: z.array(unlocatedEmbassySchema).max(10000).optional(),
   unlocatedLibraries: z.array(unlocatedLibrarySchema).max(10000).optional(),
   manual: z.array(poiSchema).max(10000), decisions: z.array(decisionSchema).max(20000),
-  visibility: z.object({ airports: z.boolean(), parks: z.boolean(), referencePoints: z.boolean(), zoos: z.boolean().optional(), hospitals: z.boolean().optional(), libraries: z.boolean().optional(), cinemas: z.boolean().optional(), waterbodies: z.boolean().optional() }),
+  visibility: z.object({ airports: z.boolean(), parks: z.boolean(), referencePoints: z.boolean(), zoos: z.boolean().optional(), hospitals: z.boolean().optional(), libraries: z.boolean().optional(), cinemas: z.boolean().optional(), embassies: z.boolean().optional(), waterbodies: z.boolean().optional() }),
   parkFilters: parkFiltersSchema.optional(),
 });
 export type PoiConfiguration = z.infer<typeof poiConfigurationSchema>;
@@ -84,7 +89,7 @@ export function validatePoiConfiguration(input: PoiConfiguration): void {
   unique(input.sources.map(s => s.source.id));
   unique((input.waterSources ?? []).map(s => s.source.id));
   const records = [...input.sources.flatMap(s => s.records), ...(input.waterSources ?? []).flatMap(s => s.records), ...(input.pointCatalog ?? []), ...input.manual];
-  unique([...records.map(p => p.id), ...(input.unlocatedLibraries ?? []).map(p => p.id)]); unique(input.decisions.map(d => d.id));
+  unique([...records.map(p => p.id), ...(input.unlocatedLibraries ?? []).map(p => p.id), ...(input.unlocatedEmbassies ?? []).map(p=>p.id)]); unique(input.decisions.map(d => d.id));
   unique((input.unlocatedLibraries ?? []).map(p => p.selectionKey));
   unique(records.filter(p => p.category === 'library' && p.library?.selectionKey).map(p => p.library!.selectionKey!));
   unique(records.filter(p => p.category === 'library' && p.library).map(p => libraryId(p.library!.officialUrl)));
@@ -95,11 +100,12 @@ export function validatePoiConfiguration(input: PoiConfiguration): void {
   for (const dataset of input.waterSources ?? []) for (const record of dataset.records) {
     if (record.category !== 'waterbody' || record.source.id !== dataset.source.id || record.id !== waterbodyId(record.sourceId)) throw new Error('Nesouhlasí identita zdrojové vodní plochy.');
   }
-  if (input.pointCatalog?.some(record => !['zoo', 'hospital', 'library', 'cinema'].includes(record.category))) throw new Error('Bodový katalog této iterace obsahuje pouze zoo, nemocnice, knihovny a kina.');
+  if (input.pointCatalog?.some(record => !['zoo', 'hospital', 'library', 'cinema', 'embassy'].includes(record.category))) throw new Error('Bodový katalog této iterace obsahuje pouze zoo, nemocnice, knihovny, kina a ambasády.');
   for (const record of records) {
-    if (['zoo', 'hospital', 'library', 'cinema'].includes(record.category)) {
+    if (['zoo', 'hospital', 'library', 'cinema', 'embassy'].includes(record.category)) {
       if (record.geometry.type !== 'Point' || canonicalJson(record.geometry.coordinates) !== canonicalJson(record.point)) throw new Error('Bodový POI musí mít shodný referenční bod a geometrii Point.');
       if (record.category === 'zoo' && record.address === undefined) throw new Error('Zoo musí mít adresu.');
+      if (record.category === 'embassy' && (!record.embassy || !record.address?.trim())) throw new Error('Ambasáda musí mít adresu a metadata úřadu.');
       if (record.category === 'cinema' && record.address === undefined) throw new Error('Kino musí mít adresu.');
       if (record.category === 'library' && (!hasLibraryIdentity(record) || !record.address?.trim())) throw new Error('Nesouhlasí identita nebo adresa knihovny.');
       continue;
@@ -225,17 +231,18 @@ export function resolvePois(airports: Poi[], configuration: PoiConfiguration): P
   return [...airports, ...sources, ...configuration.manual.filter(p => !sourceIds.has(p.id))].map(record => {
     const decision = record.category === 'airport' ? undefined : decisions.get(record.id);
     const result = { ...record, ...decision, id: record.id };
-    if (['zoo', 'hospital', 'library', 'cinema'].includes(record.category)) result.geometry = { type: 'Point', coordinates: result.point };
+    if (['zoo', 'hospital', 'library', 'cinema', 'embassy'].includes(record.category)) result.geometry = { type: 'Point', coordinates: result.point };
+    if (record.category === 'embassy' && record.embassy) result.embassy = { ...record.embassy, verification: decision?.embassyVerification === undefined ? record.embassy.verification : decision.embassyVerification ?? undefined };
     if (record.category === 'library' && record.library) result.library = { ...record.library, verification: decision?.libraryVerification === undefined ? record.library.verification : decision.libraryVerification ?? undefined };
     if (record.attributes.sourceMergedInto) return { ...result, status: 'excluded' as const, note: `${result.note} Historická identita sjednocena do ${record.attributes.sourceMergedInto}.` };
-    if (record.sourceIdentity?.reviewRequired || (['park', 'zoo', 'hospital', 'library', 'cinema', 'waterbody'].includes(record.category) && !result.name.trim()) || (['zoo', 'cinema'].includes(record.category) && !result.address?.trim()) || (record.category === 'library' && (!result.address?.trim() || !isLibraryLocationVerified(result))) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
+    if (record.sourceIdentity?.reviewRequired || (['park', 'zoo', 'hospital', 'library', 'cinema', 'embassy', 'waterbody'].includes(record.category) && !result.name.trim()) || (['zoo', 'cinema', 'embassy'].includes(record.category) && !result.address?.trim()) || (record.category === 'library' && (!result.address?.trim() || !isLibraryLocationVerified(result))) || (record.category === 'embassy' && !isEmbassyLocationVerified(result)) || record.attributes.sourceMissing || (isArea(record.geometry) && !booleanPointInPolygon(result.point, record.geometry, { ignoreBoundary: true }))) {
       return { ...result, status: result.status === 'excluded' ? 'excluded' as const : 'review' as const, note: `${result.note} Referenční bod nebo dostupnost zdroje vyžaduje revizi.` };
     }
     return result;
   });
 }
 export function preparePoiDecision(poi: Poi, previous: PoiDecision | undefined, change: Partial<Omit<PoiDecision, 'id'>>, reviewedAt = new Date().toISOString()): PoiDecision {
-  if (!['park', 'zoo', 'hospital', 'library', 'cinema', 'waterbody'].includes(poi.category)) throw new Error('Schválená letiště této lokální kategorie se automaticky nemění.');
+  if (!['park', 'zoo', 'hospital', 'library', 'cinema', 'embassy', 'waterbody'].includes(poi.category)) throw new Error('Schválená letiště této lokální kategorie se automaticky nemění.');
   if (change.point) {
     pointSchema.parse(change.point);
     if (poi.category === 'park' && (!isArea(poi.geometry) || !booleanPointInPolygon(change.point, poi.geometry, { ignoreBoundary: true }))) throw new Error('Referenční bod musí ležet uvnitř parku, mimo otvory a hranici.');
@@ -245,6 +252,15 @@ export function preparePoiDecision(poi: Poi, previous: PoiDecision | undefined, 
   if (poi.category === 'waterbody') {
     if (!isArea(poi.geometry) || !poi.waterbody) throw new Error('Vodní plocha vyžaduje polygon a GLOBALID.');
     if ((decision.status ?? poi.status) === 'approved' && !(decision.name ?? poi.name).trim()) throw new Error('Před schválením vodní plochy doplňte název.');
+    return decision;
+  }
+  if (poi.category === 'embassy') {
+    if (!poi.embassy || poi.geometry.type !== 'Point') throw new Error('Ambasáda vyžaduje bod a metadata úřadu.');
+    const point = decision.point ?? poi.point, address = decision.address ?? poi.address;
+    const verification = decision.embassyVerification === undefined ? poi.embassy.verification : decision.embassyVerification ?? undefined;
+    const verified = isEmbassyLocationVerified({point,address,embassy:{...poi.embassy,verification}});
+    if (change.status === 'approved' && (!verified || !(decision.name ?? poi.name).trim() || !address?.trim())) throw new Error('Před schválením ambasády ověřte bod, název a adresu.');
+    if (!verified && (decision.status ?? poi.status) === 'approved') decision.status = 'review';
     return decision;
   }
   if (poi.category === 'library') {
@@ -366,6 +382,40 @@ export function withPublishedHospitals(configuration: PoiConfiguration, publishe
 export function withPublishedCinemas(configuration: PoiConfiguration, published: readonly Poi[]): PoiConfiguration {
   if (published.some(poi => poi.category !== 'cinema')) throw new Error('Katalog kin obsahuje jinou kategorii.');
   return withPublishedPointPois(configuration, published);
+}
+export function withPublishedEmbassies(configuration:PoiConfiguration,published:readonly Poi[],unlocated:readonly UnlocatedEmbassy[]=[]):PoiConfiguration {
+  if(published.some(p=>p.category!=='embassy'))throw new Error('Katalog ambasád obsahuje jinou kategorii.');
+  const next=withPublishedPointPois(configuration,published),known=new Set([...(next.pointCatalog??[]),...next.manual].map(p=>p.id));
+  const rows=new Map<string,UnlocatedEmbassy>();
+  for(const row of [...(next.unlocatedEmbassies??[]),...unlocated])if(!known.has(row.id)&&!rows.has(row.id))rows.set(row.id,row);
+  const remaining=[...rows.values()];return canonicalJson(remaining)===canonicalJson(next.unlocatedEmbassies??[])?next:{...next,unlocatedEmbassies:remaining};
+}
+export function resolveUnlocatedEmbassies(configuration:PoiConfiguration):UnlocatedEmbassy[]{
+  const known=new Set([...(configuration.pointCatalog??[]),...configuration.manual].map(p=>p.id));
+  return (configuration.unlocatedEmbassies??[]).filter(row=>!known.has(row.id)).map(row=>{const d=configuration.decisions.find(d=>d.id===row.id);return {...row,name:d?.name??row.name,address:d?.address??row.address,note:d?.note??row.note,reviewedAt:d?.reviewedAt??row.reviewedAt,status:d?.status==='excluded'?'excluded':'review'};});
+}
+export function decideUnlocatedEmbassy(configuration:PoiConfiguration,row:UnlocatedEmbassy,change:Partial<PoiDecision>):PoiConfiguration {
+  if(change.status==='approved'||change.point||change.embassyVerification)throw new Error('Nejprve umístěte a ověřte referenční bod ambasády.');
+  const d=decisionSchema.parse({...configuration.decisions.find(d=>d.id===row.id),...change,id:row.id,reviewedAt:new Date().toISOString()});
+  return {...configuration,decisions:[...configuration.decisions.filter(d=>d.id!==row.id),d]};
+}
+export function locateEmbassy(configuration:PoiConfiguration,row:UnlocatedEmbassy,point:[number,number],verification:import('./embassy-model').EmbassyVerification):PoiConfiguration {
+  pointSchema.parse(point);embassyVerificationSchema.parse(verification);
+  if(verification.method!=='manual_review'||!isEmbassyLocationVerified({point,address:row.address,embassy:{...row.embassy,verification}}))throw new Error('Potvrďte ručně ověřený bod pro tuto adresu.');
+  if([...(configuration.pointCatalog??[]),...configuration.manual].some(p=>p.id===row.id))throw new Error('Ambasáda již má referenční bod.');
+  const poi=poiSchema.parse({...row,point,geometry:{type:'Point',coordinates:point},embassy:{...row.embassy,verification},status:row.status==='excluded'?'excluded':'review'});
+  return {...configuration,unlocatedEmbassies:(configuration.unlocatedEmbassies??[]).filter(r=>r.id!==row.id),manual:[...configuration.manual,poi]};
+}
+export function createManualEmbassy(point:[number,number],input:{name:string;address:string;country:string;officeType:EmbassyMetadata['officeType']}):Poi {
+  const checked=pointSchema.parse(point),id=`manual-embassy:${crypto.randomUUID()}`;
+  return poiSchema.parse({id,category:'embassy',name:input.name,address:input.address,point:checked,geometry:{type:'Point',coordinates:checked},sourceId:id,
+    embassy:{country:input.country,countryCode:null,officeType:input.officeType,officialSourceUrl:null},
+    source:{id:'manual',provider:'Ručně vložené diplomatické pracoviště',url:null,license:{name:'Vlastní data – licenci určuje autor',url:null},dataDate:null,retrievedAt:new Date().toISOString(),rawChecksum:null,verification:'user_supplied',note:'Ručně vybrané pracoviště a referenční bod; nejde o úplný registr ani hranice areálu.'},
+    status:'review',reviewedAt:null,note:'Ověřte polohu pro uvedenou adresu a pracoviště schvalte.',attributes:{}});
+}
+export function removeManualEmbassy(configuration:PoiConfiguration,id:string):PoiConfiguration {
+  if(!configuration.manual.some(p=>p.id===id&&p.category==='embassy'&&id.startsWith('manual-embassy:')))throw new Error('Odstranit lze pouze ručně přidanou ambasádu; katalogové pracoviště vyřaďte ze hry.');
+  return {...configuration,manual:configuration.manual.filter(p=>p.id!==id),decisions:configuration.decisions.filter(d=>d.id!==id)};
 }
 export function withPublishedLibraries(configuration: PoiConfiguration, published: readonly Poi[], unlocated: readonly UnlocatedLibrary[] = []): PoiConfiguration {
   if (published.some(poi => poi.category !== 'library')) throw new Error('Katalog knihoven obsahuje jinou kategorii.');

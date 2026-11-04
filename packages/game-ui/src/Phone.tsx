@@ -1,3 +1,5 @@
+import {HidingInstructions,StationConfirmation} from './StationSetup';
+import {isStationSetup,stationEligibility,stationMode} from './station-selection';
 import {HunterDistance,showHunterLocation} from './HunterDistance';
 import {MatchFlow} from './MatchFlow';
 import {PartyStart} from './PartyStart';
@@ -32,6 +34,7 @@ export function PhoneScreen({view,apiKey,photos,send,release}:{view:RoleView;rel
  const tabs=hunter?[['map','⌖','Mapa'],['questions','?','Otázky'],['curses','☾','Prokletí'],['history','≡','Historie']]:[['map','⌖','Úkryt'],['incoming','?','Otázka'],['cards','▤','Karty'],['history','≡','Historie']];
  const active=view.curses.filter(activeCurse);
  const [ransomText,setRansomText]=useState(''),[tieNote,setTieNote]=useState(''),[tieConfirmed,setTieConfirmed]=useState(false),[publicPoint,setPublicPoint]=useState<MapFocus>();
+ const [candidateId,setCandidateId]=useState<string|null>(null),[confirmingStation,setConfirmingStation]=useState(false);
  const [acknowledgedMove,setAcknowledgedMove]=useState(''),[moveSelection,setMoveSelection]=useState('');
  const moveKey=view.move?`${view.move.cardId}:${view.move.startedAt}`:'';
  const moving=!!view.move&&view.move.stage!=='completed';
@@ -40,40 +43,43 @@ export function PhoneScreen({view,apiKey,photos,send,release}:{view:RoleView;rel
  const markerList:import('./MapSurface').MapMarker[]=own?[{id:'own',role:view.role,label:'Moje GPS',point:own.point}]:[];
  if(showHunterLocation(view)&&view.hunterLocation?.fix)markerList.push({id:'hunters',role:'hunter',point:view.hunterLocation.fix.point,label:view.hunterLocation.status==='current'?'Hledači – aktuální GPS':view.hunterLocation.issue??'Hledači – poslední známá GPS',stale:view.hunterLocation.status!=='current'});
  const baseMarkers=!hunter&&station?[...markerList,{id:'station',role:'station' as const,label:station.name,point:station.point}]:markerList;
- const selectedStop=(view.stops??[]).find(s=>s.id===view.provisionalStopId);
- const markers=!hunter&&!station?[...baseMarkers,...eligible.map(s=>({id:'candidate-'+s.id,role:'station' as const,label:s.name,point:s.point,onSelect:()=>void run({type:view.phase==='needs_station'?'lock_station':'select_station',stopId:s.id})})),...(selectedStop&&!eligible.some(s=>s.id===selectedStop.id)?[{id:'selected-stop',role:'station' as const,label:selectedStop.name,point:selectedStop.point}]:[])]:baseMarkers;
+ const setupPhase=isStationSetup(view),phaseMap=setupPhase&&tab==='map',selecting=!hunter&&!station&&!moving&&setupPhase;
+ const selectionStops=(view.stops??[]).filter(s=>stationEligibility(view,s)===null);
+ const selectedStop=(view.stops??[]).find(s=>s.id===(candidateId??view.provisionalStopId)),candidateStop=(view.stops??[]).find(s=>s.id===candidateId);
+ const chooseStop=(id:string)=>{if(!selecting||confirmingStation)return;if(!view.stops?.some(s=>s.id===id)){setError('Zastávka není způsobilá v rozhodném okamžiku.');return;}setError('');setCandidateId(id);};
+ const confirmStation=async()=>{if(!candidateStop||stationEligibility(view,candidateStop)||confirmingStation)return;setConfirmingStation(true);setError('');try{await send({type:view.phase==='needs_station'?'lock_station':'select_station',stopId:candidateStop.id});setCandidateId(null);}catch(error){setError((error as Error).message);}finally{setConfirmingStation(false);}};
+ const markers=selecting?[...baseMarkers,...selectionStops.map(s=>({id:'candidate-'+s.id,role:'station' as const,label:s.name,point:s.point,selected:selectedStop?.id===s.id,onSelect:()=>chooseStop(s.id)})),...(selectedStop&&!selectionStops.some(s=>s.id===selectedStop.id)?[{id:'selected-stop',role:'station' as const,label:selectedStop.name,point:selectedStop.point,selected:true,onSelect:()=>chooseStop(selectedStop.id)}]:[])]:baseMarkers;
  if(hunter&&pending?.measurement){markers.push({id:'measurement-a',role:'measurement-a',label:'Thermometer A – první měření',point:pending.measurement.first});if(pending.measurement.second)markers.push({id:'measurement-b',role:'measurement-b',label:'Thermometer B – druhé měření',point:pending.measurement.second});}
  if(last?.answerPoi&&(!view.epochId||last.epochId===view.epochId))markers.push({id:'answer-poi',role:'poi',label:last.answerPoi.name,point:last.answerPoi.point});
  if(!hunter&&moving)for(const stop of eligible.filter(s=>s.id!==view.move?.origin.id))markers.push({id:'move-candidate-'+stop.id,role:'station',label:stop.name,point:stop.point,onSelect:()=>setMoveSelection(stop.id)});
  for(const revealed of view.revealedStations??[])markers.push({id:'revealed-'+revealed.id,role:'station',label:`Odhalené původní stanoviště: ${revealed.name}`,point:revealed.point});
- const stationList=(view.stops??[]).filter(s=>search?s.name.toLocaleLowerCase('cs').includes(search.toLocaleLowerCase('cs'))||s.id.includes(search):eligible.some(e=>e.id===s.id)).slice(0,30);
- return <article className={`game-phone ${view.role}`} data-testid={`phone-${view.role}`}>
+ const stationList=(view.stops??[]).filter(s=>search?s.name.toLocaleLowerCase('cs').includes(search.toLocaleLowerCase('cs'))||s.id.includes(search):selectionStops.some(e=>e.id===s.id)).slice(0,30);
+ return <article className={`game-phone ${view.role}`} data-testid={`phone-${view.role}`} data-station-phase={setupPhase?view.phase:undefined}>
   {hunter&&moving&&acknowledgedMove!==moveKey&&<section className="move-screen" role="dialog" aria-modal="true" aria-label="Schovaný použil Move"><h2>SCHOVANÝ POUŽIL MOVE</h2><p>Původní stanoviště: <strong>{view.move!.origin.name}</strong></p><p>Hra je na 20 minut pozastavena. Musíte zůstat na místě a nesmíte pokládat otázky.</p><strong>{formatTime(view.move!.deadline-view.now)}</strong><div className="move-origin-map"><MapSurface markers={[{id:'move-origin',role:'station',point:view.move!.origin.point,label:`Odhalené původní stanoviště: ${view.move!.origin.name}`}]} center={view.move!.origin.point} apiKey={apiKey}/></div><button onClick={()=>setAcknowledgedMove(moveKey)}>Rozumím · zobrazit herní mapu</button></section>}
   <header className="phone-header" aria-label="Přehled hry">
    <div className="phone-top"><span className="phone-team" title={view.match?.teams.find(t=>t.id===view.match?.ownTeamId)?.name}>{view.match?.teams.find(t=>t.id===view.match?.ownTeamId)?.name??(hunter?'Hledači':'Schovaní')}</span><span className="role-badge">{hunter?'Hledači':'Schovaní'} · {view.match?.round??1}. kolo</span></div>
    <div className="phone-clock"><span title="Celkový čas hry"><span>Čas</span><strong>{view.connected===false?'—:—:—':formatGameTime(view.elapsedMs)}</strong></span>{view.phase==='hiding'&&view.connected!==false?<span className="hiding-countdown" title="Čas na výběr stanoviště">Schovávání <b>{formatTime(view.hideRemainingMs)}</b></span>:<span className={`phase-label ${view.phase}`}>{view.connected===false?'Čeká na partii':prestart?'Před začátkem':view.phase==='needs_station'?'Nutné řešení':view.phase==='finished'?'Konec kola':view.phase==='awaiting_capture_confirmation'?'Potvrzení nalezení':view.phase==='settling'?'Vyhodnocení':view.move?.stage==='moving'?'Move · pauza':'Hledání'}</span>}</div>
    <HunterDistance view={view}/>
   </header>
-  <main className="phone-scroll" ref={scroll}>
+  {setupPhase&&<HidingInstructions view={view}/>}
+  <main className={`phone-scroll ${phaseMap?'phase-map-screen':''}`} ref={scroll}>
    {error&&<p role="alert" className="phone-alert">{error}</p>}
    {!hunter&&view.proximityActive&&<div className="phone-alert proximity" role="status">Hledači jsou poblíž! Dostali se do vzdálenosti 400 metrů od tvého stanoviště.</div>}
    {prestart&&view.lobby?<PartyStart view={view} send={run}/>:reviewing?<MatchFlow view={view} send={run}/>:<>
    <Indicators view={view} navigate={(target,indicator)=>{navigate(target);if(target==='questions'&&pending)setGroup(pending.definition.type);setFocusAction({id:indicator.id,kind:indicator.kind,nonce:performance.now()});}} send={run}/>
    {tab==='map'&&<>
-    <div className="phone-map"><GameMap release={release} view={view} storageKey={`jetlag-public-map:${view.gameId}:${view.role}`} markers={markers} apiKey={apiKey} center={!hunter&&!station&&selectedStop?selectedStop.point:own?.point} focus={publicPoint} circle={hunter?null:moving?(view.stops??[]).find(s=>s.id===(moveSelection||view.move?.selectedStopId))?.point??null:station?.point??selectedStop?.point}/></div>
-    <section className="phone-section"><div className="section-title"><h2>{hunter?'Praha je vaše mapa':'Moje stanoviště'}</h2><span>⌖</span></div>
+    <div className="phone-map"><GameMap release={release} view={view} onStationSelect={selecting?chooseStop:undefined} storageKey={`jetlag-public-map:${view.gameId}:${view.role}`} markers={markers} apiKey={apiKey} center={!hunter&&!station&&selectedStop?selectedStop.point:own?.point} focus={publicPoint} circle={hunter?null:moving?(view.stops??[]).find(s=>s.id===(moveSelection||view.move?.selectedStopId))?.point??null:station?.point??selectedStop?.point}/></div>
+    {selecting&&<details className="station-search" data-testid="station-search"><summary>Zastávky a GPS</summary><p className="gps-label">{own?`Moje GPS · přesnost ±${Math.round(own.accuracy)} m`:"GPS není dostupná."}</p><p>{view.phase==='needs_station'?`${selectionStops.length} zastávek způsobilých při vypršení lhůty.`:`${selectionStops.length} zastávek v okruhu aktuální GPS.`}</p><label>Hledat stanoviště<input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Název nebo ID zastávky"/></label><div className="station-list">{stationList.map(stop=><button key={stop.id} className={selectedStop?.id===stop.id?'selected':''} onClick={()=>chooseStop(stop.id)}><span>{stop.name}</span><small>{stationMode(stop,release)}</small></button>)}</div></details>}
+    {!phaseMap&&<section className="phone-section"><div className="section-title"><h2>{hunter?'Praha je vaše mapa':'Moje stanoviště'}</h2><span>⌖</span></div>
      <p className="gps-label">{own?`Moje GPS · přesnost ±${Math.round(own.accuracy)} m`:'GPS není dostupná.'}</p>
      {view.gpsIssue&&<p role="status" className="phone-alert">{view.gpsIssue}</p>}
      {hunter?<><label className="walking-switch"><input type="checkbox" checked={view.walking??false} onChange={e=>void run({type:'walking',value:e.target.checked})}/>Jsem pěšky</label>{active.length>0&&<button className="curse-summary" onClick={()=>setTab('curses')}>☾ Aktivní prokletí: {active.length}</button>}{view.phase==='seeking'&&!moving&&<button className="found-button phone-wide" onClick={()=>void run({type:'report_found'})}>Našli jsme tě</button>}<button className="primary phone-wide" disabled={!view.canAsk} onClick={()=>setTab('questions')}>Položit otázku <span>↗</span></button>{view.blockingReason&&<p>{view.blockingReason}</p>}{last&&<div className="answer-card"><span>Poslední odpověď · {last.definition.label}</span><strong>{last.answer}</strong>{last.answerPoi&&<button onClick={()=>{setPublicPoint({point:last.answerPoi!.point,requestId:performance.now()});setTab('map');}}>Zobrazit místo na mapě</button>}{last.photoId&&<Photo id={last.photoId} photos={photos}/>}</div>}</>:<>
       {moving?<MoveDestination view={view} send={run} selected={moveSelection||view.move?.selectedStopId||''} onSelected={setMoveSelection}/>:station?<div className="station-card"><span>UZAMČENÉ STANOVIŠTĚ</span><h3>{station.name}</h3><p>Okruh 400 m · {own?`${Math.round(distanceMeters(own.point,station.point))} m od bodu`:'GPS chybí'}</p><strong>{!view.gpsIssue&&own&&distanceMeters(own.point,station.point)<=400?'Jste v povoleném okruhu':'Poloha není v povoleném okruhu nebo chybí'}</strong></div>:view.connected===false?<p>Stanoviště PID vyberete až v autorizované partii nebo v lokálním simulátoru.</p>:<>
-       <h3>Vyberte stanoviště PID</h3>{view.phase==='needs_station'&&<p className="phone-alert">Limit vypršel. {view.stops?.length?'Potvrďte jednu ze zastávek způsobilých v okamžiku vypršení.':'Bez spolehlivé polohy nelze stanoviště odhadnout. Je nutné řešení správcem / reset testu.'}</p>}
-       <p>{eligible.length} zastávek v okruhu GPS. Při překryvu zvolte konkrétní zastávku.</p><label>Hledat stanoviště<input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Název nebo ID zastávky"/></label>
-       <div className="station-list">{stationList.map(stop=><button key={stop.id} className={view.provisionalStopId===stop.id?'selected':''} onClick={()=>void run({type:view.phase==='needs_station'?'lock_station':'select_station',stopId:stop.id})}><span>{stop.name}</span><small>{own?`${Math.round(distanceMeters(own.point,stop.point))} m`:'Bez GPS'}</small></button>)}</div>
-       {selectedStop&&view.phase==='hiding'&&<><p>Předběžně: <strong>{selectedStop.name}</strong></p><button className="primary phone-wide" disabled={!eligible.some(s=>s.id===selectedStop.id)} onClick={()=>void run({type:'lock_station',stopId:selectedStop.id})}>Potvrdit a uzamknout stanoviště</button></>}
+       <p>Stanoviště zatím nebylo určeno.</p>
       </>}
       <button className="primary phone-wide" onClick={()=>setTab(pending?'incoming':'cards')}>{pending?'Otevřít příchozí otázku':`Karetní ruka (${view.hand?.length??0})`}</button>
      </>}
-    </section>
+    </section>}
    </>}
    {tab==='questions'&&hunter&&<section className="phone-section"><button onClick={()=>setTab('map')}>Zobrazit mapu a vrstvy</button><div className="section-title"><h2>{group?QUESTION_GROUPS.find(g=>g.id===group)?.name:'Položit otázku'}</h2>{group&&<button onClick={()=>setGroup(null)}>Zpět</button>}</div>
     {view.curses.some(c=>c.effects?.some(e=>e.state==='active'&&e.spec.kind==='next_question'&&e.spec.minWords))&&<label>Text otázky z výstřižků (alespoň 5 slov)<input value={ransomText} onChange={e=>setRansomText(e.target.value)}/></label>}
@@ -102,6 +108,7 @@ export function PhoneScreen({view,apiKey,photos,send,release}:{view:RoleView;rel
    {tab==='history'&&<section className="phone-section"><h2>Historie hry</h2>{view.questions.filter(q=>q.state==='answered'&&q.photoId).map(q=><article className="answer-card" key={q.id}><span>{q.definition.label}</span><Photo id={q.photoId!} photos={photos}/></article>)}<ol className="game-history">{[...view.events].reverse().map(e=><li key={e.id}><time>{formatTime(e.at-(view.startedAt??(view.now-view.elapsedMs)))}</time><p>{e.text}</p></li>)}</ol></section>}
    </>}
   </main>
+  {tab==='map'&&selecting&&candidateStop&&<StationConfirmation view={view} stop={candidateStop} release={release} busy={confirmingStation} onConfirm={()=>void confirmStation()} onCancel={()=>setCandidateId(null)}/>}
   <nav className="phone-nav" aria-label={`Navigace ${hunter?'hledačů':'schovaného'}`}>{tabs.map(([id,icon,label])=><button key={id} aria-pressed={tab===id} disabled={prestart||reviewing} onClick={()=>navigate(id)}><span>{icon}{id==='curses'&&active.length>0&&<b>{active.length}</b>}{id==='incoming'&&pending&&<b>1</b>}{id==='cards'&&((view.rewards?.some(r=>r.state!=='claimed'))||active.some(c=>c.hangman))&&<b aria-label={view.rewards?.some(r=>r.state==='offered')?'Nedokončené dobírání':view.rewards?.some(r=>r.state!=='claimed')?`${view.rewards.filter(r=>r.state!=='claimed').length} čekajících odměn`:'Aktivní Hangman'}>{view.rewards?.some(r=>r.state==='offered')?'!':view.rewards?.filter(r=>r.state!=='claimed').length||active.length}</b>}</span>{label}</button>)}</nav>
  </article>;
 }

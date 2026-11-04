@@ -9,8 +9,9 @@ import {useDeductionGeometry} from './use-deduction-geometry';
 const EMPTY_IDS:string[]=[];
 const EMPTY_DEDUCTIONS:import('../../game-core/src/index').Deduction[]=[];
 type MapProps=Parameters<typeof MapSurface>[0];
-export function GameMap({release,view,storageKey,...mapProps}:MapProps&{release?:GameDataRelease;view?:RoleView;storageKey?:string}){
+export function GameMap({release,view,storageKey,onStationSelect,...mapProps}:MapProps&{release?:GameDataRelease;view?:RoleView;storageKey?:string;onStationSelect?(id:string):void}){
  const [panel,setPanel]=useState<'layers'|'deductions'|null>(null),[search,setSearch]=useState(''),[selected,setSelected]=useState(''),[focus,setFocus]=useState<MapFocus>();
+ const stationSelect=useRef(onStationSelect);stationSelect.current=onStationSelect;
  const focusSequence=useRef(0),moveCamera=(point:Point)=>setFocus({point,requestId:++focusSequence.current});
  useEffect(()=>{if(mapProps.focus)setFocus(mapProps.focus);},[mapProps.focus]);
  const [settings,setSettings]=useState(()=>{try{return JSON.parse(localStorage.getItem(storageKey??'jetlag-public-map')??'{}') as {visible?:string[];fill?:boolean;borders?:boolean;target?:TargetPolicy;gpsQuestionId?:string;possible?:boolean;excluded?:boolean};}catch{return {};}});
@@ -20,7 +21,7 @@ export function GameMap({release,view,storageKey,...mapProps}:MapProps&{release?
  const visible=settings.visible??EMPTY_IDS,target=settings.target??'station',deductions=view?.deductions??EMPTY_DEDUCTIONS;
  const ids=individual.epoch===view?.epochId?individual.ids:EMPTY_IDS;
  const geometry=useDeductionGeometry(release,deductions,target,ids,settings.gpsQuestionId);
- const publicOverlays=useMemo<MapOverlay[]>(()=>layers.filter(layer=>visible.includes(layer.id)).map(layer=>({id:layer.id,data:{type:'FeatureCollection',features:layer.features},color:layer.color,icon:layer.icon,fill:settings.fill!==false,weight:settings.borders===false?0:2,onSelect:props=>setSelected(layer.id+'|'+String(props.id))})),[layers,visible,settings.fill,settings.borders]);
+ const publicOverlays=useMemo<MapOverlay[]>(()=>layers.filter(layer=>visible.includes(layer.id)).map(layer=>({id:layer.id,data:{type:'FeatureCollection',features:layer.features},color:layer.color,icon:layer.icon,fill:settings.fill!==false,weight:settings.borders===false?0:2,onSelect:props=>{setSelected(layer.id+'|'+String(props.id));if((layer.id==='pid'||layer.id==='rail')&&stationSelect.current){stationSelect.current(String(props.id));setPanel(null);}}})),[layers,visible,settings.fill,settings.borders]);
  const overlays=useMemo(()=>{
   const items:MapOverlay[]=[...publicOverlays];
   const chosen=layers.flatMap(l=>l.features.map(f=>({layer:l,feature:f}))).find(p=>p.layer.id+'|'+String(p.feature.id)===selected);

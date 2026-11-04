@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, type ReactNode } from 'react';
 import { defaultParkFilters, filterParkPois, parkHierarchy, parkMatchesHierarchy, type ParkFilters, type ParkHierarchy, type Poi, type PoiConfiguration, type PoiDecision, type ParkDataset, type UnlocatedLibrary } from '@jetlag/geo-core';
 import { HospitalProperties } from './HospitalProperties';
 import { ZooProperties } from './ZooProperties';
@@ -7,7 +7,8 @@ import { parkSourceStatus } from './poi-data';
 
 const hierarchyNames: [ParkHierarchy, string][] = [[1, 'Hierarchie 1 – metropolitní'], [2, 'Hierarchie 2 – čtvrťové'], [3, 'Hierarchie 3 – lokalitní'], [4, 'Hierarchie 4 – místní'], ['unknown', 'Bez určené hierarchie']];
 const statusName = { approved: 'Schváleno', review: 'K revizi', excluded: 'Vyloučeno' };
-export function PoiControls({ libraryCandidates, onSelectLibraryCandidate, onAddLibrary, addingLibrary, onAddCinema, addingCinema, pois, configuration, selected, disabled, drawing, onVisibility, onSelect, onAdd, onImport, onAddZoo, addingZoo, onAddHospital, addingHospital, onMerge, onFilters, onBulk, onUndoBulk, canUndoBulk, bulkBusy, bulkNotice }: {
+export function PoiControls({ children, libraryCandidates, onSelectLibraryCandidate, onAddLibrary, addingLibrary, onAddCinema, addingCinema, pois, configuration, selected, disabled, drawing, onVisibility, onSelect, onAdd, onImport, onAddZoo, addingZoo, onAddHospital, addingHospital, onMerge, onFilters, onBulk, onUndoBulk, canUndoBulk, bulkBusy, bulkNotice }: {
+  children?: ReactNode;
   libraryCandidates: UnlocatedLibrary[]; onSelectLibraryCandidate(row: UnlocatedLibrary): void; onAddLibrary(): void; addingLibrary: boolean;
   onFilters(value: ParkFilters): void; onBulk(status: 'approved' | 'excluded'): void; onUndoBulk(): void; canUndoBulk: boolean; bulkBusy: boolean; bulkNotice: { message: string; skipped: { id: string; name: string; reason: string }[] } | null;
   pois: Poi[]; configuration: PoiConfiguration; selected: string | null; disabled: boolean; drawing: boolean;
@@ -20,7 +21,7 @@ export function PoiControls({ libraryCandidates, onSelectLibraryCandidate, onAdd
   const [mergeName, setMergeName] = useState('');
   const filters = configuration.parkFilters ?? defaultParkFilters();
   const parks = pois.filter(poi => poi.category === 'park');
-  const filtered = filterParkPois(pois, filters, 'list', search).filter(p=>p.category!=='waterbody');
+  const filtered = filterParkPois(pois, filters, 'list', search).filter(p=>p.category!=='waterbody'&&p.category!=='embassy');
   const pending = libraryCandidates.filter(row => `${row.name} ${row.address} ${row.id}`.toLocaleLowerCase('cs').includes(search.trim().toLocaleLowerCase('cs')));
   const list: (Poi | UnlocatedLibrary)[] = [...filtered.filter(poi => ['zoo', 'hospital', 'library', 'cinema'].includes(poi.category)), ...pending, ...filtered.filter(poi => !['zoo', 'hospital', 'library', 'cinema'].includes(poi.category))];
   const matching = parks.filter(poi => parkMatchesHierarchy(poi, filters.hierarchies)).length;
@@ -61,6 +62,7 @@ export function PoiControls({ libraryCandidates, onSelectLibraryCandidate, onAdd
       <div className="park-status-filters" role="group" aria-label="Filtr stavu parků">{([['all', 'Vše'], ['approved', 'Schválené'], ['excluded', 'Vyloučené'], ['review', 'K revizi']] as const).map(([value, title]) => <button key={value} aria-pressed={filters.status === value} onClick={() => onFilters({ ...filters, status: value })}>{title}</button>)}</div>
       {bulkBusy && <p role="status">Zpracovávám parky v dávkách…</p>}
       {bulkNotice && <div className="park-bulk-notice" role="status"><p>{bulkNotice.message}</p>{bulkNotice.skipped.length > 0 && <details open><summary>Přeskočené objekty ({bulkNotice.skipped.length})</summary><ul>{bulkNotice.skipped.map(issue => <li key={issue.id}><strong>{issue.name || issue.id}</strong> · {issue.id}: {issue.reason}</li>)}</ul></details>}</div>}
+      {children}
       <label>Hledat POI<input value={search} onChange={e => setSearch(e.target.value)} placeholder="Název, ID nebo adresa…" /></label>
       <div className="poi-list">{list.slice(0, 100).map(row => { if (!('category' in row)) return <div key={row.id} className={`poi-row ${row.status}`} data-poi-id={row.id}><button className={selected === row.id ? 'chosen' : ''} onClick={() => onSelectLibraryCandidate(row)}><span>▤ {row.name}</span><small>{row.address} · {row.status === 'excluded' ? 'Vyloučeno' : 'Neověřená poloha'}</small></button></div>; const poi = row; return <div key={poi.id} className={`poi-row ${poi.status}`} data-poi-id={poi.id}>
         {poi.category === 'park' && <input type="checkbox" aria-label={`Sloučit ${poi.name || poi.sourceId}`} checked={members.includes(poi.id)} onChange={e => setMembers(values => e.target.checked ? [...values, poi.id] : values.filter(id => id !== poi.id))} />}

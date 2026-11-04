@@ -28,3 +28,9 @@ if (new Set(publishedCinemas.map(poi => poi.id)).size !== publishedCinemas.lengt
 import waterCatalog from './data/waterbody-catalog.json';
 import { parkDatasetSchema } from '@jetlag/geo-core';
 export const publishedWaterbodies = parkDatasetSchema.parse(waterCatalog);
+
+import embassyCatalog from './data/embassy-catalog.json';
+import {unlocatedEmbassySchema} from '@jetlag/geo-core';
+export const publishedEmbassies = (embassyCatalog.records as unknown[]).map(value => poiSchema.parse(value));
+export const publishedUnlocatedEmbassies = embassyCatalog.unlocated.map(value => unlocatedEmbassySchema.parse(value));
+if (new Set([...publishedEmbassies,...publishedUnlocatedEmbassies].map(p=>p.id)).size !== publishedEmbassies.length + publishedUnlocatedEmbassies.length) throw new Error('Duplicitní ID v katalogu ambasád.');

@@ -17,6 +17,8 @@ Původ je zaznamenán v `data/source-metadata/`: městské části mají v dodan
 
 Plnohodnotný simulátor otevřete přímo na **[/JetLagPrague/simulator/](https://wondrej89.github.io/JetLagPrague/simulator/)**, bez instalace Node.js a bez přihlášení. Obsahuje testovací mapu, dva virtuální telefony, scénáře, časovače, otázky, karty, fotografie a diagnostiku. Je označen **„Testovací simulace – nejde o skutečnou multiplayerovou hru“**. Vyberte scénář a klikněte na **Načíst testovací scénář**; **Reset hry** vyžaduje potvrzení. Lokální vývoj zůstává dostupný přes `npm run dev:simulator` na **http://127.0.0.1:4177/**.
 
+**Začátek hry a stanoviště:** připravenost má výrazné modré/fialové pokyny podle role, tlačítko a pod ním sekundární výsledek dohody. Během schovávání zůstávají instrukce nad mapou. Klepnutí na zastávku pouze otevře náhled s 400m kruhem; **Potvrdit stanoviště** uloží předběžnou volbu a hledání začne až po celých 45 minutách. Při nejednoznačném výsledku po lhůtě je vyžadováno výslovné potvrzení kandidáta způsobilého v rozhodném okamžiku. Panel se vejde nad spodní navigaci telefonu **375 × 750 px** bez scrollování. [Průchod, GPS, kompatibilita a testy](docs/GAME_START_AND_STATION.md).
+
 **Nová hra** vytvoří čistou partii s novým ID. Na obou telefonech nejprve samostatně rozhodněte o automatickém zakreslování odpovědí a potom potvrďte **Jsem připraven**. Čas začne až po obou potvrzeních a zahrnuje prvních 45 minut schovávání. Odměny jsou nahoře v Kartách, nedokončené úkoly mají trvalá upozornění. **Hidden Hangman** má česká pětipísmenná slova, sedm chyb, desetiminutové čekání, tři prohry a automatické vyhodnocení. [Ovládání, stavový model, scénáře a přesná omezení](docs/GAME_UX_HANGMAN.md).
 
 **Dva týmy / dvě kola:** každý tým má dva hráče a jeden aktivní telefon; jméno si zvolí v úvodu. Hledači použijí **Našli jsme tě**, schovaní nález potvrdí a společně vyhodnotí podmínky použitých bonusových prokletí. Výsledek odděluje herní čas, bonusy z karet a bonusy z prokletí. Potom oba týmy potvrdí výměnu rolí; stejné telefony pokračují druhým kolem a na konci se porovnají celkové časy. Vyšší čas vyhrává, shoda je remíza. [Postup, výpočet a kompatibilita](docs/TEAM_MATCH.md).
@@ -31,7 +33,7 @@ Poskytovatel map dostává běžné požadavky na dlaždice podle kamery, klient
 
 Matching, Measuring a Radar zachovávají dosavadní pravidla a odměny. **Thermometer a Tentacles mají funkční geografický průběh a odměny 2 → 1 / 4 → 2**. Nové otázky vyžadují založení nové simulace; historická rozehraná pravidla se nepřepisují. Neověřené karetní účinky a složení balíčku jsou výslovně testovací konfigurace. Historický PID zůstává označen jako neověřená reference, nikoli zdroj pro ostrou hru. [Úplný návod, architektura, pravidla a omezení](docs/GAME_MVP.md).
 
-Ověření webového simulátoru zahrnuje produkční sestavení pod `/JetLagPrague/`, celý průchod otázka → odpověď → odměna → reload, fotografie a soukromý import/export, skutečné přesuny špendlíků, časovače, oddělené prohlížeče, zachování editorových úložišť a audit všech síťových požadavků. GitHub Actions spouští E2E proti přesnému artefaktu před jeho nasazením. **Ověřovací sada nyní obsahuje 531 jednotkových testů a 117 E2E scénářů; CI před nasazením spouští také lint, typecheck a produkční build.** Dva jednotkové a dva E2E audity jsou výslovně přeskočené kvůli nedodaným původním archivům GTFS a parků. Sedm historických publikací, administrativní zdroje a kontrolní součty PID zůstaly platné.
+Ověření webového simulátoru zahrnuje produkční sestavení pod `/JetLagPrague/`, celý průchod otázka → odpověď → odměna → reload, fotografie a soukromý import/export, skutečné přesuny špendlíků, časovače, oddělené prohlížeče, zachování editorových úložišť a audit všech síťových požadavků. GitHub Actions spouští E2E proti přesnému artefaktu před jeho nasazením. **Ověřovací sada nyní obsahuje 543 jednotkových testů a 124 E2E scénářů; CI před nasazením spouští také lint, typecheck a produkční build.** Dva jednotkové a dva E2E audity jsou výslovně přeskočené kvůli nedodaným původním archivům GTFS a parků. Sedm historických publikací, administrativní zdroje a kontrolní součty PID zůstaly platné.
 
 ## Thermometer a Tentacles
 
@@ -134,6 +136,14 @@ Sběrač získává skutečné URL detailů z katalogu a uloží podklady do `da
 Ověření doplnění GPS: lint, typecheck, produkční build, 204 jednotkových a 48 E2E testů (včetně samostatného opakování opraveného migračního testu), kontrola všech pěti neměnných publikací a sestavení Workeru prošly. Dva jednotkové a dva E2E audity původních archivů byly přeskočené: chybí plný GTFS a původní parkový ZIP.
 
 **Omezení:** jde o referenční body zveřejněné knihovnou, nikoliv nezávisle zaměřené geodetické souřadnice. Licence katalogu a bodů zůstává nedoložená; MIT licence aplikace ji nenahrazuje. Otevírací doba ani budoucí přestěhování se automaticky nesledují.
+
+## Ambasády a konzuláty
+
+Kategorie `embassy` rozšiřuje editor i otázky **Matching a Measuring**. Obsahuje všech **60 pracovišť** z dodaného pracovního Excelu, včetně samostatných konzulárních oddělení, honorárních konzulátů a nunciatury. Stabilní ID vychází ze země a typu úřadu; původní názvy, adresy, řádky, stránky zdroje a kontrolní součet Excelu jsou dohledatelné. Nejde o úplný registr zastoupení.
+
+**GPS zatím nejsou doplněné: 0 umístěných, 60 k revizi.** V Excelu jsou všechny GPS buňky prázdné a oficiální adresní data RÚIAN jsou v pracovním cloudovém prostředí blokovaná HTTP 403. Aplikace nevytváří odhady z názvů ulic ani falešné značky. Do výpočtů a publikace vstoupí pouze schválený bod pro konkrétní adresu. Editor umožňuje samostatnou viditelnost, hledání podle názvu/ID/adresy/země, filtr stavu, doplnění bodu, úpravy, přesun, vyřazení a ruční přidání pracoviště. Při změně adresy nebo GPS je potřeba bod znovu ověřit.
+
+V **Body zájmu → Ambasády a konzuláty → Hromadně doplnit GPS ambasád** lze stáhnout šablonu a atomicky doplnit ručně ověřené CSV/JSON body podle stabilních ID. Import zachová ostatní kategorie, rozhodnutí i herní oblast; jednotlivé objekty se potom schválí. Katalogy s ambasádami používají schéma 7; bez nich zůstává schéma 6 a starší publikace se dál načítají beze změny. [Podrobnosti, formát importu a stav geokódování](docs/EMBASSIES.md).
 
 ## Nemocnice
 

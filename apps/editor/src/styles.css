@@ -288,3 +288,18 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .water-properties pre { overflow: auto; max-height: 320px; }
 .waterbody-marker { background: #dcefff; color: #2078ac; border-color: #2078ac; }
 .header-actions .simulator-entry { display: inline-flex; align-items: center; border: 1px solid #dbe1d9; border-radius: 6px; padding: 8px 11px; background: white; color: #28463c; text-decoration: none; font-size: 12px; }
+
+.embassy-marker { background: #e0f2ef; color: #326e70; border-color: #326e70; }
+.embassy-marker.review { opacity: .7; }
+.embassy-marker.excluded { background: #eee; border-color: #999; color: #777; }
+.embassy-controls { border-block: 1px solid #d9dfd3; margin-block: 16px; padding-block: 12px; }
+.embassy-controls .embassy-list { max-height: 280px; overflow: auto; }
+.embassy-controls select { width: 100%; }
+.embassy-properties pre { overflow: auto; max-height: 300px; }
+
+.embassy-row { display: flex; align-items: center; gap: 6px; }
+.embassy-row > button { flex: 1; text-align: left; display: flex; flex-direction: column; min-width: 0; margin: 3px 0; }
+.embassy-row small { font-size: 10px; overflow-wrap: anywhere; color: #69766d; }
+.embassy-row.approved > button { border-left: 3px solid #267a52; }
+.embassy-row.excluded > button { border-left: 3px solid #888; background: #f4f5f4; }
+.embassy-row.review > button { border-left: 3px dashed #8a958d; }
