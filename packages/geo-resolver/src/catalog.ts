@@ -1,5 +1,6 @@
 import type {Feature, Geometry} from 'geojson';
 import type {GameDataRelease} from '../../geo-core/src/index';
+import {publishedRailCatalog} from './rail';
 export interface GameLayer {id:string;label:string;icon:string;color:string;state:'approved'|'reference'|'missing';note:string;features:Feature<Geometry>[]}
 export const CATEGORY_METADATA:Record<string,{label:string;icon:string;color:string}>= {
  pid:{label:'Zastávky PID',icon:'▣',color:'#287c88'},rail:{label:'Železniční stanice',icon:'🚆',color:'#475669'},
@@ -15,10 +16,10 @@ export function publishedGameLayers(release:GameDataRelease):GameLayer[] {
  return ids.map(id=>{
   const metadata=CATEGORY_METADATA[id]??{label:id,icon:'◆',color:'#596b80'};
   let features:Feature<Geometry>[]=[];
-  if(id==='pid'||id==='rail')features=release.data.pidSnapshot.stops.filter(s=>s.eligibility==='allowed'&&(id!=='rail'||s.referenceModes.includes('train'))).map(s=>({type:'Feature',id:s.id,geometry:{type:'Point',coordinates:s.point},properties:{id:s.id,name:s.name,point:s.point,category:metadata.label,source:`PID ${release.data.pidSnapshot.serviceDate}`}}));
+  if(id==='pid'||id==='rail')features=(id==='rail'?publishedRailCatalog(release).stations:release.data.pidSnapshot.stops.filter(s=>s.eligibility==='allowed')).map(s=>({type:'Feature',id:s.id,geometry:{type:'Point',coordinates:s.point},properties:{id:s.id,name:s.name,point:s.point,category:metadata.label,source:`PID ${release.data.pidSnapshot.serviceDate}`}}));
   else if(id==='municipal'||id==='cadastral')features=release.data.administrativeAreas.filter(a=>a.kind===id).map(a=>({type:'Feature',id:a.id,geometry:a.geometry,properties:{id:a.id,name:a.name,category:metadata.label,source:release.data.sourceVersions.find(s=>s.key===a.sourceKey)?.provider??a.sourceKey}}));
   else features=release.data.pois.filter(p=>p.category===id&&p.status==='approved').map(p=>({type:'Feature',id:p.id,geometry:p.geometry,properties:{id:p.id,name:p.name,point:p.point,address:p.address??'',category:metadata.label,source:p.source.provider}}));
   const reference=(id==='pid'||id==='rail')&&(release.kind==='reference'||release.data.pidSnapshot.quality!=='verified');
-  return {id,...metadata,features,state:!features.length?'missing':reference?'reference':'approved',note:!features.length?'Chybí schválená publikovaná data.':reference?'Historická referenční data – neověřeno.':`Schválený výběr publikace ${release.releaseId.slice(8,20)}; nejde o záruku úplnosti všech míst v Praze.`};
+  return {id,...metadata,features,state:!features.length?'missing':reference?'reference':'approved',note:!features.length?(id==='rail'?publishedRailCatalog(release).reason:'Chybí schválená publikovaná data.'):reference?'Historická referenční data – neověřeno.':`Schválený výběr publikace ${release.releaseId.slice(8,20)}; nejde o záruku úplnosti všech míst v Praze.`};
  });
 }

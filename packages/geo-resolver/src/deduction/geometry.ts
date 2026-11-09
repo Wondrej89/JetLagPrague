@@ -3,6 +3,7 @@ import type {AreaGeometry, GameDataRelease} from '../../../geo-core/src/index';
 import {classifyArea, distanceMeters, makeMetricCircle} from '../../../geo-core/src/index';
 import type {Deduction, Point, TargetPolicy} from '../../../game-core/src/index';
 import {areaSegments,featureIndex,project,SpatialIndex,unproject,type Bounds} from './spatial-index';
+import {publishedRailCatalog} from '../rail';
 
 export const DEDUCTION_CELL_METERS=64;
 export const DEDUCTION_MARGIN_METERS=2;
@@ -57,7 +58,7 @@ export class DeductionComputer {
    return {value:point=>{const classification=classifyArea(point,{...layer,features:candidates.filter(({bounds:b})=>point[0]>=b[0]&&point[0]<=b[2]&&point[1]>=b[1]&&point[1]<=b[3]).map(v=>v.feature)});if(!['inside','boundary'].includes(classification.status))return 0;return sign*(classification.matches[0].id===chosenId?1:-1)*boundary.nearest(point)!.distance;},lipschitz:1,errorMeters:2*boundary.errorMeters};
   }
   const key=`${p.category}:${p.distanceMode??'category'}`;
-  if(!this.indexes.has(key))this.indexes.set(key,featureIndex(this.release.data.pois.filter(poi=>poi.category===p.category&&poi.status==='approved'),p.distanceMode??'category',p.category));
+  if(!this.indexes.has(key))this.indexes.set(key,featureIndex(p.category==='rail'?publishedRailCatalog(this.release).stations:this.release.data.pois.filter(poi=>poi.category===p.category&&poi.status==='approved'),p.distanceMode??'category',p.category));
   const index=this.indexes.get(key)!,nearest=index.nearest(p.hunterPoint);
   if(!nearest)throw new Error('Chybí schválená publikovaná geometrie kategorie.');
   if(p.resolver==='poi_measuring')return {value:point=>sign*(nearest.distance-index.nearest(point)!.distance),lipschitz:1,errorMeters:2*index.errorMeters};

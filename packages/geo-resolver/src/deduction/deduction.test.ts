@@ -6,6 +6,9 @@ import type {AreaGeometry,GameDataRelease} from '../../../geo-core/src/index';
 import {distanceMeters,distanceToPoiMeters} from '../../../geo-core/src/index';
 import {DeductionComputer} from './geometry';
 import {project,unproject} from './spatial-index';
+import {createGeoResolver} from '../index';
+import {publishedRailCatalog} from '../rail';
+import {deductionFromQuestion,questionRegistry} from '../../../game-core/src/index';
 let fixture:Awaited<ReturnType<typeof gameFixture>>;
 beforeAll(async()=>{fixture=await gameFixture();});
 const origin:Point=[14.43,50.08];
@@ -42,6 +45,19 @@ it('Measuring uses the distance field of ALL objects, including different neares
  expect(inside(xy(1600,100),result.possible)).toBe(true);expect(inside(xy(0,2000),result.excluded)).toBe(true);
  for(let x=-2300;x<=2300;x+=163)for(let y=-2300;y<=2300;y+=181){const p=xy(x,y),nearest=Math.min(...release.data.pois.map(poi=>distanceMeters(p,poi.point)));if(inside(p,result.possible))expect(nearest).toBeLessThan(distanceMeters(d.parameters.hunterPoint,release.data.pois[0].point));}
 });
+it('rail deductions use the same published group points and geographic comparison as the answer, for BLÍŽ and DÁL',()=>{
+ const release=world(),template=release.data.pidSnapshot.stops[0];
+ release.data.pidSnapshot={...release.data.pidSnapshot,quality:'verified',stops:[-1600,1600].map((x,i)=>({...template,id:'rail-'+i,groupIds:['group-'+i],point:xy(x,0),modes:['train','metro'],referenceModes:['train'],dominantMode:'train',eligibility:'review'}))};
+ const env=createGeoResolver(release),definition=questionRegistry().find(q=>q.id==='measuring:rail')!,hunter=xy(-1600,1200),target=xy(1600,100);
+ const q={id:'rail-q',definition,hunterFix:{point:hunter,at:1000,accuracy:5},targetPoint:target,askedAt:1000,deadline:301000,state:'answered' as const,answeredAt:2000};
+ const resolution=env.resolve(q);expect(resolution).toMatchObject({answer:'BLÍŽ',details:{hunterPoi:'rail-0',targetPoi:'rail-1'}});
+ const d=deductionFromQuestion({id:'test',releaseId:release.releaseId,epochId:'epoch:1'},{...q,answer:resolution.answer})!,computer=new DeductionComputer(release);
+ expect(d.parameters.category).toBe('rail');expect(JSON.stringify(d)).not.toContain('targetPoint');
+ const closer=computer.compute([d],'station'),farther=computer.compute([{...d,result:'DÁL',operation:'exclude'}],'station');
+ expect(inside(target,closer.possible)).toBe(true);expect(inside(target,farther.excluded)).toBe(true);expect(inside(xy(0,2000),farther.possible)).toBe(true);
+ const {stations}=publishedRailCatalog(release),threshold=resolution.details!.hunterDistance as number;
+ for(let x=-2200;x<=2200;x+=211)for(let y=-2200;y<=2200;y+=199){const p=xy(x,y),nearest=Math.min(...stations.map(s=>distanceMeters(p,s.point)));if(inside(p,closer.possible)||inside(p,farther.excluded))expect(nearest).toBeLessThan(threshold);if(inside(p,closer.excluded)||inside(p,farther.possible))expect(nearest).toBeGreaterThan(threshold);}
+},15000);
 it('Measuring measures irregular polygons, holes and MultiPolygons as actual surfaces',()=>{
  const release=world(),template=release.data.pois.find(p=>p.category==='waterbody')!,a=box(-1800,-1800,1400),hole=box(-1500,-1500,800),b=box(1300,1300,500);if(a.type!=='Polygon'||hole.type!=='Polygon'||b.type!=='Polygon')throw new Error();
  a.coordinates.push(hole.coordinates[0].slice().reverse());const geometry:AreaGeometry={type:'MultiPolygon',coordinates:[a.coordinates,b.coordinates]};

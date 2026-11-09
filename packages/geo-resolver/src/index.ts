@@ -1,8 +1,10 @@
-import { classifyArea, containsGamePoint, distanceMeters, distanceToPoiMeters, matchingPois, measuringPois, nearestApprovedPoi, type GameDataRelease } from '../../geo-core/src/index';
+import { classifyArea, containsGamePoint, distanceMeters, distanceToPoiMeters, matchingPois, measuringPois, nearestApprovedPoi, type GeographicPoi, type GameDataRelease } from '../../geo-core/src/index';
 import { GEOGRAPHIC_EPSILON_METERS, THERMOMETER_TOLERANCE_METERS, type GameEnvironment, type Point, type QuestionDefinition, type QuestionInstance, type Resolution } from '../../game-core/src/index';
+import {publishedRailCatalog} from './rail';
 /** Only a checksum-verified published release is supplied by the release loader.
  * No editor draft/catalog fallback or duplicated distance/POI algorithms. */
 export function createGeoResolver(release:GameDataRelease):GameEnvironment {
+  const rail=publishedRailCatalog(release);
   // Actual boundary vertices witness a possible displacement. No boxes replace
   // the area or containment tests. This conservative sample may omit a feasible
   // extreme variant, but never enables one longer than a witnessed span.
@@ -14,6 +16,7 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
     if(d.configured===false)return {state:'unsupported',reason:'Work in progress – chybí schválená varianta pravidla a odměna.'};
     if(d.resolver==='manual'||d.resolver==='photo')return {state:'manual',reason:d.testOnly?'Testovací ruční zadání; bez automatického výsledku.':'Ruční vyhodnocení schovaným.'};
     if(d.resolver==='unsupported')return {state:'missing_data',reason:'Chybí publikovaná vrstva nebo ověřený resolver. Nelze automaticky vyhodnotit.'};
+    if(d.category==='rail'&&d.resolver==='poi_measuring')return {state:rail.stations.length?'ready':'missing_data',reason:rail.reason};
     if(d.resolver==='radar')return Number.isFinite(d.radiusMeters)&&d.radiusMeters!>0?{state:'ready',reason:'Geografická vzdálenost v metrech; hranice je zahrnutá.'}:{state:'unsupported',reason:'Chybí poloměr.'};
     if(d.resolver==='thermometer')return Number.isFinite(d.minMoveMeters)&&d.minMoveMeters!>0&&d.configured===true&&d.minMoveMeters!<=maxMovementMeters?{state:'ready',reason:`Dva GPS snapshoty, pevné stanoviště; nerozhodnost ±${d.toleranceMeters??THERMOMETER_TOLERANCE_METERS} m.`}:{state:'unsupported',reason:'Minimální přesun není nastaven nebo přesahuje ověřený rozměr herní oblasti.'};
     if(d.resolver==='same_area')return release.data.administrativeAreas.some(a=>a.kind===d.category)?{state:'ready',reason:'Přesné publikované administrativní hranice.'}:{state:'missing_data',reason:'Chybí publikované administrativní hranice.'};
@@ -32,8 +35,8 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
       return {state:'known',answer:result.matches?'ANO':'NE',details:{...base,hunterPoi:result.first.poi.id,targetPoi:result.second.poi.id,hunterDistance:result.first.distanceMeters,targetDistance:result.second.distanceMeters}};
     }
     if(d.resolver==='poi_measuring'){
-      const result=measuringPois(a,b,d.category,release.data.pois,d.distanceMode);if(result.state==='unknown')return result;
-      return {state:'known',answer:result.comparison==='equal'?'STEJNĚ':result.comparison==='second-closer'?'BLÍŽ':'DÁL',details:{...base,hunterPoi:result.first.poi.id,targetPoi:result.second.poi.id,hunterDistance:result.first.distanceMeters,targetDistance:result.second.distanceMeters}};
+      const result=measuringPois<GeographicPoi & {name:string}>(a,b,d.category,d.category==='rail'?rail.stations:release.data.pois,d.distanceMode);if(result.state==='unknown')return result;
+      return {state:'known',answer:result.comparison==='equal'?'STEJNĚ':result.comparison==='second-closer'?'BLÍŽ':'DÁL',details:{...base,hunterPoi:result.first.poi.id,targetPoi:result.second.poi.id,hunterDistance:result.first.distanceMeters,targetDistance:result.second.distanceMeters,...(d.category==='rail'?{hunterStationName:result.first.poi.name,targetStationName:result.second.poi.name,pidServiceDate:release.data.pidSnapshot.serviceDate}:{})}};
     }
     if(d.resolver==='same_area'){
       const features=release.data.administrativeAreas.filter(p=>p.kind===d.category).map(p=>({id:p.id,name:p.name,geometry:p.geometry,attributes:{code:p.code},note:'',source:p.sourceKey,importedAt:release.publishedAt,status:'draft' as const}));

@@ -1,6 +1,7 @@
 import {beforeAll,expect,it} from 'vitest';
 import {gameFixture} from '../../game-core/src/test-fixtures';
 import {publishedGameLayers} from './catalog';
+import {publishedRailCatalog} from './rail';
 let f:Awaited<ReturnType<typeof gameFixture>>;beforeAll(async()=>{f=await gameFixture();});
 it('only displays approved published objects with their exact reference coordinates and geometry',()=>{
  const before=JSON.stringify(f.release),layers=publishedGameLayers(f.release);
@@ -9,5 +10,5 @@ it('only displays approved published objects with their exact reference coordina
 });
 it('keeps unknown categories missing and labels reference PID without inventing objects',()=>{
  const layers=publishedGameLayers(f.release);for(const id of ['golf','aquapark','vltava'])expect(layers.find(l=>l.id===id)).toMatchObject({state:'missing',features:[]});
- expect(layers.find(l=>l.id==='pid')!.features.map(f=>f.id)).toEqual(f.release.data.pidSnapshot.stops.filter(p=>p.eligibility==='allowed').map(s=>s.id));expect(layers.find(l=>l.id==='rail')!.features.map(f=>f.id)).toEqual(f.release.data.pidSnapshot.stops.filter(p=>p.eligibility==='allowed'&&p.referenceModes.includes('train')).map(s=>s.id));
+ expect(layers.find(l=>l.id==='pid')!.features.map(f=>f.id)).toEqual(f.release.data.pidSnapshot.stops.filter(p=>p.eligibility==='allowed').map(s=>s.id));expect(layers.find(l=>l.id==='rail')!.features.map(f=>f.id)).toEqual(publishedRailCatalog(f.release).stations.map(s=>s.id));
 });

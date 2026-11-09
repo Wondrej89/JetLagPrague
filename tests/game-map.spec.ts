@@ -10,6 +10,45 @@ const map=(page:Page)=>phone(page).getByTestId('game-map-tools');
 const adminMap=(page:Page)=>page.locator('.sim-map').getByTestId('game-map-tools');
 test.beforeEach(async({page})=>{await page.route('https://api.mapy.com/**',r=>r.abort());});
 
+test('Measuring rail uses published train markers, private diagnostics, frozen snapshots, 3 → 1 and real deductions after reload',async({page})=>{
+ test.setTimeout(90000);
+ const {gameFixture}=await import('../packages/game-core/src/test-fixtures'),fixture=await gameFixture();
+ const {publishedRailCatalog}=await import('../packages/geo-resolver/src/rail'),stations=publishedRailCatalog(fixture.release).stations;
+ await create(page);await scenario(page,'deck-100');
+ await page.getByLabel('Longitude hunter',{exact:true}).fill(String(stations[0].point[0]+.001));await page.getByLabel('Latitude hunter',{exact:true}).fill(String(stations[0].point[1]));await page.getByRole('button',{name:'Nastavit GPS hledačů',exact:true}).click();
+ await tab(page,'hunter','Otázky');
+ await phone(page).getByRole('button',{name:/Measuring/}).click();
+ const choice=phone(page).locator('.question-choice').filter({has:page.getByRole('heading',{name:'Železniční stanice',exact:true})});
+ await expect(choice).toContainText('Jsi blíž, nebo dál od nejbližší železniční stanice než já?');
+ await choice.getByRole('button',{name:'Položit otázku',exact:true}).click();
+ await expect.poll(async()=>(await stored(page)).state.questions.length).toBe(1);
+ const q=(await stored(page)).state.questions[0],expected=fixture.env.resolve(q);expect(expected).toMatchObject({state:'known',answer:'DÁL'});expect(q.deadline!-q.askedAt).toBe(300000);
+ await page.getByRole('combobox',{name:'Otázka pro diagnostiku',exact:true}).selectOption(q.id);
+ const diagnostics=JSON.parse((await page.getByTestId('question-diagnostics').textContent())!);
+ expect(diagnostics.expected).toEqual(expected);expect(diagnostics.expected.details.hunterStationName).toBeTruthy();expect(diagnostics.expected.details.targetStationName).toBeTruthy();
+ for(const role of ['hunter','hider']){
+  const point=stations[role==='hunter'?0:1].point;
+  await page.getByLabel(`Longitude ${role}`,{exact:true}).fill(String(point[0]));await page.getByLabel(`Latitude ${role}`,{exact:true}).fill(String(point[1]));
+  await page.getByRole('button',{name:role==='hunter'?'Nastavit GPS hledačů':'Nastavit GPS schovaného',exact:true}).click();
+ }
+ await page.getByRole('button',{name:'+5 minut',exact:true}).click();
+ await expect.poll(async()=>(await stored(page)).state.questions[0].state).toBe('answered');
+ const answered=(await stored(page)).state;
+ expect(answered.questions[0]).toMatchObject({answer:expected.answer,hunterFix:q.hunterFix,targetPoint:q.targetPoint});expect(answered.rewards[0].policy).toEqual({draw:3,keep:1});expect(answered.deductions).toHaveLength(1);
+ await tab(page,'hunter','Otázky');await expect(phone(page).getByTestId('last-answer')).toContainText(expected.answer!);await expect(phone(page)).not.toContainText('targetStationName');
+ await phone(page).getByRole('button',{name:'Zobrazit mapu a vrstvy'}).click();
+ await expect(map(page)).toHaveAttribute('data-deduction-state','ready',{timeout:30000});await expect(map(page)).toHaveAttribute('data-deduction-count','1');
+ await map(page).getByRole('button',{name:'Vrstvy',exact:true}).click();const panel=map(page).getByRole('region',{name:'Vrstvy mapy'});
+ await panel.getByRole('checkbox',{name:/Železniční stanice/}).check();
+ await expect(map(page).locator('[data-public-layer="rail"]')).toHaveCount(stations.length);await expect(map(page).locator('[data-public-layer="rail"]').first()).toContainText('🚆');
+ await panel.getByLabel('Hledat objekt v publikovaném katalogu').fill(stations[0].id);await panel.locator('.map-search-result').filter({hasText:'Železniční stanice'}).click();
+ await map(page).locator(`[data-public-layer="rail"][data-public-feature="${stations[0].id}"]`).click();await expect(map(page).locator('.leaflet-popup')).toContainText(stations[0].name);await expect(map(page).locator('.leaflet-popup')).toContainText(`GPS: ${stations[0].point[1]}, ${stations[0].point[0]}`);
+ await tab(page,'hider','Karty');await phone(page,'hider').getByRole('button',{name:'Otevřít karetní odměnu'}).click();await expect(phone(page,'hider').locator('.offered-card')).toHaveCount(3);await phone(page,'hider').locator('.offered-card').first().click();await expect.poll(async()=>(await stored(page)).state.rewards[0].state).toBe('claimed');
+ const beforeReload=(await stored(page)).state;
+ await page.reload();await expect(phone(page)).toBeVisible({timeout:30000});await expect(map(page)).toHaveAttribute('data-deduction-state','ready',{timeout:30000});
+ expect((await stored(page)).state.questions).toEqual(beforeReload.questions);expect((await stored(page)).state.deductions).toEqual(beforeReload.deductions);expect((await stored(page)).state.hand).toEqual(beforeReload.hand);expect(beforeReload.hand).toHaveLength(1);await expect(map(page).locator('[data-public-layer="rail"]')).toHaveCount(stations.length);
+});
+
 test('new game requires explicit decisions of both roles; deduction defaults off and cannot be changed in the running game',async({page})=>{
  await create(page,false);expect((await stored(page)).state.lobby?.choices).toEqual({hunter:false,hider:false});
  await scenario(page,'radar-in');await tab(page,'hider','Otázka');await phone(page,'hider').getByRole('button',{name:'Odpovědět nyní'}).click();expect((await stored(page)).state.deductions).toEqual([]);expect((await stored(page)).state.questions[0].answer).toBe('ANO');await map(page).getByRole('button',{name:'Dedukce',exact:true}).click();await expect(map(page).getByRole('region',{name:'Dedukční mapa'})).toContainText('vypnuté');expect((await stored(page)).state.rules.automaticDeductionMap).toBe(false);
