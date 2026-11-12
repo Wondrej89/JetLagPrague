@@ -5,6 +5,7 @@ import {publishedRailCatalog} from './rail';
  * No editor draft/catalog fallback or duplicated distance/POI algorithms. */
 export function createGeoResolver(release:GameDataRelease):GameEnvironment {
   const rail=publishedRailCatalog(release);
+  const stopPois=release.data.pidSnapshot.quality==='verified'?release.data.pidSnapshot.stops.filter(s=>s.eligibility==='allowed'&&s.activity==='active').map(s=>({...s,category:'pid',status:'approved' as const})):[];
   // Actual boundary vertices witness a possible displacement. No boxes replace
   // the area or containment tests. This conservative sample may omit a feasible
   // extreme variant, but never enables one longer than a witnessed span.
@@ -14,6 +15,7 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
   const maxMovementMeters=Math.max(...extremes.flatMap(a=>extremes.map(b=>distanceMeters(a,b))));
   function availability(d:QuestionDefinition):{state:QuestionDefinition['availability'];reason:string}{
     if(d.configured===false)return {state:'unsupported',reason:'Work in progress – chybí schválená varianta pravidla a odměna.'};
+    if(d.category==='stop_name'&&d.referenceVersion===1&&!stopPois.length)return {state:'missing_data',reason:'Chybí ověřené aktivní způsobilé PID zastávky.'};
     if(d.resolver==='manual'||d.resolver==='photo')return {state:'manual',reason:d.testOnly?'Testovací ruční zadání; bez automatického výsledku.':'Ruční vyhodnocení schovaným.'};
     if(d.resolver==='unsupported')return {state:'missing_data',reason:'Chybí publikovaná vrstva nebo ověřený resolver. Nelze automaticky vyhodnotit.'};
     if(d.category==='rail'&&d.resolver==='poi_measuring')return {state:rail.stations.length?'ready':'missing_data',reason:rail.reason};
@@ -73,5 +75,5 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
     }
     return {state:'unknown',reason:'Resolver této varianty není implementovaný.'};
   }
-  return {namedWaterDistance:(point:Point)=>{const nearest=nearestApprovedPoi(point,'waterbody',release.data.pois.filter(p=>p.name.trim().length>0));return nearest.state==='known'?{state:'known' as const,meters:nearest.distanceMeters}:{state:'unknown' as const,reason:nearest.reason};},maxMovementMeters,releaseId:release.releaseId,stops:release.data.pidSnapshot.stops.filter(p=>p.eligibility==='allowed').map(p=>({id:p.id,name:p.name,point:p.point})),insideArea:(p:Point)=>containsGamePoint(p,release.data.gameArea.geometry),distance:distanceMeters,availability,resolve};
+  return {nearestStop:(point:Point)=>{const result=nearestApprovedPoi(point,'pid',stopPois);return result.state==='known'?{id:result.poi.id,name:result.poi.name,point:result.poi.point}:null;},namedWaterDistance:(point:Point)=>{const nearest=nearestApprovedPoi(point,'waterbody',release.data.pois.filter(p=>p.name.trim().length>0));return nearest.state==='known'?{state:'known' as const,meters:nearest.distanceMeters}:{state:'unknown' as const,reason:nearest.reason};},maxMovementMeters,releaseId:release.releaseId,stops:release.data.pidSnapshot.stops.filter(p=>p.eligibility==='allowed').map(p=>({id:p.id,name:p.name,point:p.point})),insideArea:(p:Point)=>containsGamePoint(p,release.data.gameArea.geometry),distance:distanceMeters,availability,resolve};
 }

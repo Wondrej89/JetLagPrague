@@ -6,6 +6,7 @@ export type TargetPolicy = 'station' | 'gps';
 export interface Fix { point: Point; at: number; accuracy: number; speed?: number | null }
 export interface RewardPolicy { draw: number; keep: number }
 export interface QuestionDefinition {
+  referenceVersion?:1;
   id: string; type: QuestionType; category: string; label: string; description: string;
   resolver: 'poi_matching' | 'poi_measuring' | 'same_area' | 'radar' | 'thermometer' | 'tentacles' | 'manual' | 'photo' | 'unsupported';
   answerMode: 'automatic' | 'manual' | 'photo'; rewardPolicy: RewardPolicy | null; timeoutSeconds: number | null;
@@ -31,6 +32,7 @@ export interface Stop { id: string; name: string; point: Point }
 export interface PublicPoi { id: string; name: string; point: Point }
 export type QuestionPhase = 'awaiting_second_measurement' | 'awaiting_response' | 'answered' | 'error';
 export interface QuestionInstance {
+  targetFix?:Fix; matchingReferences?:import('./matching').MatchingReferences;
   epochId?: string;
   phase?: QuestionPhase; responseStartedAt?: number; secondCapturedAt?: number; answerPoi?: PublicPoi; errorCode?: 'thermometer_tie';
   manualResolution?: { at: number; note: string };
@@ -48,6 +50,7 @@ export interface Deduction {
   parameters: { definitionId: string; resolver: QuestionDefinition['resolver']; category: string; hunterPoint: Point; secondPoint?: Point; radiusMeters?: number; minMoveMeters?:number; toleranceMeters: number; distanceMode?: 'geometry' };
 }
 export interface GameState {
+  matchingPreparation?:import('./matching').MatchingPreparation;
   match?: import('./match-types').TeamMatch; roundEnd?: import('./match-types').RoundEnd;
   lobby?: { choices: Partial<Record<Role, boolean>>; ready: Record<Role, boolean>; startedAt?: number };
   noticeAcknowledgements?: Partial<Record<Role, string[]>>;
@@ -77,11 +80,13 @@ export type Command =
   | { type: 'walking'; value: boolean }
   | { type: 'select_station'; stopId: string }
   | { type: 'lock_station'; stopId: string }
-  | { type: 'ask'; questionId: string; confirmations?: string[]; ransomText?:string }
+  | { type: 'prepare_matching'; questionId:string; retry?:boolean; confirmations?:string[]; ransomText?:string }
+  | { type: 'correct_matching_reference'; name:string; preparationId?:string; questionId?:string }
+  | { type: 'ask'; questionId: string; preparationId?:string; confirmations?: string[]; ransomText?:string }
   | { type: 'second_measurement'; confirmations?: string[]; ransomText?: string }
   | { type: 'resolve_thermometer_tie'; answer: 'TEPLEJI' | 'CHLADNĚJI'; confirmed: boolean; note: string }
   | { type: 'attach_photo'; photoId:string }
-  | { type: 'answer'; answer?: string; photoId?: string }
+  | { type: 'answer'; answer?: string; photoId?: string; matchingVerified?:boolean }
   | { type: 'draw_reward'; rewardId: string }
   | { type: 'keep_reward'; rewardId: string; cardId: string; cardIds?: never }
   | { type: 'keep_reward'; rewardId: string; cardIds: string[]; cardId?: never }
@@ -106,6 +111,7 @@ export type Command =
 export interface Envelope { id: string; at: number; actor: Role | 'clock'; command: Command }
 export interface Resolution { code?: 'thermometer_tie'; publicPoi?: PublicPoi; state: 'known' | 'unknown'; answer?: string; reason?: string; details?: Record<string, string | number | Point | null> }
 export interface GameEnvironment {
+  nearestStop?(point:Point):Stop|null;
   releaseId: string; stops: Stop[]; maxMovementMeters?: number;
   insideArea(point: Point): boolean; distance(a: Point, b: Point): number;
   resolve(question: QuestionInstance): Resolution;
@@ -113,6 +119,7 @@ export interface GameEnvironment {
   namedWaterDistance?(point: Point): { state: 'known'; meters: number } | { state: 'unknown'; reason: string };
 }
 export interface RoleView {
+  matchingPreparation?:import('./matching').MatchingPreparationView;
   match?: import('./match-types').MatchView; roundEnd?: import('./match-types').RoundEnd;
   /** Supplied only to the hider, through the role-filtered transport. */
   hunterLocation?: import('./location-view').SharedLocation;
@@ -125,7 +132,7 @@ export interface RoleView {
   rolls?: CardRuntime['rolls']; penalties?: CardRuntime['penalties']; doors?:CardRuntime['doors'];
   startedAt?:number; connected?:boolean; gameId: string; releaseId: string; role: Role; phase: GameState['phase']; elapsedMs: number; now: number; hideRemainingMs: number;
   proximityActive?:boolean; finalScoreMs?:number; ownFix: Fix | null; gpsIssue:string|null; canAsk: boolean; blockingReason: string; walking?: boolean; station?: Stop | null; provisionalStopId?: string | null; stops?: Stop[];
-  questions: { epochId?:string; phase?: QuestionPhase; responseStartedAt?: number; answerPoi?: PublicPoi; manualTie?: boolean; measurement?: { first: Point; second?: Point; movement: number | null; remaining: number | null; canFinish: boolean }; id: string; definition: QuestionDefinition; state: QuestionInstance['state']; askedAt: number; deadline: number | null; answer?: string; error?: string; photoId?: string; draftPhotoId?:string; secondCaptured: boolean }[];
+  questions: { matchingReferences?:import('./matching').MatchingReferencesView; epochId?:string; phase?: QuestionPhase; responseStartedAt?: number; answerPoi?: PublicPoi; manualTie?: boolean; measurement?: { first: Point; second?: Point; movement: number | null; remaining: number | null; canFinish: boolean }; id: string; definition: QuestionDefinition; state: QuestionInstance['state']; askedAt: number; deadline: number | null; answer?: string; error?: string; photoId?: string; draftPhotoId?:string; secondCaptured: boolean }[];
   availableQuestions: (QuestionDefinition & { reason: string })[];
   hand?: { instanceId: string; definition: CardDefinition }[]; handLimit?: number; overflow?: number; bonusSeconds?: number;
   rewards?: Reward[]; rewardCards?: Record<string, CardDefinition>; curses: Curse[]; events: GameEvent[];

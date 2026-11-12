@@ -96,3 +96,5 @@
  .station-confirmation small { font-size: 9px; }
  .game-phone .phase-map-screen > .phone-map { min-height: 120px; }
 }
+
+.matching-preparation,.matching-references{padding:10px 0;border-top:1px solid #dce5e7;overflow-wrap:anywhere}.matching-preparation p,.matching-references p{margin:6px 0}.matching-source-note,.matching-references small{font-size:11px;color:#5b6d77}.matching-editor{margin:10px 0}.matching-editor label{display:block}.matching-editor input{width:100%;max-width:100%;min-height:36px}

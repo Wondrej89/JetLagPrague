@@ -18,3 +18,5 @@ export * from './location-view';
 
 export * from './match-types';
 export * from './match';
+
+export * from './matching';
