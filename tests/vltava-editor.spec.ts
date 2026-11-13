@@ -23,6 +23,8 @@ test.beforeEach(async({page})=>{await page.route('https://api.mapy.com/**',route
 
 test('Pages editor: all T modes, real map selection, undo/redo, union, holes, save/reload and continuing work preserve original water data',async({page})=>{
  test.setTimeout(120000);await open(page);const source=await sourcePromise,before=await storedWorld(page),controls=panel(page);
+ await controls.getByRole('button',{name:'Zpět ve výběru',exact:true}).click();await expect.poll(async()=>(await storedWorld(page)).vltavaAssembly).toBeUndefined();
+ await controls.getByRole('button',{name:'Znovu ve výběru',exact:true}).click();await expect.poll(async()=>!!(await storedWorld(page)).vltavaAssembly).toBe(true);
  await controls.getByLabel('Zobrazení toků').selectOption('related');await expect(page.getByTestId('map')).toHaveAttribute('data-vltava-count','173');
  await controls.getByLabel('Zobrazení toků').selectOption('all');await expect(page.getByTestId('map')).toHaveAttribute('data-vltava-count','2755');
  await controls.getByLabel('Zobrazení toků').selectOption('selected');await expect(page.getByTestId('map')).toHaveAttribute('data-vltava-count','0');

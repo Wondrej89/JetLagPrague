@@ -18,6 +18,9 @@ export function VltavaControls({controller:c,draft,disabled,onChange,onFit,onOpe
    {c.error&&<div role="alert" className="vltava-warning">{c.error}<button disabled={!!c.busy} onClick={c.reload}>Znovu načíst zdroj</button></div>}
    {c.compatibilityError&&c.source&&<button onClick={()=>{if(confirm('Nahradit pouze starý výběr Vltavy novým prázdným výběrem? Nejprve exportujte starý draft.'))onChange(newVltavaAssembly(c.source!));}}>Založit nový výběr pro tento zdroj</button>}
    {draft&&<p data-testid="vltava-selection-count">Vybráno: {draft.selectedIds.length} · stav: {draft.status} · vyřazených kandidátů: {draft.excludedCandidateIds.length}</p>}
+   {!draft&&c.source&&<button disabled={disabled||!!c.busy} onClick={()=>onChange(newVltavaAssembly(c.source!))}>Založit prázdný výběr Vltavy</button>}
+   <div className="vltava-actions"><button disabled={disabled||!!c.busy||!canUndo} onClick={onUndo}>Zpět ve výběru</button><button disabled={disabled||!!c.busy||!canRedo} onClick={onRedo}>Znovu ve výběru</button></div>
+   <p>Undo/Redo používají společnou historii světa.</p>
    <fieldset disabled={blocked}>
     <label>Zobrazení toků<select value={c.mode} onChange={e=>c.setMode(e.target.value as VltavaMode)}><option value="candidates">Pouze 62 automatických kandidátů</option><option value="related">Celá propojená skupina 173 polygonů</option><option value="all">Všechny původní vodní toky T</option><option value="selected">Pouze ručně vybrané polygony</option><option value="result" disabled={!c.preview}>Výsledná sjednocená geometrie</option></select></label>
     <label>Průhlednost vodních polygonů<input type="range" min="0" max="0.8" step="0.05" value={c.opacity} onChange={e=>c.setOpacity(Number(e.target.value))}/></label>
@@ -26,8 +29,6 @@ export function VltavaControls({controller:c,draft,disabled,onChange,onFit,onOpe
     <div className="vltava-legend"><span className="included">■ zařazeno</span><span className="candidate">■ kandidát</span><span className="other">■ ostatní</span><span className="problem">□ problém</span></div>
     <button onClick={()=>run(()=>onChange(changeVltavaSelection(draft!,c.source!,c.source!.records.filter(r=>r.candidate).map(r=>r.globalId))))}>Načíst 62 kandidátů z auditu</button>
     <p>Nahradí výběr kandidátní množinou. Nejde o schválení; změnu lze vrátit.</p>
-    <div className="vltava-actions"><button disabled={!canUndo} onClick={onUndo}>Zpět ve výběru</button><button disabled={!canRedo} onClick={onRedo}>Znovu ve výběru</button></div>
-    <p>Undo/Redo používají společnou historii světa.</p>
     <button disabled={!draft?.selectedIds.length} onClick={()=>run(async()=>{if(await c.compute(draft!))c.setMode('result');})}>Vytvořit náhled sjednocené řeky</button>
     <button disabled={!draft?.selectedIds.length} onClick={()=>run(async()=>{if(await c.compute(draft!))c.setNotice('Oddělené komponenty a ostrovní otvory jsou v pravém panelu. Žádné mezery nebyly doplněné.');})}>Najít přerušená místa</button>
     <button onClick={()=>{c.setMode('related');c.setNeighbors(true);const r=c.source!.records.find(r=>r.globalId==='{B692D262-C6E7-4A76-AE55-7139B85B96E7}');if(r){c.setSelectedId(r.globalId);onFit(r.geometry);}c.setNotice('Prověřte soutok s Berounkou a navazující toky. Společná hranice není důvodem k zařazení.');}}>Prověřit přítoky</button>
