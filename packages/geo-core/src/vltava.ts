@@ -21,7 +21,7 @@ export const vltavaWaterAreaInputSchema=z.object({
   source:z.object({provider:text,url,version:text,dataDate:z.iso.date(),retrievedAt:z.iso.datetime(),
    license:z.object({name:text,url}).strict(),rawChecksum:z.string().regex(/^[a-f0-9]{64}$/),sourceFeatureIds:z.array(text).min(1).max(10000).refine(ids=>new Set(ids).size===ids.length,'Zdrojová ID nesmějí být duplicitní.')}).strict(),
   coverageReview:z.object({status:z.enum(['pending','verified']),fullPragueReach:z.boolean(),islandHoles:z.enum(['unverified','included']),
-   bridgePassages:z.enum(['unverified','continuous']),reviewedBy:text.nullable(),reviewedAt:z.iso.datetime().nullable(),note:text}).strict()
+   bridgePassages:z.enum(['unverified','continuous']),reviewedBy:text.nullable(),reviewedAt:z.iso.datetime().nullable(),note:z.string().trim().min(1).max(100000)}).strict()
  }).strict()
 }).strict().superRefine((input,ctx)=>{
  const review=input.properties.coverageReview;

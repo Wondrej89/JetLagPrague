@@ -69,6 +69,7 @@ export function PublicationDialog({ world, pidKey, onBuild, onRules, onClose, on
   const rules = world.gameStops ?? defaultGameStopConfiguration();
   return <div className="modal-backdrop"><section role="dialog" aria-modal="true" aria-labelledby="publication-title" className="import-dialog publication-dialog">
     <div className="dialog-heading"><h2 id="publication-title">Publikace herních podkladů</h2><button onClick={onClose}>Zavřít</button></div>
+    {world.vltavaAssembly&&<p className="vltava-warning">Výběr Vltavy není součástí tohoto GameDataRelease. Schválenou geometrii exportujte v nástroji Vltava pro následné zapojení publikace. Lokální výběr nezpřístupňuje Measuring.</p>}
     <p>Pracovní svět zůstává v tomto prohlížeči. Publikace obsahuje schválené POI, hranice a ověřené herní zastávky; úplný GIS audit se neposílá.</p>
     <p className={configured ? '' : 'message warning'}>{configured ? session ? `Správce: ${session.login} · relace platí do ${new Date(session.expiresAt).toLocaleTimeString('cs-CZ')}` : 'Publikace vyžaduje přihlášení správce.' : 'Publikace není nakonfigurována'}</p>
     {configured && !compatible && <p role="alert" className="message warning">Publikační server zatím nepodporuje vodní plochy (schéma 6). Nasaďte aktuální verzi Cloudflare Workeru.</p>}

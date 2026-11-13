@@ -128,6 +128,20 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .message.error { background: #faeae4; color: #94462e; border-bottom: 1px solid #edd1c3; }
 .message button { background: transparent; font-size: 12px; }
 .warning { background: #fff4dc; color: #8f6a2c; }
+.vltava-controls { border-block: 1px solid #dce2d8; margin: 14px 0; padding: 16px 0; }
+.vltava-controls button, .vltava-inspector button { margin: 4px 4px 4px 0; font-size: 11px; }
+.vltava-controls p, .vltava-inspector p { font-size: 11px; margin: 8px 0; }
+.vltava-controls label, .vltava-inspector label { margin: 10px 0; }
+.vltava-check { display: flex; align-items: flex-start; gap: 7px; }
+.vltava-check input { width: 15px; flex: 0 0 15px; margin: 2px 0 0; }
+.vltava-warning { padding: 8px; background: #fff4dc; border: 1px solid #ddbc80; font-size: 11px; overflow-wrap: anywhere; }
+.vltava-id-list { max-height: 180px; overflow: auto; }
+.vltava-id-list button { width: 100%; text-align: left; }
+.vltava-id-list small { display: block; overflow-wrap: anywhere; font-size: 10px; }
+.vltava-legend { display: flex; flex-wrap: wrap; gap: 7px; font-size: 10px; margin: 10px 0; }
+.vltava-legend .included { color: #1976c9; }.vltava-legend .candidate { color: #b56b0c; }.vltava-legend .other { color: #68747c; }.vltava-legend .problem { color: #c62c35; }
+.vltava-inspector section, .vltava-site { border-bottom: 1px solid #dce2d8; padding: 12px 0; }
+.vltava-inspector h3 { margin-top: 16px; }
 .inline-error { color: #a3452d; font-size: 12px; line-height: 1.5; background: #fbeee8; padding: 10px; margin-top: 10px; }
 .map-settings { background: #f4f6ed; border-bottom: 1px solid #d5decf; padding: 18px 24px; }
 .map-settings label { max-width: 420px; }

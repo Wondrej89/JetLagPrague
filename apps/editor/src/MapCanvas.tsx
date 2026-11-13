@@ -7,6 +7,7 @@ import { distanceMeters, isManagedLayer, validateGeometry, type AreaGeometry, ty
 import type { Position, Feature } from 'geojson';
 import type { PidMapState } from './pid-types';
 import { modeColors } from './PidPanel';
+import {VltavaMapLayer,visibleVltavaRecords,type VltavaMapState} from './VltavaMapLayer';
 
 export type Tool = 'select' | 'point' | 'line' | 'polygon' | 'hole' | 'circle' | 'measure' | 'edit' | 'inspect' | 'park' | 'zoo' | 'hospital' | 'library' | 'cinema' | 'embassy';
 export interface Selection { layerId: string; featureId: string }
@@ -14,6 +15,7 @@ export interface MapHandle { prague(): void; fit(): void; fitArea(geometry: Area
 interface Props {
   world: WorldDraft; selected: Selection | null; tool: Tool; apiKey: string;
   pid?: PidMapState;
+  vltava?:VltavaMapState|null;
   poi?: { preview?: AreaGeometry | null; records: Poi[]; visibility: PoiConfiguration['visibility']; selected: string | null; moving: boolean; onSelect(id: string): void; onReference(point: [number, number]): boolean };
   testPoint: Position | null;
   onTestPoint(point: Position): void;
@@ -42,6 +44,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
   const pidHit = useRef<(point: L.LatLng) => string | null>(() => null);
   const featureLayers = useRef(new Map<string, L.Marker | L.Polyline | L.Polygon>());
   const current = useRef(props);
+  const vltavaLayer=useRef<VltavaMapLayer|null>(null);
   current.current = props;
 
   useImperativeHandle(ref, () => ({
@@ -69,6 +72,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     const coveragePane = instance.createPane('hiding-coverage'); coveragePane.style.zIndex = '350'; coveragePane.style.pointerEvents = 'none';
     coverageLayer.current.addTo(instance);
     const poiPane = instance.createPane('poi-polygons'); poiPane.style.zIndex = '460';
+    vltavaLayer.current=new VltavaMapLayer(instance);
     poiLayers.current.addTo(instance);
     const pane = instance.createPane('pid-data'); pane.style.zIndex = '450'; pane.style.pointerEvents = 'none';
     pidRenderer.current = L.canvas({ padding: 0.2, pane: 'pid-data' });
@@ -96,8 +100,13 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     });
     const resize = new ResizeObserver(() => instance.invalidateSize());
     resize.observe(container.current);
-    return () => { cancelAnimationFrame(boundsFrame); resize.disconnect(); instance.remove(); map.current = null; };
+    return () => { cancelAnimationFrame(boundsFrame); resize.disconnect();vltavaLayer.current?.remove();vltavaLayer.current=null; instance.remove(); map.current = null; };
   }, []);
+
+  useEffect(()=>{
+    vltavaLayer.current?.update(props.vltava??null);
+    if(container.current){container.current.dataset.vltavaCount=String(props.vltava?visibleVltavaRecords(props.vltava).length:0);container.current.dataset.vltavaPreview=props.vltava?.mode==='result'?props.vltava.preview?.geometry.type??'none':'none';}
+  },[props.vltava]);
 
   useEffect(() => {
     const instance = map.current;
