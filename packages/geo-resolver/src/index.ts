@@ -1,4 +1,4 @@
-import { classifyArea, containsGamePoint, distanceMeters, distanceToPoiMeters, matchingPois, measuringPois, nearestApprovedPoi, type GeographicPoi, type GameDataRelease } from '../../geo-core/src/index';
+import { VLTAVA_MISSING_DATA_REASON,classifyArea, containsGamePoint, distanceMeters, distanceToPoiMeters, matchingPois, measuringPois, nearestApprovedPoi, type GeographicPoi, type GameDataRelease } from '../../geo-core/src/index';
 import { GEOGRAPHIC_EPSILON_METERS, THERMOMETER_TOLERANCE_METERS, type GameEnvironment, type Point, type QuestionDefinition, type QuestionInstance, type Resolution } from '../../game-core/src/index';
 import {publishedRailCatalog} from './rail';
 /** Only a checksum-verified published release is supplied by the release loader.
@@ -15,6 +15,7 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
   const maxMovementMeters=Math.max(...extremes.flatMap(a=>extremes.map(b=>distanceMeters(a,b))));
   function availability(d:QuestionDefinition):{state:QuestionDefinition['availability'];reason:string}{
     if(d.configured===false)return {state:'unsupported',reason:'Work in progress – chybí schválená varianta pravidla a odměna.'};
+    if(d.category==='vltava')return {state:'missing_data',reason:VLTAVA_MISSING_DATA_REASON};
     if(d.category==='stop_name'&&d.referenceVersion===1&&!stopPois.length)return {state:'missing_data',reason:'Chybí ověřené aktivní způsobilé PID zastávky.'};
     if(d.resolver==='manual'||d.resolver==='photo')return {state:'manual',reason:d.testOnly?'Testovací ruční zadání; bez automatického výsledku.':'Ruční vyhodnocení schovaným.'};
     if(d.resolver==='unsupported')return {state:'missing_data',reason:'Chybí publikovaná vrstva nebo ověřený resolver. Nelze automaticky vyhodnotit.'};

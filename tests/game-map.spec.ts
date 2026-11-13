@@ -10,6 +10,16 @@ const map=(page:Page)=>phone(page).getByTestId('game-map-tools');
 const adminMap=(page:Page)=>page.locator('.sim-map').getByTestId('game-map-tools');
 test.beforeEach(async({page})=>{await page.route('https://api.mapy.com/**',r=>r.abort());});
 
+test('missing Vltava has an exact data reason and no fabricated layer or question; Radar still works and survives reload',async({page})=>{
+ test.setTimeout(60000);await create(page);await scenario(page,'deck-100');await tab(page,'hunter','Otázky');await phone(page).getByRole('button',{name:/Measuring/}).click();
+ const choice=phone(page).locator('.question-choice').filter({has:page.getByRole('heading',{name:'Vltava – vzdálenost k řece',exact:true})});
+ await expect(choice).toContainText('Jsi blíž, nebo dál od Vltavy než já?');await expect(choice).toContainText('polygon vodní plochy Vltavy včetně ostrovů');await expect(choice.getByRole('button',{name:'Položit otázku',exact:true})).toBeDisabled();expect((await stored(page)).state.questions).toEqual([]);
+ await phone(page).getByRole('button',{name:'Zobrazit mapu a vrstvy'}).click();await map(page).getByRole('button',{name:'Vrstvy',exact:true}).click();const panel=map(page).getByRole('region',{name:'Vrstvy mapy'});await expect(panel.getByRole('checkbox',{name:/Vltava/})).toBeDisabled();await expect(panel).toContainText('Polygon/MultiPolygon');await expect(map(page).locator('[data-public-layer="vltava"]')).toHaveCount(0);await map(page).getByRole('button',{name:'Zavřít mapový panel'}).click();
+ await tab(page,'hunter','Otázky');await phone(page).getByRole('button',{name:/Radar/}).click();await phone(page).locator('.question-choice').filter({has:page.getByRole('heading',{name:'Radar 800 m',exact:true})}).getByRole('button',{name:'Položit otázku',exact:true}).click();await tab(page,'hider','Otázka');await phone(page,'hider').getByRole('button',{name:'Odpovědět nyní'}).click();await expect.poll(async()=>(await stored(page)).state.questions[0].answer).toBe('ANO');
+ await phone(page).getByRole('button',{name:'Zobrazit mapu a vrstvy'}).click();await expect(map(page)).toHaveAttribute('data-deduction-state','ready',{timeout:30000});const before=(await stored(page)).state;expect(before.questions).toHaveLength(1);expect(before.deductions!.every(d=>d.parameters.category!=='vltava')).toBe(true);
+ await page.reload();await expect(map(page)).toHaveAttribute('data-deduction-state','ready',{timeout:30000});expect((await stored(page)).state.questions).toEqual(before.questions);expect((await stored(page)).state.deductions).toEqual(before.deductions);await expect(map(page).locator('[data-public-layer="vltava"]')).toHaveCount(0);
+});
+
 test('Measuring rail uses published train markers, private diagnostics, frozen snapshots, 3 → 1 and real deductions after reload',async({page})=>{
  test.setTimeout(90000);
  const {gameFixture}=await import('../packages/game-core/src/test-fixtures'),fixture=await gameFixture();

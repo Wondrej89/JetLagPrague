@@ -1,0 +1,1360 @@
+{
+  "format": "jetlag-prague-vltava-source-audit",
+  "schemaVersion": 1,
+  "source": {
+    "file": "data/raw/AGD_CUR_AGD_OCH_VODNIPLOCHYTOKY_P.zip",
+    "checksum": "e778e595fc2a6efe606d167468230cad3523583146417620c6245ade6c096f9d",
+    "crs": "S-JTSK / Křovákovo zobrazení (definice PRJ)",
+    "encoding": "utf-8",
+    "transformation": "proj4 2.22.0: PRJ → EPSG:4326; pořadí vstupních os ze souboru, výstup [longitude, latitude]; datumová transformace podle PRJ a databáze proj4, bez lokálního transformačního gridu.",
+    "fields": [
+      "NAZEV",
+      "PRISTUPNOS",
+      "TYP",
+      "KOUPANI",
+      "KOUP_OBL",
+      "GLOBALID",
+      "SHAPE_LEN"
+    ],
+    "metadataSynchronizedAt": "2026-10-05",
+    "dataDate": null,
+    "license": "Konkrétní licence není v dodaném ZIPu doložena."
+  },
+  "inventory": {
+    "total": 3524,
+    "waterAreas": 769,
+    "streams": 2755,
+    "namedStreams": 0,
+    "invalidStreams": []
+  },
+  "connectivity": {
+    "engine": "GEOS 3.13.0 / geos-wasm 3.1.1",
+    "space": "original EPSG:5514 metres",
+    "adjacencyToleranceMeters": 0.000001,
+    "totalComponents": 463,
+    "riverAndTributariesComponent": [
+      {
+        "row": 22,
+        "globalId": "{BCFF8ED7-61A3-430D-837D-7B4EFB84C9BA}",
+        "name": ""
+      },
+      {
+        "row": 30,
+        "globalId": "{5441E8CA-ECC1-4922-9A05-418E9FC2D0F7}",
+        "name": ""
+      },
+      {
+        "row": 33,
+        "globalId": "{F0B6102E-234E-4C2D-94D6-E3164D4F1F3B}",
+        "name": ""
+      },
+      {
+        "row": 53,
+        "globalId": "{4DE8BFBE-1738-4BDA-94B6-036DAD436943}",
+        "name": ""
+      },
+      {
+        "row": 58,
+        "globalId": "{EA9DEA1B-B7DB-4A57-B3CC-7674A6A89151}",
+        "name": ""
+      },
+      {
+        "row": 63,
+        "globalId": "{55E384FD-7CBA-4B7E-9B7C-B75243727FDF}",
+        "name": ""
+      },
+      {
+        "row": 105,
+        "globalId": "{3A8E6B63-9AD8-442B-A239-3C92049B3BFF}",
+        "name": ""
+      },
+      {
+        "row": 127,
+        "globalId": "{28468908-3B98-4140-9030-2E64671B99CC}",
+        "name": ""
+      },
+      {
+        "row": 136,
+        "globalId": "{AC58139A-AB93-4320-BA1D-35BF7B722F77}",
+        "name": ""
+      },
+      {
+        "row": 153,
+        "globalId": "{326C5DF8-44ED-47AA-83C7-00C147CBCDEA}",
+        "name": ""
+      },
+      {
+        "row": 172,
+        "globalId": "{12DAB84F-3D42-4B44-959D-28FDC9CE929F}",
+        "name": ""
+      },
+      {
+        "row": 181,
+        "globalId": "{C776B768-ACB7-4E26-A547-7B0018FF463D}",
+        "name": ""
+      },
+      {
+        "row": 217,
+        "globalId": "{5B7B29C0-0F10-448E-953C-09F14FEDC497}",
+        "name": ""
+      },
+      {
+        "row": 326,
+        "globalId": "{5C428BD1-8EDA-46CA-8618-27C1A4BE9C88}",
+        "name": ""
+      },
+      {
+        "row": 335,
+        "globalId": "{2CA149D6-9E47-4B92-ABA0-BB25379DF038}",
+        "name": ""
+      },
+      {
+        "row": 354,
+        "globalId": "{87DBDA00-C6F1-464C-904B-265A4CD47E05}",
+        "name": ""
+      },
+      {
+        "row": 378,
+        "globalId": "{D6E306FC-3A5B-49F1-80EC-36656F2522D2}",
+        "name": ""
+      },
+      {
+        "row": 380,
+        "globalId": "{99451BB8-6553-4CE1-A55B-590B11C3436A}",
+        "name": ""
+      },
+      {
+        "row": 411,
+        "globalId": "{64922B92-707A-415D-BA25-880ABCF66505}",
+        "name": ""
+      },
+      {
+        "row": 422,
+        "globalId": "{2B313ACD-0F12-4086-968F-8750FDAA95BC}",
+        "name": ""
+      },
+      {
+        "row": 457,
+        "globalId": "{D7A85DB2-0265-4D99-B6BB-D63912369CA9}",
+        "name": ""
+      },
+      {
+        "row": 469,
+        "globalId": "{7E75D9B4-A31B-45BC-8BD9-E936B25F78EA}",
+        "name": ""
+      },
+      {
+        "row": 474,
+        "globalId": "{714CB407-08C5-440D-889D-B97C32B45E28}",
+        "name": ""
+      },
+      {
+        "row": 509,
+        "globalId": "{06C3F6CF-BC38-4357-B778-9B978A3709B4}",
+        "name": ""
+      },
+      {
+        "row": 517,
+        "globalId": "{88553274-9D06-4A62-90B5-8500B112E8C3}",
+        "name": ""
+      },
+      {
+        "row": 546,
+        "globalId": "{C02762F2-6D8A-4B8C-AC47-721FEA8CD076}",
+        "name": ""
+      },
+      {
+        "row": 547,
+        "globalId": "{D139FDE2-E234-4784-893B-70635023A113}",
+        "name": ""
+      },
+      {
+        "row": 566,
+        "globalId": "{995E40B5-CA5E-46B3-9173-B050855DD5B6}",
+        "name": ""
+      },
+      {
+        "row": 582,
+        "globalId": "{AD1B344F-21B5-42D0-AC52-EC325A57315A}",
+        "name": ""
+      },
+      {
+        "row": 588,
+        "globalId": "{2F6D32B6-C852-4CA4-B71F-22F8DD7B55CC}",
+        "name": ""
+      },
+      {
+        "row": 620,
+        "globalId": "{2558852D-1CF8-46BB-BA45-7CC54D973F4E}",
+        "name": ""
+      },
+      {
+        "row": 621,
+        "globalId": "{71A9DB74-0426-46CF-BD82-11694E6F0ED3}",
+        "name": ""
+      },
+      {
+        "row": 627,
+        "globalId": "{C4BDA775-7C57-4397-A0C5-B27684D62F3F}",
+        "name": ""
+      },
+      {
+        "row": 640,
+        "globalId": "{B6E5C505-7A1E-4CCA-A098-1CD3796D1D10}",
+        "name": ""
+      },
+      {
+        "row": 643,
+        "globalId": "{9562D629-90BF-45A0-8316-83415B468E32}",
+        "name": ""
+      },
+      {
+        "row": 706,
+        "globalId": "{68915D81-6163-45E6-BEE6-FF532B4B8407}",
+        "name": ""
+      },
+      {
+        "row": 733,
+        "globalId": "{141E7C77-6723-4547-A8B4-D84A62A78183}",
+        "name": ""
+      },
+      {
+        "row": 750,
+        "globalId": "{1D5FE1AE-ABF1-4D10-9F84-6F2E89DE7792}",
+        "name": ""
+      },
+      {
+        "row": 753,
+        "globalId": "{897B965F-E750-4694-AFC4-E42C535A5995}",
+        "name": ""
+      },
+      {
+        "row": 766,
+        "globalId": "{658B3ED6-8240-47BF-B0A9-57959E327FD5}",
+        "name": ""
+      },
+      {
+        "row": 779,
+        "globalId": "{7FFCAA65-3E7D-4118-B806-F04C823CFF52}",
+        "name": ""
+      },
+      {
+        "row": 794,
+        "globalId": "{AA26D5A6-5286-4DEC-BFD2-B620C24E3B3D}",
+        "name": ""
+      },
+      {
+        "row": 818,
+        "globalId": "{A3F019E2-BC26-477D-B6C6-5E42CFA37F4F}",
+        "name": ""
+      },
+      {
+        "row": 828,
+        "globalId": "{354BFD27-8DB1-4602-A988-C50E91BA4BEA}",
+        "name": ""
+      },
+      {
+        "row": 831,
+        "globalId": "{85643136-BFBB-46F8-96DE-B70CF1300CDE}",
+        "name": ""
+      },
+      {
+        "row": 849,
+        "globalId": "{80BEE64F-CE98-42FA-9BD0-29C7BD700835}",
+        "name": ""
+      },
+      {
+        "row": 850,
+        "globalId": "{8F966094-DD3D-4533-86BD-543B61A57D40}",
+        "name": ""
+      },
+      {
+        "row": 859,
+        "globalId": "{B89BAC84-9DC6-49FF-810C-D9DE4AD1E0FE}",
+        "name": ""
+      },
+      {
+        "row": 878,
+        "globalId": "{E6BB52FB-326C-42D3-AD0A-4655C7D7AB5D}",
+        "name": ""
+      },
+      {
+        "row": 883,
+        "globalId": "{9BEC8326-D8E1-459E-9B55-4B7B9D1C93C6}",
+        "name": ""
+      },
+      {
+        "row": 924,
+        "globalId": "{475A358E-AB87-4FF0-B677-3B3DEC816A87}",
+        "name": ""
+      },
+      {
+        "row": 954,
+        "globalId": "{BAE8F9D5-6162-4B59-8379-ED05E35CDC5A}",
+        "name": ""
+      },
+      {
+        "row": 960,
+        "globalId": "{B696BDCF-EB5E-4D5F-B165-A669D0747965}",
+        "name": ""
+      },
+      {
+        "row": 986,
+        "globalId": "{0F0C7581-DDF7-4B8D-BBE3-FE2A2678971A}",
+        "name": ""
+      },
+      {
+        "row": 999,
+        "globalId": "{9FDC9D90-7C12-44DB-94C9-ED8443A44628}",
+        "name": ""
+      },
+      {
+        "row": 1001,
+        "globalId": "{67D6C23D-2857-4F0F-9DEC-59A5E1801712}",
+        "name": ""
+      },
+      {
+        "row": 1012,
+        "globalId": "{2CD107B5-2EE5-4468-9502-79D3823C05EA}",
+        "name": ""
+      },
+      {
+        "row": 1056,
+        "globalId": "{F1B0AC0C-8AA3-442F-8057-29360342557D}",
+        "name": ""
+      },
+      {
+        "row": 1096,
+        "globalId": "{ABC95DB1-9F90-4226-B904-4986EE435BB4}",
+        "name": ""
+      },
+      {
+        "row": 1105,
+        "globalId": "{B3E041B8-70F1-4C72-A1EE-673120118650}",
+        "name": ""
+      },
+      {
+        "row": 1197,
+        "globalId": "{15A31C20-3C4F-4FFF-82A5-90B9A67E2CD1}",
+        "name": ""
+      },
+      {
+        "row": 1199,
+        "globalId": "{5ED0F38B-B6B4-453C-9580-B7BD0FC94382}",
+        "name": ""
+      },
+      {
+        "row": 1228,
+        "globalId": "{0AA6C253-032C-4990-90F3-52B54E56D497}",
+        "name": ""
+      },
+      {
+        "row": 1236,
+        "globalId": "{1F35DD61-70F8-4C51-8BF6-8AF4F8D2E330}",
+        "name": ""
+      },
+      {
+        "row": 1244,
+        "globalId": "{F2D6E82B-C5AB-4E9C-8A3A-ADF9E10010CB}",
+        "name": ""
+      },
+      {
+        "row": 1254,
+        "globalId": "{E68B096C-EAF6-45C8-AA53-AD4BDC38ECC0}",
+        "name": ""
+      },
+      {
+        "row": 1258,
+        "globalId": "{1FA9E326-1DC5-4CD3-9C7E-E03E65871471}",
+        "name": ""
+      },
+      {
+        "row": 1273,
+        "globalId": "{EE7D4A19-0B5E-49F4-92F8-13894EA5F795}",
+        "name": ""
+      },
+      {
+        "row": 1319,
+        "globalId": "{27B29E4E-77E0-4502-A11F-69D1F53D7D3C}",
+        "name": ""
+      },
+      {
+        "row": 1367,
+        "globalId": "{D60A64B8-E1AF-4659-BB88-CF0BBD170C1D}",
+        "name": ""
+      },
+      {
+        "row": 1403,
+        "globalId": "{E42902B8-2955-4C0C-901A-2746B760380A}",
+        "name": ""
+      },
+      {
+        "row": 1452,
+        "globalId": "{75FEB0DE-9467-47FE-A287-3E5058A13000}",
+        "name": ""
+      },
+      {
+        "row": 1462,
+        "globalId": "{60277BF0-1D5D-4D29-A47A-42CD843FDC51}",
+        "name": ""
+      },
+      {
+        "row": 1556,
+        "globalId": "{6305783C-61DD-4DBE-B9A0-0C7AB40D353D}",
+        "name": ""
+      },
+      {
+        "row": 1602,
+        "globalId": "{2BFC9A65-D380-4A09-B04B-5D6C51B5757D}",
+        "name": ""
+      },
+      {
+        "row": 1606,
+        "globalId": "{0D13BDBA-E1FC-483D-A04E-1935FC5F4264}",
+        "name": ""
+      },
+      {
+        "row": 1628,
+        "globalId": "{B77E9C96-26CC-49BE-BF8C-4B17C5DF4D3E}",
+        "name": ""
+      },
+      {
+        "row": 1642,
+        "globalId": "{901BDA55-2C51-48CA-9934-8246F372341C}",
+        "name": ""
+      },
+      {
+        "row": 1647,
+        "globalId": "{A484993D-F248-44A6-BB39-B6F64608CD3E}",
+        "name": ""
+      },
+      {
+        "row": 1648,
+        "globalId": "{DD59C25A-9FB9-4A9E-9FC0-873E1FC21A14}",
+        "name": ""
+      },
+      {
+        "row": 1658,
+        "globalId": "{3291EA0A-7F63-4180-AFCC-388897CC0B02}",
+        "name": ""
+      },
+      {
+        "row": 1661,
+        "globalId": "{2740B516-CDB8-476B-8275-926CF796CA3E}",
+        "name": ""
+      },
+      {
+        "row": 1675,
+        "globalId": "{DB49C829-0C3C-4EFD-AE1D-2AA438D5FD7C}",
+        "name": ""
+      },
+      {
+        "row": 1677,
+        "globalId": "{26D7B8D2-0959-4DF9-8729-5D0FFFC17FAE}",
+        "name": ""
+      },
+      {
+        "row": 1690,
+        "globalId": "{9BA767ED-4083-42D3-AFC9-9A740188B41D}",
+        "name": ""
+      },
+      {
+        "row": 1697,
+        "globalId": "{D8554BCF-F503-4607-A65E-4C20FE7E5E92}",
+        "name": ""
+      },
+      {
+        "row": 1704,
+        "globalId": "{99537C4D-12D7-4AFA-8BBC-7D6DBC269ECF}",
+        "name": ""
+      },
+      {
+        "row": 1796,
+        "globalId": "{DA71F540-2FF0-4B13-A599-E98309F73C45}",
+        "name": ""
+      },
+      {
+        "row": 1850,
+        "globalId": "{7323C514-7EA4-4218-8556-8FE98233F2E6}",
+        "name": ""
+      },
+      {
+        "row": 1886,
+        "globalId": "{0C9C0301-E508-4E69-B278-37ADA73F7160}",
+        "name": ""
+      },
+      {
+        "row": 1935,
+        "globalId": "{6179502D-C885-422D-B992-78A643E86639}",
+        "name": ""
+      },
+      {
+        "row": 1938,
+        "globalId": "{DBF6DFAC-D1EF-43E6-B567-7BB8187A9FCC}",
+        "name": ""
+      },
+      {
+        "row": 1942,
+        "globalId": "{BE4D1067-2A55-40CE-A15A-AEFC44359436}",
+        "name": ""
+      },
+      {
+        "row": 1944,
+        "globalId": "{31B03DB7-168C-4E11-AD1B-BC3E431DF950}",
+        "name": ""
+      },
+      {
+        "row": 2004,
+        "globalId": "{15313817-B39A-4618-8F54-67DAB1C6AAD8}",
+        "name": ""
+      },
+      {
+        "row": 2009,
+        "globalId": "{3C27DDF6-5042-4D31-95B2-6DBDD49E935E}",
+        "name": ""
+      },
+      {
+        "row": 2026,
+        "globalId": "{8C5506F5-16FD-41E7-BE77-3356B753BD81}",
+        "name": ""
+      },
+      {
+        "row": 2038,
+        "globalId": "{5D426FFF-5FD9-49D0-9138-AC1D411DFF1A}",
+        "name": ""
+      },
+      {
+        "row": 2051,
+        "globalId": "{1627DC8F-99E5-42A5-BCBB-9B7C49003013}",
+        "name": ""
+      },
+      {
+        "row": 2057,
+        "globalId": "{12751102-0B55-478F-81DE-FCFEAC6D34D9}",
+        "name": ""
+      },
+      {
+        "row": 2060,
+        "globalId": "{0A55A410-AE27-45B2-A54A-9CF74D2FED2B}",
+        "name": ""
+      },
+      {
+        "row": 2109,
+        "globalId": "{C13BB59E-BBB5-49EE-B06F-A991BFB09429}",
+        "name": ""
+      },
+      {
+        "row": 2117,
+        "globalId": "{5812340F-7755-4332-85D9-95D4E0D3900C}",
+        "name": ""
+      },
+      {
+        "row": 2129,
+        "globalId": "{A6826945-1811-4F4F-AF83-4758F08A738F}",
+        "name": ""
+      },
+      {
+        "row": 2133,
+        "globalId": "{F7056D5E-F627-4FA7-8ADF-C14ACBD81DBD}",
+        "name": ""
+      },
+      {
+        "row": 2189,
+        "globalId": "{71BCBF3F-7F89-43B3-BDC9-6AFB57AF3703}",
+        "name": ""
+      },
+      {
+        "row": 2246,
+        "globalId": "{CA6EFAE0-E68A-456A-A9AC-2C6C8EE0B373}",
+        "name": ""
+      },
+      {
+        "row": 2271,
+        "globalId": "{4B92F8B7-17D0-46F7-9C12-998AAB9CAAFC}",
+        "name": ""
+      },
+      {
+        "row": 2282,
+        "globalId": "{10DD4BBE-5447-440E-89FF-775D27C8B44A}",
+        "name": ""
+      },
+      {
+        "row": 2283,
+        "globalId": "{57F2AEF2-02EF-4831-9F19-4D6EC6F7FF94}",
+        "name": ""
+      },
+      {
+        "row": 2290,
+        "globalId": "{C8157A9E-5856-4A80-AC0D-E0C048DC3E77}",
+        "name": ""
+      },
+      {
+        "row": 2296,
+        "globalId": "{A5F34E6F-7AD1-4931-9B7D-718F514031CD}",
+        "name": ""
+      },
+      {
+        "row": 2321,
+        "globalId": "{F2770C05-25BE-4867-9BB1-F9003035B813}",
+        "name": ""
+      },
+      {
+        "row": 2341,
+        "globalId": "{BAB96E27-AF29-4BAD-8A94-6348F69D8D08}",
+        "name": ""
+      },
+      {
+        "row": 2347,
+        "globalId": "{A19EF60D-4B12-4F08-BB72-36353ECC6D35}",
+        "name": ""
+      },
+      {
+        "row": 2360,
+        "globalId": "{E097B52C-AFEA-493D-B395-D78C377D8607}",
+        "name": ""
+      },
+      {
+        "row": 2398,
+        "globalId": "{118ADE4B-2EB6-4EA7-BEDC-3043E9CA9B1E}",
+        "name": ""
+      },
+      {
+        "row": 2411,
+        "globalId": "{590C492F-7BEF-4039-8989-C832DC37A91A}",
+        "name": ""
+      },
+      {
+        "row": 2422,
+        "globalId": "{86B8262E-9204-457B-AF62-2CE3B4FC59E7}",
+        "name": ""
+      },
+      {
+        "row": 2456,
+        "globalId": "{22E3FFC3-FB5A-4798-B100-58189534ABDD}",
+        "name": ""
+      },
+      {
+        "row": 2462,
+        "globalId": "{7BE59ED9-350B-471A-A5C3-BA4FBF20CA34}",
+        "name": ""
+      },
+      {
+        "row": 2467,
+        "globalId": "{346150AB-5921-4ADA-9121-371F17E5F9A3}",
+        "name": ""
+      },
+      {
+        "row": 2490,
+        "globalId": "{1E55044B-33EE-4DC2-9186-78D3042FA5EB}",
+        "name": ""
+      },
+      {
+        "row": 2507,
+        "globalId": "{657A99D3-5F84-4C60-9082-BD9C8CFDCC63}",
+        "name": ""
+      },
+      {
+        "row": 2556,
+        "globalId": "{6ACDE24A-4786-4EAB-9488-581333EBB8C0}",
+        "name": ""
+      },
+      {
+        "row": 2563,
+        "globalId": "{6604CF2D-AC9A-4CD6-A5DD-2083BC993446}",
+        "name": ""
+      },
+      {
+        "row": 2575,
+        "globalId": "{F8AE6F9C-A9F6-4925-AFD0-DB24235E3987}",
+        "name": ""
+      },
+      {
+        "row": 2641,
+        "globalId": "{250E164D-885D-45D3-B7ED-47BE009DE925}",
+        "name": ""
+      },
+      {
+        "row": 2656,
+        "globalId": "{5D4FBE5F-90F1-4A24-9279-2BF424ADE2CC}",
+        "name": ""
+      },
+      {
+        "row": 2689,
+        "globalId": "{69BC228E-CA19-42FD-88EB-32E32B26EEC8}",
+        "name": ""
+      },
+      {
+        "row": 2715,
+        "globalId": "{95DA9CE5-FAA9-42EE-9712-F139B319A4AF}",
+        "name": ""
+      },
+      {
+        "row": 2762,
+        "globalId": "{E703110B-B308-4EF1-99DB-634583C706E1}",
+        "name": ""
+      },
+      {
+        "row": 2774,
+        "globalId": "{65B52ACC-75F2-4C53-A0D2-85FF39F332C5}",
+        "name": ""
+      },
+      {
+        "row": 2777,
+        "globalId": "{AB678786-971C-4249-B3F6-4C5E7432D52C}",
+        "name": ""
+      },
+      {
+        "row": 2799,
+        "globalId": "{B00FE2EF-DB69-4B04-8F27-17BB3055F37E}",
+        "name": ""
+      },
+      {
+        "row": 2800,
+        "globalId": "{82B890FF-343E-4815-ABF9-EF7AFD8D401A}",
+        "name": ""
+      },
+      {
+        "row": 2802,
+        "globalId": "{2ED23344-B375-4A34-98C7-D2E07688FD6D}",
+        "name": ""
+      },
+      {
+        "row": 2899,
+        "globalId": "{B692D262-C6E7-4A76-AE55-7139B85B96E7}",
+        "name": ""
+      },
+      {
+        "row": 2906,
+        "globalId": "{14FD02BD-8793-4271-B1FF-6E41B6F15408}",
+        "name": ""
+      },
+      {
+        "row": 2916,
+        "globalId": "{DC31B04F-6B8F-45B3-9535-6B725B41E18B}",
+        "name": ""
+      },
+      {
+        "row": 2937,
+        "globalId": "{0E2DE5D1-7741-411E-AFEB-8DF01D933ED5}",
+        "name": ""
+      },
+      {
+        "row": 2945,
+        "globalId": "{3A791EF6-B461-4AAD-9DB1-1EF5FC4F9108}",
+        "name": ""
+      },
+      {
+        "row": 2957,
+        "globalId": "{6618770C-70CE-4E2E-9D1C-52BF2691A39F}",
+        "name": ""
+      },
+      {
+        "row": 2959,
+        "globalId": "{9A0E794C-0112-44EA-B177-A5BF8F835DA2}",
+        "name": ""
+      },
+      {
+        "row": 2990,
+        "globalId": "{FFAB9AF0-0963-4736-989A-67B1B2F0E7B6}",
+        "name": ""
+      },
+      {
+        "row": 3055,
+        "globalId": "{E5D2A294-5916-4382-84B9-10A24E87DC48}",
+        "name": ""
+      },
+      {
+        "row": 3062,
+        "globalId": "{86B5A4B8-8843-4E1C-9BC1-DF73066C3A31}",
+        "name": ""
+      },
+      {
+        "row": 3094,
+        "globalId": "{4F0AF362-1143-4711-B468-E5B7918D885D}",
+        "name": ""
+      },
+      {
+        "row": 3096,
+        "globalId": "{CED4E3C6-EC25-43B7-8DC3-FEC50ECFBCB9}",
+        "name": ""
+      },
+      {
+        "row": 3099,
+        "globalId": "{9A068EC1-B3D5-4815-9F39-46A5C21F87F1}",
+        "name": ""
+      },
+      {
+        "row": 3100,
+        "globalId": "{F2A4BBF3-E7C5-488A-BD55-D74395FB039D}",
+        "name": ""
+      },
+      {
+        "row": 3119,
+        "globalId": "{0532FA4F-E5D6-4138-BA41-7B468AD129C3}",
+        "name": ""
+      },
+      {
+        "row": 3126,
+        "globalId": "{02EC8DA1-C8AE-4A39-8456-2ECDB2136A45}",
+        "name": ""
+      },
+      {
+        "row": 3152,
+        "globalId": "{72B665E5-CDEC-4DEB-8CE5-B034012C604A}",
+        "name": ""
+      },
+      {
+        "row": 3154,
+        "globalId": "{E464E368-6F3D-4EF8-87BE-428697234BFB}",
+        "name": ""
+      },
+      {
+        "row": 3223,
+        "globalId": "{2DA5CA7B-FECA-4924-A2F4-62FD4565AF30}",
+        "name": ""
+      },
+      {
+        "row": 3240,
+        "globalId": "{5F48E236-5C96-4A27-8C22-7EB304A84EB6}",
+        "name": ""
+      },
+      {
+        "row": 3246,
+        "globalId": "{0685E5D0-EA91-4EF8-A6C9-6223EA2E0136}",
+        "name": ""
+      },
+      {
+        "row": 3280,
+        "globalId": "{4C2F010F-185C-4D99-A251-86763869765E}",
+        "name": ""
+      },
+      {
+        "row": 3332,
+        "globalId": "{938CB78A-E57B-4602-AC99-83D3676017EF}",
+        "name": ""
+      },
+      {
+        "row": 3343,
+        "globalId": "{DEA41510-B9C7-411F-88EF-827E7AB9C7F5}",
+        "name": ""
+      },
+      {
+        "row": 3345,
+        "globalId": "{4732993F-A69F-4E2F-A760-C32F741D0BED}",
+        "name": ""
+      },
+      {
+        "row": 3405,
+        "globalId": "{5843545F-4153-4E89-A6A1-FB04457CB460}",
+        "name": ""
+      },
+      {
+        "row": 3412,
+        "globalId": "{6BCA2022-4C28-4B05-B442-188D8B550D95}",
+        "name": ""
+      },
+      {
+        "row": 3416,
+        "globalId": "{667BF0A1-B160-4975-B28D-BB43B9EA986C}",
+        "name": ""
+      },
+      {
+        "row": 3436,
+        "globalId": "{954A51E4-100F-4B09-B4EA-92F013A34B62}",
+        "name": ""
+      },
+      {
+        "row": 3451,
+        "globalId": "{E8C5F145-FCC2-4FC1-A528-65C86311407B}",
+        "name": ""
+      },
+      {
+        "row": 3471,
+        "globalId": "{4F8F3951-B17D-4F12-959C-5BFEB7D4F0A8}",
+        "name": ""
+      },
+      {
+        "row": 3505,
+        "globalId": "{A7D14BA6-7ED6-40D3-8566-C1A62FBBEC37}",
+        "name": ""
+      },
+      {
+        "row": 3508,
+        "globalId": "{E744B1CB-2643-470C-BB61-BCAEB091CEC6}",
+        "name": ""
+      },
+      {
+        "row": 3510,
+        "globalId": "{94E5D2E4-206B-4EC7-990C-A1FCA1E54157}",
+        "name": ""
+      },
+      {
+        "row": 3516,
+        "globalId": "{57469154-3D3A-4976-B8F4-84381F157437}",
+        "name": ""
+      },
+      {
+        "row": 3519,
+        "globalId": "{EAEECCD8-32D8-4C3D-9B19-D8DC0866C0F0}",
+        "name": ""
+      }
+    ]
+  },
+  "candidate": {
+    "status": "diagnostic_only_not_approved",
+    "method": "Block-cut endpoint path; spatially reviewed source anchors. Feature-graph pruning alone does not preserve all island arms.",
+    "anchors": [
+      {
+        "row": 1244,
+        "globalId": "{F2D6E82B-C5AB-4E9C-8A3A-ADF9E10010CB}",
+        "name": ""
+      },
+      {
+        "row": 1704,
+        "globalId": "{99537C4D-12D7-4AFA-8BBC-7D6DBC269ECF}",
+        "name": ""
+      }
+    ],
+    "records": [
+      {
+        "row": 33,
+        "globalId": "{F0B6102E-234E-4C2D-94D6-E3164D4F1F3B}",
+        "name": ""
+      },
+      {
+        "row": 127,
+        "globalId": "{28468908-3B98-4140-9030-2E64671B99CC}",
+        "name": ""
+      },
+      {
+        "row": 136,
+        "globalId": "{AC58139A-AB93-4320-BA1D-35BF7B722F77}",
+        "name": ""
+      },
+      {
+        "row": 474,
+        "globalId": "{714CB407-08C5-440D-889D-B97C32B45E28}",
+        "name": ""
+      },
+      {
+        "row": 546,
+        "globalId": "{C02762F2-6D8A-4B8C-AC47-721FEA8CD076}",
+        "name": ""
+      },
+      {
+        "row": 547,
+        "globalId": "{D139FDE2-E234-4784-893B-70635023A113}",
+        "name": ""
+      },
+      {
+        "row": 566,
+        "globalId": "{995E40B5-CA5E-46B3-9173-B050855DD5B6}",
+        "name": ""
+      },
+      {
+        "row": 582,
+        "globalId": "{AD1B344F-21B5-42D0-AC52-EC325A57315A}",
+        "name": ""
+      },
+      {
+        "row": 588,
+        "globalId": "{2F6D32B6-C852-4CA4-B71F-22F8DD7B55CC}",
+        "name": ""
+      },
+      {
+        "row": 766,
+        "globalId": "{658B3ED6-8240-47BF-B0A9-57959E327FD5}",
+        "name": ""
+      },
+      {
+        "row": 794,
+        "globalId": "{AA26D5A6-5286-4DEC-BFD2-B620C24E3B3D}",
+        "name": ""
+      },
+      {
+        "row": 828,
+        "globalId": "{354BFD27-8DB1-4602-A988-C50E91BA4BEA}",
+        "name": ""
+      },
+      {
+        "row": 850,
+        "globalId": "{8F966094-DD3D-4533-86BD-543B61A57D40}",
+        "name": ""
+      },
+      {
+        "row": 878,
+        "globalId": "{E6BB52FB-326C-42D3-AD0A-4655C7D7AB5D}",
+        "name": ""
+      },
+      {
+        "row": 883,
+        "globalId": "{9BEC8326-D8E1-459E-9B55-4B7B9D1C93C6}",
+        "name": ""
+      },
+      {
+        "row": 954,
+        "globalId": "{BAE8F9D5-6162-4B59-8379-ED05E35CDC5A}",
+        "name": ""
+      },
+      {
+        "row": 960,
+        "globalId": "{B696BDCF-EB5E-4D5F-B165-A669D0747965}",
+        "name": ""
+      },
+      {
+        "row": 1197,
+        "globalId": "{15A31C20-3C4F-4FFF-82A5-90B9A67E2CD1}",
+        "name": ""
+      },
+      {
+        "row": 1228,
+        "globalId": "{0AA6C253-032C-4990-90F3-52B54E56D497}",
+        "name": ""
+      },
+      {
+        "row": 1236,
+        "globalId": "{1F35DD61-70F8-4C51-8BF6-8AF4F8D2E330}",
+        "name": ""
+      },
+      {
+        "row": 1244,
+        "globalId": "{F2D6E82B-C5AB-4E9C-8A3A-ADF9E10010CB}",
+        "name": ""
+      },
+      {
+        "row": 1254,
+        "globalId": "{E68B096C-EAF6-45C8-AA53-AD4BDC38ECC0}",
+        "name": ""
+      },
+      {
+        "row": 1258,
+        "globalId": "{1FA9E326-1DC5-4CD3-9C7E-E03E65871471}",
+        "name": ""
+      },
+      {
+        "row": 1319,
+        "globalId": "{27B29E4E-77E0-4502-A11F-69D1F53D7D3C}",
+        "name": ""
+      },
+      {
+        "row": 1403,
+        "globalId": "{E42902B8-2955-4C0C-901A-2746B760380A}",
+        "name": ""
+      },
+      {
+        "row": 1556,
+        "globalId": "{6305783C-61DD-4DBE-B9A0-0C7AB40D353D}",
+        "name": ""
+      },
+      {
+        "row": 1648,
+        "globalId": "{DD59C25A-9FB9-4A9E-9FC0-873E1FC21A14}",
+        "name": ""
+      },
+      {
+        "row": 1677,
+        "globalId": "{26D7B8D2-0959-4DF9-8729-5D0FFFC17FAE}",
+        "name": ""
+      },
+      {
+        "row": 1704,
+        "globalId": "{99537C4D-12D7-4AFA-8BBC-7D6DBC269ECF}",
+        "name": ""
+      },
+      {
+        "row": 1796,
+        "globalId": "{DA71F540-2FF0-4B13-A599-E98309F73C45}",
+        "name": ""
+      },
+      {
+        "row": 1886,
+        "globalId": "{0C9C0301-E508-4E69-B278-37ADA73F7160}",
+        "name": ""
+      },
+      {
+        "row": 1938,
+        "globalId": "{DBF6DFAC-D1EF-43E6-B567-7BB8187A9FCC}",
+        "name": ""
+      },
+      {
+        "row": 2004,
+        "globalId": "{15313817-B39A-4618-8F54-67DAB1C6AAD8}",
+        "name": ""
+      },
+      {
+        "row": 2009,
+        "globalId": "{3C27DDF6-5042-4D31-95B2-6DBDD49E935E}",
+        "name": ""
+      },
+      {
+        "row": 2038,
+        "globalId": "{5D426FFF-5FD9-49D0-9138-AC1D411DFF1A}",
+        "name": ""
+      },
+      {
+        "row": 2051,
+        "globalId": "{1627DC8F-99E5-42A5-BCBB-9B7C49003013}",
+        "name": ""
+      },
+      {
+        "row": 2129,
+        "globalId": "{A6826945-1811-4F4F-AF83-4758F08A738F}",
+        "name": ""
+      },
+      {
+        "row": 2246,
+        "globalId": "{CA6EFAE0-E68A-456A-A9AC-2C6C8EE0B373}",
+        "name": ""
+      },
+      {
+        "row": 2321,
+        "globalId": "{F2770C05-25BE-4867-9BB1-F9003035B813}",
+        "name": ""
+      },
+      {
+        "row": 2341,
+        "globalId": "{BAB96E27-AF29-4BAD-8A94-6348F69D8D08}",
+        "name": ""
+      },
+      {
+        "row": 2422,
+        "globalId": "{86B8262E-9204-457B-AF62-2CE3B4FC59E7}",
+        "name": ""
+      },
+      {
+        "row": 2456,
+        "globalId": "{22E3FFC3-FB5A-4798-B100-58189534ABDD}",
+        "name": ""
+      },
+      {
+        "row": 2507,
+        "globalId": "{657A99D3-5F84-4C60-9082-BD9C8CFDCC63}",
+        "name": ""
+      },
+      {
+        "row": 2563,
+        "globalId": "{6604CF2D-AC9A-4CD6-A5DD-2083BC993446}",
+        "name": ""
+      },
+      {
+        "row": 2774,
+        "globalId": "{65B52ACC-75F2-4C53-A0D2-85FF39F332C5}",
+        "name": ""
+      },
+      {
+        "row": 2906,
+        "globalId": "{14FD02BD-8793-4271-B1FF-6E41B6F15408}",
+        "name": ""
+      },
+      {
+        "row": 2916,
+        "globalId": "{DC31B04F-6B8F-45B3-9535-6B725B41E18B}",
+        "name": ""
+      },
+      {
+        "row": 2937,
+        "globalId": "{0E2DE5D1-7741-411E-AFEB-8DF01D933ED5}",
+        "name": ""
+      },
+      {
+        "row": 2959,
+        "globalId": "{9A0E794C-0112-44EA-B177-A5BF8F835DA2}",
+        "name": ""
+      },
+      {
+        "row": 3126,
+        "globalId": "{02EC8DA1-C8AE-4A39-8456-2ECDB2136A45}",
+        "name": ""
+      },
+      {
+        "row": 3223,
+        "globalId": "{2DA5CA7B-FECA-4924-A2F4-62FD4565AF30}",
+        "name": ""
+      },
+      {
+        "row": 3246,
+        "globalId": "{0685E5D0-EA91-4EF8-A6C9-6223EA2E0136}",
+        "name": ""
+      },
+      {
+        "row": 3280,
+        "globalId": "{4C2F010F-185C-4D99-A251-86763869765E}",
+        "name": ""
+      },
+      {
+        "row": 3345,
+        "globalId": "{4732993F-A69F-4E2F-A760-C32F741D0BED}",
+        "name": ""
+      },
+      {
+        "row": 3405,
+        "globalId": "{5843545F-4153-4E89-A6A1-FB04457CB460}",
+        "name": ""
+      },
+      {
+        "row": 3416,
+        "globalId": "{667BF0A1-B160-4975-B28D-BB43B9EA986C}",
+        "name": ""
+      },
+      {
+        "row": 3436,
+        "globalId": "{954A51E4-100F-4B09-B4EA-92F013A34B62}",
+        "name": ""
+      },
+      {
+        "row": 3471,
+        "globalId": "{4F8F3951-B17D-4F12-959C-5BFEB7D4F0A8}",
+        "name": ""
+      },
+      {
+        "row": 3508,
+        "globalId": "{E744B1CB-2643-470C-BB61-BCAEB091CEC6}",
+        "name": ""
+      },
+      {
+        "row": 3510,
+        "globalId": "{94E5D2E4-206B-4EC7-990C-A1FCA1E54157}",
+        "name": ""
+      },
+      {
+        "row": 3516,
+        "globalId": "{57469154-3D3A-4976-B8F4-84381F157437}",
+        "name": ""
+      },
+      {
+        "row": 3519,
+        "globalId": "{EAEECCD8-32D8-4C3D-9B19-D8DC0866C0F0}",
+        "name": ""
+      }
+    ],
+    "geometry": {
+      "type": "Polygon",
+      "parts": 1,
+      "holes": 10,
+      "areaM2": 4743060.92909665,
+      "vertices": 7830,
+      "geometryChecksum": "d9c470da04a067e99f36847858fef17c4a3798ac977aa84ef9863c83e42cbfcf"
+    },
+    "summedInputAreaM2": 4743060.929124871
+  },
+  "allSourceWaterControl": {
+    "input": "All 3,524 source P/T polygons, including other rivers and ponds; not a river selection.",
+    "components": 952,
+    "largest": {
+      "type": "Polygon",
+      "parts": 1,
+      "holes": 17,
+      "areaM2": 5291040.99625756,
+      "vertices": 10911,
+      "geometryChecksum": "40148189c8f3e6ece046c1297e618ce589bc7ab47a978abe8354058cb29852b4"
+    }
+  },
+  "locationChecks": [
+    {
+      "id": "park:ipr-mpp-100-parky:2210",
+      "name": "Císařská louka",
+      "point": [
+        14.414195649571713,
+        50.05843569678099
+      ],
+      "referenceRelease": "release:db8e4958e46888be47302ea9998b787572549856497da3adcd04e5850e32222c",
+      "candidate": {
+        "insideWater": false,
+        "insideOuterRing": false,
+        "insideIslandHole": false
+      },
+      "allSourceWaterControl": {
+        "insideWater": false,
+        "insideOuterRing": true,
+        "insideIslandHole": true
+      }
+    },
+    {
+      "id": "park:ipr-mpp-100-parky:2261",
+      "name": "Ostrov Žofín",
+      "point": [
+        14.41317067313398,
+        50.07812442947812
+      ],
+      "referenceRelease": "release:db8e4958e46888be47302ea9998b787572549856497da3adcd04e5850e32222c",
+      "candidate": {
+        "insideWater": false,
+        "insideOuterRing": false,
+        "insideIslandHole": false
+      },
+      "allSourceWaterControl": {
+        "insideWater": false,
+        "insideOuterRing": false,
+        "insideIslandHole": false
+      }
+    },
+    {
+      "id": "park:ipr-mpp-100-parky:2494",
+      "name": "Střelecký ostrov",
+      "point": [
+        14.410007279816842,
+        50.081883674859704
+      ],
+      "referenceRelease": "release:db8e4958e46888be47302ea9998b787572549856497da3adcd04e5850e32222c",
+      "candidate": {
+        "insideWater": false,
+        "insideOuterRing": true,
+        "insideIslandHole": true
+      },
+      "allSourceWaterControl": {
+        "insideWater": false,
+        "insideOuterRing": true,
+        "insideIslandHole": true
+      }
+    },
+    {
+      "id": "park:ipr-mpp-100-parky:2003",
+      "name": "Císařský ostrov",
+      "point": [
+        14.395161915656306,
+        50.12040627206964
+      ],
+      "referenceRelease": "release:db8e4958e46888be47302ea9998b787572549856497da3adcd04e5850e32222c",
+      "candidate": {
+        "insideWater": false,
+        "insideOuterRing": true,
+        "insideIslandHole": true
+      },
+      "allSourceWaterControl": {
+        "insideWater": false,
+        "insideOuterRing": true,
+        "insideIslandHole": true
+      }
+    },
+    {
+      "id": "park:ipr-mpp-100-parky:2809",
+      "name": "Veslařský ostrov",
+      "point": [
+        14.417696820135614,
+        50.05710622911516
+      ],
+      "referenceRelease": "release:db8e4958e46888be47302ea9998b787572549856497da3adcd04e5850e32222c",
+      "candidate": {
+        "insideWater": false,
+        "insideOuterRing": false,
+        "insideIslandHole": false
+      },
+      "allSourceWaterControl": {
+        "insideWater": false,
+        "insideOuterRing": true,
+        "insideIslandHole": true
+      }
+    }
+  ],
+  "publication": {
+    "status": "blocked",
+    "approvedVltavaObjects": 0,
+    "geometryPublished": false,
+    "reasons": [
+      "Neexistuje atribut příslušnosti anonymních T k Vltavě; propojená komponenta zahrnuje i jiné toky.",
+      "Pouhý výběr topologické páteře vynechává skutečná ostrovní ramena.",
+      "Ani kontrolní sjednocení všech vodních polygonů neuzavírá ostrovní otvor u publikovaného bodu Žofína. Je nutná autoritativní kontrola břehů a vody pod přemostěními.",
+      "Úplnost koryta pro geografické Measuring není ověřená; žádné doplnění bufferem, obálkou nebo rastrem se neprovádí."
+    ]
+  }
+}
