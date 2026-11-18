@@ -1,9 +1,10 @@
 import {beforeAll,expect,it} from 'vitest';
 import {readFile} from 'node:fs/promises';
+import {booleanPointInPolygon,pointOnFeature} from '@turf/turf';
 import {canonicalJson} from './administrative';
 import {sha256} from './pid-snapshot';
 import {exportWorld,importWorld,newWorld} from './index';
-import {approveVltavaAssembly,approvedVltavaInput,changeVltavaSelection,checkVltavaSource,importVltavaAssembly,newVltavaAssembly,removedVltavaBridge,reviewVltavaAssembly,reviseVltavaAssembly,verifyVltavaSource,VLTAVA_SITES,type VltavaSource} from './vltava-assembly';
+import {approveVltavaAssembly,approvedVltavaInput,changeVltavaSelection,connectedRiverIds,excludedRiverIds,reviseRiverSeparation,checkVltavaSource,importVltavaAssembly,newVltavaAssembly,removedVltavaBridge,reviewVltavaAssembly,reviseVltavaAssembly,verifyVltavaSource,VLTAVA_SITES,type VltavaSource} from './vltava-assembly';
 import {previewVltavaAssembly} from './vltava-topology';
 import {readParkFile} from './park-import';
 import {releaseTestInput,releaseTestAirports,releaseTestDate} from './game-release-test-fixtures';
@@ -25,6 +26,47 @@ it('deduplicates map selections, records explicit candidate exclusions, rejects 
  expect(changeVltavaSelection(removed,source,[candidate.globalId]).excludedCandidateIds).toEqual([]);
  expect(()=>changeVltavaSelection(initial,source,['invented'])).toThrow('neznámé GLOBALID');expect(JSON.stringify(source)).toBe(before);
 });
+it('expands transitively to all 173 audited neighbors, preserves manual exclusions and allows isolated manual additions',async()=>{
+ const candidates=source.records.filter(record=>record.candidate).map(record=>record.globalId);
+ const connected=connectedRiverIds(source);
+ expect(candidates).toHaveLength(62);
+ expect(connected).toEqual(source.records.filter(record=>record.related).map(record=>record.globalId).sort());
+ expect(connected).toHaveLength(173);
+ const removed=source.records.find(record=>record.related&&!record.candidate)!.globalId;
+ const isolated=source.records.find(record=>!record.related)!.globalId;
+ const initial=changeVltavaSelection(newVltavaAssembly(source),source,connected,false);
+ const edited=changeVltavaSelection(initial,source,[...connected.filter(id=>id!==removed),isolated]);
+ expect(excludedRiverIds(edited)).toEqual([removed]);
+ expect(connectedRiverIds(source,excludedRiverIds(edited))).not.toContain(removed);
+ expect(connected).not.toContain(isolated);
+ expect(edited.selectedIds).toContain(isolated);
+ const union=await previewVltavaAssembly(source,initial);
+ const berounka=source.records.find(record=>record.globalId==='{B692D262-C6E7-4A76-AE55-7139B85B96E7}')!;
+ const berounkaPoint=pointOnFeature(berounka.geometry).geometry.coordinates;
+ const vltavaPoint=pointOnFeature(source.records.find(record=>record.candidate)!.geometry).geometry.coordinates;
+ const vltavaOnly=await previewVltavaAssembly(source,changeVltavaSelection(newVltavaAssembly(source),source,candidates));
+ expect(union.sourceCount).toBe(173);
+ expect(booleanPointInPolygon(berounkaPoint,vltavaOnly.geometry)).toBe(false);
+ expect(booleanPointInPolygon(berounkaPoint,union.geometry)).toBe(true);
+ expect(booleanPointInPolygon(vltavaPoint,union.geometry)).toBe(true);
+ const restored=changeVltavaSelection(edited,source,[...edited.selectedIds,removed],false);
+ expect(excludedRiverIds(restored)).toEqual([]);
+},20000);
+
+it('retains legacy draft notes and exclusions, and round-trips separation decisions in world backups',()=>{
+ const old=newVltavaAssembly(source);
+ old.excludedCandidateIds=[source.records.find(record=>record.candidate)!.globalId];
+ old.note='Původní poznámka';
+ const migrated=importVltavaAssembly(JSON.parse(JSON.stringify(old)),source);
+ expect(excludedRiverIds(migrated)).toEqual(old.excludedCandidateIds);
+ expect(migrated.note).toBe(old.note);
+ const edited=reviseRiverSeparation(migrated,{id:'separation',geometry:{type:'LineString',coordinates:[[14,50],[14.01,50.01]]},name:'Most',reason:'Přerušené rameno',evidence:'Kontrola',author:'Správce',status:'approved',updatedAt:'2026-11-18T14:00:00Z'},'separation');
+ const reloaded=importWorld(exportWorld({...newWorld(),vltavaAssembly:edited})).vltavaAssembly!;
+ expect(reloaded).toEqual(edited);
+ expect(reloaded.approvalHistory?.[0].kind).toBe('separation');
+ expect(reviseRiverSeparation(reloaded,null,'separation')).toMatchObject({separations:[],landReview:null,approvalHistory:edited.approvalHistory});
+});
+
 it('preserves every original transformed T vertex, hole and disconnected polygon part from the supplied Shapefile ZIP',async()=>{
  const file=await readParkFile(new Uint8Array(await readFile('data/raw/AGD_CUR_AGD_OCH_VODNIPLOCHYTOKY_P.zip')),'AGD_CUR_AGD_OCH_VODNIPLOCHYTOKY_P.zip');
  const original=file.features.map((f,i)=>({f,row:i+1})).filter(({f})=>f.properties.TYP==='T');

@@ -4,14 +4,14 @@ import '@geoman-io/leaflet-geoman-free';
 import 'leaflet/dist/leaflet.css';
 import '@geoman-io/leaflet-geoman-free/dist/leaflet-geoman.css';
 import { distanceMeters, isManagedLayer, validateGeometry, type AreaGeometry, type Geometry, type WorldDraft, type Poi, type PoiConfiguration } from '@jetlag/geo-core';
-import type { Position, Feature } from 'geojson';
+import type { Position, Feature, LineString } from 'geojson';
 import type { PidMapState } from './pid-types';
 import { modeColors } from './PidPanel';
 import {VltavaMapLayer,visibleVltavaRecords,type VltavaMapState} from './VltavaMapLayer';
 
-export type Tool = 'select' | 'point' | 'line' | 'polygon' | 'hole' | 'circle' | 'measure' | 'edit' | 'inspect' | 'park' | 'zoo' | 'hospital' | 'library' | 'cinema' | 'embassy';
+export type Tool = 'select' | 'point' | 'line' | 'river-line' | 'polygon' | 'hole' | 'circle' | 'measure' | 'edit' | 'inspect' | 'park' | 'zoo' | 'hospital' | 'library' | 'cinema' | 'embassy';
 export interface Selection { layerId: string; featureId: string }
-export interface MapHandle { prague(): void; fit(): void; fitArea(geometry: AreaGeometry): void; saveEdit(): void; focus(point: Position): void }
+export interface MapHandle { prague(): void; fit(): void; fitArea(geometry: AreaGeometry): void; saveEdit(): void; editedSeparation(): LineString|null; focus(point: Position): void }
 interface Props {
   world: WorldDraft; selected: Selection | null; tool: Tool; apiKey: string;
   pid?: PidMapState;
@@ -21,6 +21,7 @@ interface Props {
   onTestPoint(point: Position): void;
   onSelect(selection: Selection): void;
   onCreate(geometry: Geometry): void;
+  onRiverCreate(geometry:LineString):void;
   onCircle(center: Position): void;
   onEdit(geometry: Geometry): void;
   onMeasure(meters: number | null): void;
@@ -52,6 +53,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     focus: point => map.current?.setView([point[1], point[0]], Math.max(map.current?.getZoom() ?? 12, 15), { animate: false }),
     fit: () => { const bounds = drawn.current.getBounds(); if (bounds.isValid()) map.current?.fitBounds(bounds.pad(0.12)); },
     fitArea: geometry => { const data: Feature = { type: 'Feature', properties: {}, geometry }; const bounds = L.geoJSON(data).getBounds(); if (bounds.isValid()) map.current?.fitBounds(bounds.pad(0.05), { animate: false }); },
+    editedSeparation:()=>vltavaLayer.current?.editedSeparation()??null,
     saveEdit: () => {
       const selection = current.current.selected;
       const layer = selection && featureLayers.current.get(`${selection.layerId}/${selection.featureId}`);
@@ -77,7 +79,11 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     const pane = instance.createPane('pid-data'); pane.style.zIndex = '450'; pane.style.pointerEvents = 'none';
     pidRenderer.current = L.canvas({ padding: 0.2, pane: 'pid-data' });
     pidRoutes.current.addTo(instance); pidStops.current.addTo(instance); pidDetails.current.addTo(instance);
-    const boundsChanged = () => { const bounds = instance.getBounds().pad(0.15); current.current.pid?.onBounds([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]); };
+    const boundsChanged = () => {
+      if (container.current) container.current.dataset.mapZoom = String(instance.getZoom());
+      const bounds = instance.getBounds().pad(0.15);
+      current.current.pid?.onBounds([bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth()]);
+    };
     instance.on('moveend', boundsChanged); const boundsFrame = requestAnimationFrame(boundsChanged);
     instance.pm.setLang('cz');
     instance.pm.setGlobalOptions({ allowSelfIntersection: false, snapDistance: 15 });
@@ -94,7 +100,9 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
       const layer = event.layer as L.Polygon;
       try {
         const geometry = validateGeometry(layer.toGeoJSON(false).geometry);
-        current.current.onCreate(geometry);
+        if(current.current.tool==='river-line'){
+          if(geometry.type==='LineString')current.current.onRiverCreate(geometry);
+        }else current.current.onCreate(geometry);
       } catch (error) { current.current.onError((error as Error).message); }
       instance.removeLayer(layer);
     });
@@ -156,7 +164,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
         geo.addTo(drawn.current);
       }
     }
-  }, [props.world, props.selected]);
+  }, [props.world.layers, props.selected]);
 
   useEffect(() => {
     const instance = map.current;
@@ -169,6 +177,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
     const tool = props.tool;
     if (tool === 'point' || tool === 'zoo' || tool === 'hospital' || tool === 'library' || tool === 'cinema' || tool === 'embassy') instance.pm.enableDraw('Marker', { markerStyle: { icon: L.divIcon({ className: 'draw-point', iconSize: [16, 16] }) } });
     if (tool === 'line') instance.pm.enableDraw('Line');
+    if (tool === 'river-line') instance.pm.enableDraw('Line',{finishOn:'dblclick',snappable:false,pathOptions:{color:'#a42174',dashArray:'8 5'}});
     if (tool === 'polygon' || tool === 'hole' || tool === 'park') instance.pm.enableDraw('Polygon');
     if (tool === 'edit' && props.selected) featureLayers.current.get(`${props.selected.layerId}/${props.selected.featureId}`)?.pm?.enable({ allowSelfIntersection: false });
     if (tool === 'measure') current.current.onMeasure(null);
@@ -194,7 +203,7 @@ export const MapCanvas = forwardRef<MapHandle, Props>(function MapCanvas(props, 
       instance.pm.disableDraw();
       for (const layer of layers) layer.pm?.disable();
     };
-  }, [props.tool, props.selected, props.world]);
+  }, [props.tool, props.selected, props.world.layers]);
 
   useEffect(() => {
     const instance = map.current; if (!instance) return;

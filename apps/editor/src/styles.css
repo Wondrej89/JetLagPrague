@@ -317,3 +317,5 @@ pre { white-space: pre-wrap; overflow-wrap: anywhere; background: #f0f3ea; paddi
 .embassy-row.approved > button { border-left: 3px solid #267a52; }
 .embassy-row.excluded > button { border-left: 3px solid #888; background: #f4f5f4; }
 .embassy-row.review > button { border-left: 3px dashed #8a958d; }
+.vltava-legend .new { color: #118763; }
+.vltava-inspector code { overflow-wrap: anywhere; }

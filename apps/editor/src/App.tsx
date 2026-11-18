@@ -6,10 +6,10 @@ import { PublicationDialog } from './PublicationDialog';
 import {WaterControls,WaterProperties} from './WaterPanel';
 import {VltavaControls,VltavaInspector} from './VltavaPanel';
 import {useVltava} from './use-vltava';
-import {changeVltavaSelection,removedVltavaBridge,type VltavaAssembly} from '../../../packages/geo-core/src/vltava-assembly';
+import {changeVltavaSelection,removedVltavaBridge,reviseRiverSeparation,type VltavaAssembly} from '../../../packages/geo-core/src/vltava-assembly';
 import {withPublishedWaterbodies,applyWaterUpdate,splitWaterbody} from '@jetlag/geo-core';
 import { MapCanvas, type MapHandle, type Selection, type Tool } from './MapCanvas';
-import type { Position } from 'geojson';
+import type { Position, LineString } from 'geojson';
 import { readIndexedDraft, persistWorld } from './draft-store';
 import { loadBundledAdministrativeData } from './administrative-data';
 import { AdministrativeDialog, SourceMetadata } from './AdministrativePanel';
@@ -35,7 +35,7 @@ import { DefaultAreaLoadError, initializeEditorWorld, recordGameAreaChoice, with
 interface History { past: WorldDraft[]; present: WorldDraft; future: WorldDraft[] }
 const withBundledPois = (saved: WorldDraft['poi']) => withPublishedEmbassies(withPublishedWaterbodies(withPublishedCinemas(withPublishedLibraries(withPublishedHospitals(withPublishedZoos(withPublishedParks(saved, publishedParks), publishedZoos), publishedHospitals), publishedLibraries, publishedUnlocatedLibraries), publishedCinemas),publishedWaterbodies),publishedEmbassies,publishedUnlocatedEmbassies);
 
-const toolNames: Record<Tool, string> = { select: 'Výběr', point: 'Bod', line: 'Linie', polygon: 'Polygon', hole: 'Otvor', circle: 'Kruh', measure: 'Měření', edit: 'Úprava vrcholů', inspect: 'Ověřit polohu', park: 'Kreslení parku', zoo: 'Vložení zoo', hospital: 'Vložení nemocnice', library: 'Vložení knihovny', embassy: 'Vložení diplomatického pracoviště', cinema: 'Vložení kina' };
+const toolNames: Record<Tool, string> = { select: 'Výběr', point: 'Bod', line: 'Linie', 'river-line': 'Oddělit ostrov / pevninu', polygon: 'Polygon', hole: 'Otvor', circle: 'Kruh', measure: 'Měření', edit: 'Úprava vrcholů', inspect: 'Ověřit polohu', park: 'Kreslení parku', zoo: 'Vložení zoo', hospital: 'Vložení nemocnice', library: 'Vložení knihovny', embassy: 'Vložení diplomatického pracoviště', cinema: 'Vložení kina' };
 function CursorIcon() { return <svg className="cursor-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true"><path d="M4 3 19 13 11 14 8 21Z" /></svg>; }
 function errorText(error: unknown) { return error instanceof Error ? error.message : 'Operace se nezdařila.'; }
 function download(contents: string, filename: string) {
@@ -71,17 +71,14 @@ export function App() {
   const [importing, setImporting] = useState(false);
   const [filter, setFilter] = useState('');
   const map = useRef<MapHandle>(null);
-  const vltava=useVltava(world.vltavaAssembly,value=>commit({...latestWorld.current,vltavaAssembly:value}));
-  const vltavaProps={controller:vltava,draft:world.vltavaAssembly,disabled:tool==='edit'||hydrating||storageBlocked,onChange:(value:VltavaAssembly)=>attempt(()=>commit({...latestWorld.current,vltavaAssembly:value})),onFit:(geometry:AreaGeometry)=>map.current?.fitArea(geometry),onFocus:(point:[number,number])=>map.current?.focus(point)};
-  function toggleVltava(id:string){
-    const draft=latestWorld.current.vltavaAssembly,source=vltava.source;
-    if(!draft||!source||vltava.busy||vltava.compatibilityError||editing||storageBlocked)return;
-    attempt(()=>{
-      const removing=draft.selectedIds.includes(id),bridge=removing&&removedVltavaBridge(draft,source,id);
-      commit({...latestWorld.current,vltavaAssembly:changeVltavaSelection(draft,source,removing?draft.selectedIds.filter(v=>v!==id):[...draft.selectedIds,id])});
-      vltava.setSelectedId(id);vltava.setNotice(bridge?'Pozor: odebraný úsek propojoval části výběru. Zkontrolujte oddělené komponenty; změnu lze vrátit.':'');
-    });
+  function commit(next: WorldDraft) {
+    try {
+      const validated = validateWorld({ ...recordGameAreaChoice(latestWorld.current, next), updatedAt: new Date().toISOString() });
+      setHistory(h => ({ past: [...h.past.slice(-49), h.present], present: validated, future: [] }));
+      setError('');
+    } catch (error) { setError(errorText(error)); throw error; }
   }
+  function attempt(action: () => void) { try { action(); } catch (error) { setError(errorText(error)); } }
   const active = world.layers.find(l => l.id === activeId) ?? world.layers[0];
   const selectedLayer = world.layers.find(l => l.id === selected?.layerId);
   const selectedFeature = selectedLayer?.features.find(f => f.id === selected?.featureId);
@@ -178,6 +175,46 @@ export function App() {
   const pidPreviewStop: GameStop | null = useMemo(() => pidStop && (pidPreview || pid.deriving) ? { ...pidStop, point: pidPreview ?? pidStop.point, eligibility: 'review', reasons: [...pidStop.reasons, pid.deriving ? 'Přepočítávám pravidla PID; vyčkejte na ověřený výsledek.' : 'Návrh referenčního bodu ještě nebyl schválen.'] } : pidStop, [pidStop, pidPreview, pid.deriving]);
   const gameGeometry = world.layers.find(layer => layer.kind === 'game_area')?.features[0]?.geometry;
   const pidArea = gameGeometry && isArea(gameGeometry) ? gameGeometry : null;
+  const landStops=useMemo(()=>pid.view&&!pid.deriving?pid.view.stops.flatMap(stop=>
+    stop.activity==='active'&&stop.eligibility==='allowed'&&stop.point?[{id:stop.id,point:stop.point}]:[]
+  ).sort((a,b)=>a.id.localeCompare(b.id)):null,[pid.view,pid.deriving]);
+  const vltava=useVltava(world.vltavaAssembly,value=>commit({...latestWorld.current,vltavaAssembly:value}),pidArea,landStops);
+  const vltavaProps={
+    controller:vltava,draft:world.vltavaAssembly,disabled:tool==='edit'||hydrating||storageBlocked,
+    drawing:tool==='river-line',
+    onChange:(value:VltavaAssembly)=>commit({...latestWorld.current,vltavaAssembly:value}),
+    onFit:(geometry:AreaGeometry)=>map.current?.fitArea(geometry),
+    onFocus:(point:[number,number])=>map.current?.focus(point),
+  };
+  function toggleVltava(id:string){
+    const draft=latestWorld.current.vltavaAssembly,source=vltava.source;
+    if(!draft||!source||vltava.busy||vltava.compatibilityError||tool!=='select'||storageBlocked||vltava.editingLine)return;
+    attempt(()=>{
+      const removing=draft.selectedIds.includes(id),bridge=removing&&removedVltavaBridge(draft,source,id);
+      vltavaProps.onChange(changeVltavaSelection(draft,source,removing?draft.selectedIds.filter(value=>value!==id):[...draft.selectedIds,id]));
+      vltava.setSelectedId(id);
+      if(!removing)vltava.setHighlight([id]);
+      vltava.setNotice(bridge?'Odebraný úsek propojoval části výběru. Zkontrolujte oddělené komponenty.':'');
+    });
+  }
+  function createRiverSeparation(geometry:LineString){
+    const draft=latestWorld.current.vltavaAssembly;
+    if(!draft||storageBlocked)return;
+    const id=crypto.randomUUID();
+    vltavaProps.onChange(reviseRiverSeparation(draft,{id,name:'',reason:'',author:'',evidence:'',status:'draft',
+      updatedAt:new Date().toISOString(),geometry:{type:'LineString',coordinates:geometry.coordinates.map(([x,y])=>[x,y])}},id));
+    vltava.setLineId(id);
+    setTool('select');
+  }
+  function saveRiverEdit(){
+    const draft=latestWorld.current.vltavaAssembly;
+    const line=draft?.separations?.find(value=>value.id===vltava.editingLine);
+    const geometry=map.current?.editedSeparation();
+    if(!draft||!line||!geometry)return;
+    vltavaProps.onChange(reviseRiverSeparation(draft,{...line,status:'draft',updatedAt:new Date().toISOString(),
+      geometry:{type:'LineString',coordinates:geometry.coordinates.map(([x,y])=>[x,y])}},line.id));
+    vltava.setEditingLine(null);
+  }
   const presetActivated = useRef(pidPreferences.saved);
   useEffect(() => {
     if (!presetActivated.current && world.layers.find(layer => layer.kind === 'game_area')?.features[0]?.attributes.preset === 'praha-municipal-union') {
@@ -322,14 +359,6 @@ export function App() {
     setHistory(h => ({ ...h, present: { ...h.present, poi: effective } }));
   }, [hydrating, storageBlocked, tool, world.poi]);
 
-  function commit(next: WorldDraft) {
-    try {
-      const validated = validateWorld({ ...recordGameAreaChoice(latestWorld.current, next), updatedAt: new Date().toISOString() });
-      setHistory(h => ({ past: [...h.past.slice(-49), h.present], present: validated, future: [] }));
-      setError('');
-    } catch (error) { setError(errorText(error)); throw error; }
-  }
-  function attempt(action: () => void) { try { action(); } catch (error) { setError(errorText(error)); } }
   function updateLayer(id: string, change: Partial<GeoLayer>) {
     commit({ ...world, layers: world.layers.map(l => l.id === id ? { ...l, ...change } : l) });
   }
@@ -436,7 +465,9 @@ export function App() {
         </article>)}</div>
         <button className="add-layer" disabled={editing} onClick={() => { const layer = newLayer(`Vrstva ${world.layers.length}`); attempt(() => commit({ ...world, layers: [...world.layers, layer] })); setActiveId(layer.id); }}>+ Přidat vrstvu</button>
         {world.gameAreaInitialization?.state === 'legacy-empty' && <p className="source-load-error" role="status" data-testid="legacy-empty-area">Uložený svět nemá herní oblast. Nelze zjistit, zda byla dříve smazaná, proto ji automaticky nedoplňujeme. Obnovit ji můžete tlačítkem níže; vlastní data zůstanou zachovaná.</p>}
-        <VltavaControls {...vltavaProps} onOpen={()=>{setTool('select');setSelected(null);setPoiSelected(null);setPidSelected(null);vltava.setEnabled(true);}} onUndo={()=>undo()} onRedo={()=>undo(true)} canUndo={!!history.past.length} canRedo={!!history.future.length} onSave={()=>persistWorld(latestWorld.current)}/>
+        <VltavaControls {...vltavaProps} onOpen={()=>{setTool('select');setSelected(null);setPoiSelected(null);setPidSelected(null);vltava.setEnabled(true);}} onClose={()=>{if(tool==='river-line')setTool('select');vltava.setEditingLine(null);vltava.setEnabled(false);}}
+          onDraw={()=>{vltava.setEditingLine(null);setTool(tool==='river-line'?'select':'river-line');}}
+          onUndo={()=>undo()} onRedo={()=>undo(true)} canUndo={!!history.past.length} canRedo={!!history.future.length} onSave={()=>persistWorld(latestWorld.current)}/>
         <TerritoryControls hasArea={!!pidArea} busy={pragueBusy} disabled={editing} onPrague={() => void restorePragueArea()} onFit={() => { if (pidArea) map.current?.fitArea(pidArea); }} territoryOnly={pidFilters.territoryOnly} onFilter={territoryOnly => setPidFilters(filters => ({ ...filters, territoryOnly }))} filterError={!!membershipFailure} membershipStatus={!pidArea ? 'Herní oblast není definovaná; polohu nelze určit.' : membershipError || (membership ? `${membership.stopIds.length} zastávek a ${membership.routeIds.length} linek v oblasti · ${membership.unknownStops} neurčených bodů` : 'Ověřuji polohu zastávek a průnik tras…')} showCoverage={showCoverage} onCoverage={setShowCoverage} radius={pidConfiguration.radiusMeters} coverage={coverage} coverageStatus={!pidArea ? 'Chybí herní oblast.' : coverageError || (coverage ? coverage.geometry ? 'Společná úkrytová plocha zobrazena.' : 'Žádná společná úkrytová plocha.' : 'Počítám sjednocení všech úkrytových zón…')} />
         <PidControls disabled={editing} view={filteredPidView} sourceView={pid.view} filterPending={membershipPending} filterError={membershipFailure} loadError={pid.loadError} updateError={pid.updateError} warning={[pid.warning, pidPreferencesWarning].filter(Boolean).join(" ")} filters={pidFilters} onChange={setPidFilters} onSelect={stop => selectPid(stop, true)} selected={pidSelected} onSources={() => setPidSources(true)} onRetry={() => void pid.refresh()} busy={pid.busy} radius={pidConfiguration.radiusMeters} onRadius={radiusMeters => attempt(() => commit({ ...world, gameStops: { ...pidConfiguration, radiusMeters } }))} />
         <WaterControls pois={pois} configuration={poiConfiguration} disabled={editing||hydrating} onConfiguration={poi=>attempt(()=>commit({...world,poi}))} onSelect={selectPoi} onUpdate={source=>attempt(()=>commit({...world,poi:applyWaterUpdate(poiConfiguration,source)}))} onMerge={(ids,name)=>{void (async()=>{try{const before=latestWorld.current;const {mergeWaterbodies}=await import('../../../packages/geo-core/src/water-topology');const result=await mergeWaterbodies(withBundledPois(before.poi),pois.filter(p=>ids.includes(p.id)),name);if(latestWorld.current!==before)throw new Error('Svět se během slučování změnil. Zopakujte sloučení; novější úpravy zůstaly zachované.');commit({...before,poi:result.configuration});selectPoi(result.poi);}catch(error){setError((error as Error).message);}})();}}/>
@@ -458,15 +489,18 @@ export function App() {
       </aside>
       <main className="map-panel">
         <div className="toolbar" aria-label="Geografické nástroje">
-          {(['select', 'point', 'line', 'polygon', 'hole', 'circle', 'measure', 'inspect'] as Tool[]).map((item, i) => <button key={item} aria-label={toolNames[item]} aria-pressed={tool === item} disabled={editing || (isManagedLayer(active) && !['select', 'inspect', 'measure'].includes(item)) || (item === 'hole' && (!selectedFeature || !isArea(selectedFeature.geometry) || !!selectedFeature.circle))} onClick={() => { setTool(item); setError(''); }}><span aria-hidden="true">{item === 'select' ? <CursorIcon /> : ['', '●', '╱', '⬡', '◌', '◯', '↔', '⌖'][i]}</span>{toolNames[item]}</button>)}
+          {(['select', 'point', 'line', 'polygon', 'hole', 'circle', 'measure', 'inspect'] as Tool[]).map((item, i) => <button key={item} aria-label={toolNames[item]} aria-pressed={tool === item} disabled={editing || (isManagedLayer(active) && !['select', 'inspect', 'measure'].includes(item)) || (item === 'hole' && (!selectedFeature || !isArea(selectedFeature.geometry) || !!selectedFeature.circle))} onClick={() => { if(item!=='select')vltava.setEditingLine(null);setTool(item);setError(''); }}><span aria-hidden="true">{item === 'select' ? <CursorIcon /> : ['', '●', '╱', '⬡', '◌', '◯', '↔', '⌖'][i]}</span>{toolNames[item]}</button>)}
           <div className="history-buttons"><button aria-label="Zpět" disabled={!history.past.length || editing} onClick={() => undo()}>↶</button><button aria-label="Znovu" disabled={!history.future.length || editing} onClick={() => undo(true)}>↷</button></div>
         </div>
         <div className="map-stage">
-          <MapCanvas ref={map} vltava={vltava.enabled&&vltava.source?{source:vltava.source,draft:vltava.compatibilityError?undefined:world.vltavaAssembly,mode:vltava.mode,opacity:vltava.opacity,focusId:vltava.selectedId,neighbors:vltava.neighborIds,preview:vltava.preview,showSites:vltava.showSites,problems:vltava.problems,interactive:tool==='select'&&!vltava.busy&&!vltava.compatibilityError,onSelect:toggleVltava}:null} poi={{ preview: parkImportPreview, records: mapPois, visibility: poiConfiguration.visibility, selected: poiSelected, moving: poiMoving && tool === 'select', onSelect: id => { const poi = pois.find(p => p.id === id); if (poi) selectPoi(poi); }, onReference: point => updatePoi({ point }) }} pid={{ stops: pidStops, routes: pidRoutes, selected: pidPreviewStop, platforms: pidPlatforms, showPlatforms: pidShowPlatforms, zone: pidZone, coverage: coverage?.geometry ?? null, coverageReview: !!coverage?.reviewStops, moveReference: pidMoving, highlightedRoute: pidFilters.selectedRoute, onSelect: id => { const stop = pid.view?.stops.find(value => value.id === id); if (stop) selectPid(stop); }, onReference: setPidPreview, onBounds: setPidBounds }} testPoint={testPoint} onTestPoint={setTestPoint} world={world} selected={selected} tool={tool} apiKey={apiKey} onSelect={selection => { setPoiSelected(null); setPoiMoving(false); setPidSelected(null); setSelected(selection); setActiveId(selection.layerId); }} onCreate={geometry => attempt(() => addGeometry(geometry))} onCircle={center => attempt(() => addGeometry(makeMetricCircle(center, Number(radius)), { center, radiusMeters: Number(radius) }))} onEdit={geometry => attempt(() => { updateFeature({ geometry }); setTool('select'); })} onMeasure={setMeasurement} onError={setError} onTileStatus={setTileStatus} />
+          <MapCanvas ref={map} vltava={vltava.enabled&&vltava.source?{source:vltava.source,draft:vltava.compatibilityError?undefined:world.vltavaAssembly,mode:vltava.mode,highlight:vltava.highlight,land:vltava.land,areaId:vltava.areaId,lineId:vltava.lineId,
+            editingLine:tool==='select'&&!storageBlocked?vltava.editingLine:null,
+            onArea:id=>{vltava.setAreaId(id);vltava.setLineId(null);},onLine:id=>vltava.setLineId(id),
+            opacity:vltava.opacity,focusId:vltava.selectedId,neighbors:vltava.neighborIds,preview:vltava.preview,showSites:vltava.showSites,problems:vltava.problems,interactive:tool==='select'&&!vltava.busy&&!vltava.compatibilityError,onSelect:toggleVltava}:null} poi={{ preview: parkImportPreview, records: mapPois, visibility: poiConfiguration.visibility, selected: poiSelected, moving: poiMoving && tool === 'select', onSelect: id => { const poi = pois.find(p => p.id === id); if (poi) selectPoi(poi); }, onReference: point => updatePoi({ point }) }} pid={{ stops: pidStops, routes: pidRoutes, selected: pidPreviewStop, platforms: pidPlatforms, showPlatforms: pidShowPlatforms, zone: pidZone, coverage: coverage?.geometry ?? null, coverageReview: !!coverage?.reviewStops, moveReference: pidMoving, highlightedRoute: pidFilters.selectedRoute, onSelect: id => { const stop = pid.view?.stops.find(value => value.id === id); if (stop) selectPid(stop); }, onReference: setPidPreview, onBounds: setPidBounds }} testPoint={testPoint} onTestPoint={setTestPoint} world={world} selected={selected} tool={tool} apiKey={apiKey} onSelect={selection => { setPoiSelected(null); setPoiMoving(false); setPidSelected(null); setSelected(selection); setActiveId(selection.layerId); }} onRiverCreate={createRiverSeparation} onCreate={geometry => attempt(() => addGeometry(geometry))} onCircle={center => attempt(() => addGeometry(makeMetricCircle(center, Number(radius)), { center, radiusMeters: Number(radius) }))} onEdit={geometry => attempt(() => { updateFeature({ geometry }); setTool('select'); })} onMeasure={setMeasurement} onError={setError} onTileStatus={setTileStatus} />
           {(membershipPending || membershipFailure) && <div className="pid-map-status" role="status" data-testid="pid-filter-map-status">{membershipFailure || 'Ověřuji polohu PID v herní oblasti… Poslední zobrazení může čekat na přepočet.'}{membershipFailure && <button onClick={() => setPidFilters(filters => ({ ...filters, territoryOnly: false }))}>Vypnout prostorový filtr</button>}</div>}
           {tileStatus !== 'ready' && <div className={`map-notice ${tileStatus === 'error' ? 'warning' : ''}`} role="status"><strong>{tileStatus === 'missing' ? 'Chybí API klíč Mapy.com' : tileStatus === 'error' ? 'Mapový podklad se nepodařilo načíst' : 'Načítám mapový podklad…'}</strong><span>{tileStatus === 'missing' ? 'Přidejte klientský klíč v Nastavení mapy nebo do .env.local. Geometrie lze editovat i bez podkladu.' : tileStatus === 'error' ? 'Ověřte klíč, povolený HTTP referer, službu maptiles, limit a síťové připojení. Vaše geometrie zůstávají zachované.' : 'Mapy.com REST API'}</span></div>}
           <button className="prague-button" onClick={() => map.current?.prague()}>⌖ Zpět na Prahu</button>
-          <div className="map-help" aria-live="polite"><strong>{toolNames[tool]}</strong><span>{tool === 'select' ? 'Kliknutím vyberte objekt. Pro kreslení zvolte nástroj.' : tool === 'inspect' ? 'Klikněte na mapu nebo přetáhněte testovací špendlík. Výsledky jsou vpravo.' : tool === 'library' ? 'Klikněte na skutečnou polohu knihovny. Bod potom vyžaduje ověření a schválení.' : tool === 'cinema' ? 'Klikněte do mapy pro vložení kina. Potom doplňte název, adresu a kino schvalte.' : tool === 'hospital' ? 'Klikněte do mapy pro vložení nemocnice. Potom doplňte název a bod schvalte.' : tool === 'zoo' ? 'Klikněte do mapy pro vložení zoo. Potom doplňte název, adresu a bod schvalte.' : tool === 'point' ? 'Klikněte na mapu a vložte bod.' : tool === 'circle' ? 'Kliknutím určete střed kruhu.' : tool === 'measure' ? measurement === null ? 'Klikněte na dva body. Měří se vzdálenost po povrchu Země.' : `${measurement.toLocaleString('cs', { maximumFractionDigits: 1 })} m · ${(measurement / 1000).toLocaleString('cs', { maximumFractionDigits: 3 })} km. Další kliknutí začne nové měření.` : tool === 'edit' ? 'Přetáhněte vrcholy. Klik na hranu přidá vrchol, pravé tlačítko vrchol odstraní. Potom změny uložte.' : tool === 'hole' ? 'Nakreslete otvor uvnitř vybraného polygonu. Kliknutím na první vrchol jej uzavřete.' : 'Klikáním přidávejte vrcholy. Polygon dokončíte prvním, linii posledním vrcholem.'}</span>
+          <div className="map-help" aria-live="polite"><strong>{toolNames[tool]}</strong><span>{tool === 'select' ? 'Kliknutím vyberte objekt. Pro kreslení zvolte nástroj.' : tool === 'inspect' ? 'Klikněte na mapu nebo přetáhněte testovací špendlík. Výsledky jsou vpravo.' : tool === 'library' ? 'Klikněte na skutečnou polohu knihovny. Bod potom vyžaduje ověření a schválení.' : tool === 'cinema' ? 'Klikněte do mapy pro vložení kina. Potom doplňte název, adresu a kino schvalte.' : tool === 'hospital' ? 'Klikněte do mapy pro vložení nemocnice. Potom doplňte název a bod schvalte.' : tool === 'zoo' ? 'Klikněte do mapy pro vložení zoo. Potom doplňte název, adresu a bod schvalte.' : tool === 'point' ? 'Klikněte na mapu a vložte bod.' : tool === 'circle' ? 'Kliknutím určete střed kruhu.' : tool === 'measure' ? measurement === null ? 'Klikněte na dva body. Měří se vzdálenost po povrchu Země.' : `${measurement.toLocaleString('cs', { maximumFractionDigits: 1 })} m · ${(measurement / 1000).toLocaleString('cs', { maximumFractionDigits: 3 })} km. Další kliknutí začne nové měření.` : tool === 'edit' ? 'Přetáhněte vrcholy. Klik na hranu přidá vrchol, pravé tlačítko vrchol odstraní. Potom změny uložte.' : tool === 'river-line' ? 'Klikáním přidávejte vrcholy. Dvojklikem linii dokončíte.' : tool === 'hole' ? 'Nakreslete otvor uvnitř vybraného polygonu. Kliknutím na první vrchol jej uzavřete.' : 'Klikáním přidávejte vrcholy. Polygon dokončíte prvním, linii posledním vrcholem.'}</span>
             {tool === 'circle' && <label>Poloměr (m)<input aria-label="Poloměr nového kruhu (m)" type="number" min="1" max="100000" value={radius} onChange={e => setRadius(e.target.value)} /></label>}
             {tool !== 'select' && <button onClick={() => { setTool('select'); if (editing) setHistory(h => ({ ...h, present: structuredClone(h.present) })); }}>Zrušit nástroj</button>}
           </div>
@@ -476,7 +510,7 @@ export function App() {
       </main>
       <aside className="right-panel panel">
         <div className="panel-heading"><div><span className="eyebrow">VYBRANÝ OBJEKT</span><h2>Vlastnosti</h2></div><span className="draft-chip">draft</span></div>
-        {vltava.enabled ? <VltavaInspector {...vltavaProps} onToggle={toggleVltava}/> : tool !== 'inspect' && selectedEmbassyCandidate ? <UnlocatedEmbassyProperties key={selectedEmbassyCandidate.id+':'+world.updatedAt} row={selectedEmbassyCandidate}
+        {vltava.enabled ? <VltavaInspector {...vltavaProps} onToggle={toggleVltava} onSaveLine={saveRiverEdit}/> : tool !== 'inspect' && selectedEmbassyCandidate ? <UnlocatedEmbassyProperties key={selectedEmbassyCandidate.id+':'+world.updatedAt} row={selectedEmbassyCandidate}
           onDecision={change=>attempt(()=>commit({...latestWorld.current,poi:decideUnlocatedEmbassy(withBundledPois(latestWorld.current.poi),selectedEmbassyCandidate,change)}))}
           onLocate={(point,verification)=>{const next=locateEmbassy(withBundledPois(latestWorld.current.poi),selectedEmbassyCandidate,point,verification);commit({...latestWorld.current,poi:next});selectPoi(resolvePois([],next).find(p=>p.id===selectedEmbassyCandidate.id)!);}}/>
           : tool !== 'inspect' && selectedPoi?.category==='embassy' ? <EmbassyProperties key={selectedPoi.id+':'+world.updatedAt} poi={selectedPoi} moving={poiMoving} onMove={()=>{setPoiMoving(v=>!v);setTool('select');}} onDecision={updatePoi}

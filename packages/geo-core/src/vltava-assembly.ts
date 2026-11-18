@@ -4,7 +4,7 @@ import {sha256} from './pid-snapshot';
 import {readVltavaWaterAreaInput} from './vltava';
 import {isArea,validateGeometry,type AreaGeometry} from './index';
 
-import {vltavaAssemblySchema,type VltavaAssembly} from './vltava-assembly-schema';
+import {vltavaAssemblySchema,riverApprovalHistory,riverSeparationSchema,type RiverSeparation,type VltavaAssembly} from './vltava-assembly-schema';
 export {vltavaAssemblySchema,VLTAVA_CHECKS,VLTAVA_SITES,type VltavaAssembly} from './vltava-assembly-schema';
 const checksum=z.string().regex(/^[a-f0-9]{64}$/),id=z.string().min(1).max(200);
 export interface VltavaSourceRecord {globalId:string;row:number;type:'T';geometry:AreaGeometry;attributes:Record<string,unknown>;candidate:boolean;related:boolean;neighbors:string[]}
@@ -24,7 +24,7 @@ export function newVltavaAssembly(source:VltavaSource):VltavaAssembly {
 export function checkVltavaSource(draft:VltavaAssembly,source:VltavaSource):void {
  if(draft.source.id!==source.id||draft.source.rawChecksum!==source.rawChecksum||draft.source.preparedChecksum!==source.checksum)throw new Error('Zdrojový checksum výběru neodpovídá načtenému datasetu. Výběr nebyl použit ani přepsán; obnovte odpovídající verzi zdroje nebo založte nový výběr.');
  const records=new Map(source.records.map(r=>[r.globalId,r]));
- if(draft.selectedIds.some(id=>!records.has(id))||draft.excludedCandidateIds.some(id=>!records.get(id)?.candidate))throw new Error('Výběr obsahuje neznámé GLOBALID nebo nesprávně vyřazené kandidáty.');
+ if(draft.selectedIds.some(id=>!records.has(id))||draft.excludedCandidateIds.some(id=>!records.get(id)?.candidate)||draft.excludedIds?.some(id=>!records.has(id)))throw new Error('Výběr obsahuje neznámé GLOBALID nebo nesprávně vyřazené kandidáty.');
  if(draft.sites.length!==source.sites.length||draft.sites.some(s=>!source.sites.some(p=>p.id===s.id)))throw new Error('Kontrolní místa neodpovídají zdrojové verzi.');
 }
 export async function verifyVltavaSource(input:unknown,expectedChecksum:string):Promise<VltavaSource> {
@@ -41,15 +41,51 @@ export async function verifyVltavaSource(input:unknown,expectedChecksum:string):
  if(source.records.some(r=>r.neighbors.some(n=>!map.get(n)!.neighbors.includes(r.globalId))))throw new Error('Nesouměrná návaznost polygonů.');
  return source;
 }
-export function changeVltavaSelection(draft:VltavaAssembly,source:VltavaSource,selection:string[]):VltavaAssembly {
+export function excludedRiverIds(draft:VltavaAssembly):string[]{
+ return [...new Set([...draft.excludedCandidateIds,...draft.excludedIds??[]])];
+}
+
+export function connectedRiverIds(source:VltavaSource,excluded:readonly string[]=[]):string[]{
+ const blocked=new Set(excluded);
+ const graph=new Map(source.records.map(record=>[record.globalId,record]));
+ const queue=source.records.filter(record=>record.candidate&&!blocked.has(record.globalId)).map(record=>record.globalId);
+ const seen=new Set(queue);
+ for(const id of queue){
+  for(const neighbor of graph.get(id)!.neighbors){
+   if(seen.has(neighbor)||blocked.has(neighbor))continue;
+   seen.add(neighbor);
+   queue.push(neighbor);
+  }
+ }
+ return queue.sort();
+}
+
+export function changeVltavaSelection(draft:VltavaAssembly,source:VltavaSource,selection:string[],manual=true):VltavaAssembly {
  checkVltavaSource(draft,source);
- const selectedIds=[...new Set(selection)].sort(),candidates=new Set(source.records.filter(r=>r.candidate).map(r=>r.globalId));
- const excludedCandidateIds=[...new Set([...draft.excludedCandidateIds,...draft.selectedIds.filter(id=>!selectedIds.includes(id)&&candidates.has(id))])].filter(id=>!selectedIds.includes(id)).sort();
- const next={...draft,selectedIds,excludedCandidateIds,status:'draft' as const,checks:newVltavaAssembly(source).checks,sites:draft.sites.map(s=>({...s,status:'pending' as const})),preview:null,approval:null,updatedAt:new Date().toISOString()};
+ const selectedIds=[...new Set(selection)].sort(),selected=new Set(selectedIds);
+ if(selectedIds.length===draft.selectedIds.length&&draft.selectedIds.every(id=>selected.has(id)))return draft;
+ const removed=manual?draft.selectedIds.filter(id=>!selected.has(id)):[];
+ const excludedIds=[...new Set([...excludedRiverIds(draft),...removed])].filter(id=>!selected.has(id)).sort();
+ const candidates=new Set(source.records.filter(r=>r.candidate).map(r=>r.globalId));
+ const excludedCandidateIds=excludedIds.filter(id=>candidates.has(id));
+ const history=riverApprovalHistory(draft);
+ const next={...draft,selectedIds,excludedCandidateIds,...(draft.excludedIds||excludedIds.length?{excludedIds}:{}),
+  ...(draft.landReview?{landReview:null}:{}),...(history.length?{approvalHistory:history}:{}),status:'draft' as const,checks:newVltavaAssembly(source).checks,
+  sites:draft.sites.map(s=>({...s,status:'pending' as const})),preview:null,approval:null,updatedAt:new Date().toISOString()};
  checkVltavaSource(next,source);return next;
 }
+
+export function reviseRiverSeparation(draft:VltavaAssembly,line:RiverSeparation|null,id:string):VltavaAssembly {
+ const next=line&&riverSeparationSchema.parse(line);
+ const separations=(draft.separations??[]).filter(item=>item.id!==id);
+ if(next)separations.push(next);
+ const history=next?.status==='approved'?[...riverApprovalHistory(draft),{kind:'separation' as const,id,author:next.author.trim(),at:next.updatedAt}]:riverApprovalHistory(draft);
+ return vltavaAssemblySchema.parse({...draft,separations,landReview:null,...(history.length?{approvalHistory:history}:{}),updatedAt:new Date().toISOString()});
+}
+
 export function reviseVltavaAssembly(draft:VltavaAssembly,change:Partial<Pick<VltavaAssembly,'checks'|'sites'|'note'|'reviewer'|'metadata'>>):VltavaAssembly {
- return {...draft,...change,status:draft.status==='approved'?'review':draft.status,approval:null,updatedAt:new Date().toISOString()};
+ const history=riverApprovalHistory(draft);
+ return {...draft,...change,...(history.length?{approvalHistory:history}:{}),status:draft.status==='approved'?'review':draft.status,approval:null,updatedAt:new Date().toISOString()};
 }
 export function vltavaSelectionChecksum(draft:VltavaAssembly):Promise<string>{return sha256(canonicalJson({source:draft.source,ids:[...draft.selectedIds].sort()}));}
 export function vltavaComponents(source:VltavaSource,selection:string[]):string[][] {
@@ -61,7 +97,9 @@ export function removedVltavaBridge(draft:VltavaAssembly,source:VltavaSource,id:
 }
 export async function reviewVltavaAssembly(draft:VltavaAssembly,source:VltavaSource,preview:VltavaPreview):Promise<VltavaAssembly>{
  checkVltavaSource(draft,source);if(!preview.valid||!draft.selectedIds.length||await vltavaSelectionChecksum(draft)!==preview.selectionChecksum)throw new Error('Náhled již neodpovídá výběru. Znovu sestavte geometrii.');
- return vltavaAssemblySchema.parse({...draft,status:'review',preview:{geometryChecksum:preview.geometryChecksum,selectionChecksum:preview.selectionChecksum},approval:null,updatedAt:new Date().toISOString()});
+ const history=riverApprovalHistory(draft);
+ const checks=draft.waterScope?draft.checks:newVltavaAssembly(source).checks;
+ return vltavaAssemblySchema.parse({...draft,checks,waterScope:'vltava-berounka',...(history.length?{approvalHistory:history}:{}),status:'review',preview:{geometryChecksum:preview.geometryChecksum,selectionChecksum:preview.selectionChecksum},approval:null,updatedAt:new Date().toISOString()});
 }
 export async function approvedVltavaInput(draft:VltavaAssembly,source:VltavaSource,preview:VltavaPreview){
  checkVltavaSource(draft,source);
@@ -73,10 +111,17 @@ export async function approvedVltavaInput(draft:VltavaAssembly,source:VltavaSour
  return readVltavaWaterAreaInput({type:'Feature',id:'river:vltava:prague',geometry:preview.geometry,properties:{name:'Vltava',kind:'river_water_area',source:{provider:m.provider,url:m.url,version:m.version,dataDate:m.dataDate,retrievedAt:source.source.retrievedAt,license:{name:m.licenseName,url:m.licenseUrl},rawChecksum:source.rawChecksum,sourceFeatureIds:[...draft.selectedIds].sort()},coverageReview:{status:'verified',fullPragueReach:true,islandHoles:'included',bridgePassages:'continuous',reviewedBy:draft.approval.reviewedBy,reviewedAt:draft.approval.reviewedAt,note:[draft.note,m.evidence,...draft.sites.map(s=>`${s.id}: ${s.status}; ${s.note}`)].join('\n')}}});
 }
 export async function approveVltavaAssembly(draft:VltavaAssembly,source:VltavaSource,preview:VltavaPreview):Promise<VltavaAssembly>{
- if(draft.status!=='review'||!draft.reviewer.trim())throw new Error('Nejprve předejte platný náhled k revizi a vyplňte jméno správce.');
- const next=vltavaAssemblySchema.parse({...draft,status:'approved',approval:{reviewedBy:draft.reviewer.trim(),reviewedAt:new Date().toISOString(),geometryChecksum:preview.geometryChecksum,selectionChecksum:preview.selectionChecksum},updatedAt:new Date().toISOString()});
+ if(draft.status!=='review'||!draft.waterScope||!draft.reviewer.trim())throw new Error('Nejprve předejte platný náhled k revizi a vyplňte jméno správce.');
+ const at=new Date().toISOString(),author=draft.reviewer.trim();
+ const next=vltavaAssemblySchema.parse({...draft,status:'approved',approval:{reviewedBy:author,reviewedAt:at,geometryChecksum:preview.geometryChecksum,selectionChecksum:preview.selectionChecksum},approvalHistory:[...riverApprovalHistory(draft),{kind:'water',id:'river:vltava-berounka',author,at,checksum:preview.geometryChecksum}],updatedAt:at});
  await approvedVltavaInput(next,source,preview);return next;
 }
+export async function approvedRiverInput(draft:VltavaAssembly,source:VltavaSource,preview:VltavaPreview){
+ if(!draft.waterScope)throw new Error('Původní revizi Vltavy je nutné zopakovat pro společnou vodní plochu.');
+ const water=await approvedVltavaInput(draft,source,preview);
+ return {...water,id:'river:vltava-berounka:prague',properties:{...water.properties,name:'Vltava a Berounka'}};
+}
+
 export function importVltavaAssembly(input:unknown,source:VltavaSource):VltavaAssembly {
  const draft=vltavaAssemblySchema.parse(input);checkVltavaSource(draft,source);return draft;
 }

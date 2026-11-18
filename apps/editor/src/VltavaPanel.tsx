@@ -1,68 +1,103 @@
 import {useRef,useState} from 'react';
-import {approvedVltavaInput,approveVltavaAssembly,changeVltavaSelection,importVltavaAssembly,newVltavaAssembly,reviewVltavaAssembly,reviseVltavaAssembly,VLTAVA_CHECKS,type VltavaAssembly} from '../../../packages/geo-core/src/vltava-assembly';
+import {approvedRiverInput,approveVltavaAssembly,changeVltavaSelection,connectedRiverIds,excludedRiverIds,importVltavaAssembly,newVltavaAssembly,reviewVltavaAssembly,reviseVltavaAssembly,VLTAVA_CHECKS,type VltavaAssembly} from '../../../packages/geo-core/src/vltava-assembly';
 import type {AreaGeometry} from '@jetlag/geo-core';
+import {RiverLandPanel} from './RiverLandPanel';
 import type {VltavaController,VltavaMode} from './use-vltava';
 
 function download(value:unknown,filename:string){const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'})),a=document.createElement('a');a.href=url;a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(url),1000);}
-interface Common {controller:VltavaController;draft:VltavaAssembly|undefined;disabled:boolean;onChange(value:VltavaAssembly):void;onFit(geometry:AreaGeometry):void;onFocus(point:[number,number]):void}
-export function VltavaControls({controller:c,draft,disabled,onChange,onFit,onOpen,onUndo,onRedo,canUndo,canRedo,onSave}:{onOpen():void;onUndo():void;onRedo():void;canUndo:boolean;canRedo:boolean;onSave():Promise<unknown>} & Common){
+interface Common {controller:VltavaController;draft:VltavaAssembly|undefined;disabled:boolean;drawing:boolean;onChange(value:VltavaAssembly):void;onFit(geometry:AreaGeometry):void;onFocus(point:[number,number]):void}
+export function VltavaControls({controller:c,draft,disabled,drawing,onChange,onFit,onOpen,onClose,onDraw,onUndo,onRedo,canUndo,canRedo,onSave}:{onOpen():void;onClose():void;onDraw():void;onUndo():void;onRedo():void;canUndo:boolean;canRedo:boolean;onSave():Promise<unknown>} & Common){
  const [search,setSearch]=useState('');
- const blocked=disabled||!!c.busy||!!c.compatibilityError||!c.source||!draft;
+ const blocked=disabled||!!c.busy||!!c.compatibilityError||!c.source||!draft||!!c.editingLine||drawing;
+ const candidateIds=c.source?.records.filter(record=>record.candidate).map(record=>record.globalId)??[];
+ const relatedIds=c.source?connectedRiverIds(c.source):[];
+ const excluded=draft?excludedRiverIds(draft):[];
+ const changeSelection=(ids:string[],message:string)=>{
+  const previous=new Set(draft!.selectedIds);
+  const next=changeVltavaSelection(draft!,c.source!,ids,false);
+  if(next!==draft)onChange(next);
+  c.setHighlight(next.selectedIds.filter(id=>!previous.has(id)));
+  c.setNotice(message);
+ };
+ const expand=(restore:boolean)=>{
+  const ids=connectedRiverIds(c.source!,restore?[]:excluded);
+  const selection=[...new Set([...draft!.selectedIds,...ids])];
+  const difference=selection.length-draft!.selectedIds.length;
+  changeSelection(selection,`Pracovní výběr: ${selection.length} polygonů (+${difference}). Dosažitelná skupina: ${ids.length} polygonů.`);
+  c.setMode('related');
+ };
  const matches=c.source?.records.filter(r=>search.trim()?r.globalId.toLowerCase().includes(search.trim().toLowerCase()):draft?.selectedIds.includes(r.globalId))??[];
  const run=(fn:()=>void|Promise<unknown>)=>{c.setError('');void Promise.resolve().then(fn).catch(error=>c.setError((error as Error).message));};
- return <section className="vltava-controls" aria-label="Vltava – sestavení řeky"><h3>Vltava – sestavení řeky</h3>
-  <button disabled={disabled} aria-expanded={c.enabled} onClick={()=>c.enabled?c.setEnabled(false):onOpen()}>{c.enabled?'Zavřít nástroj Vltava':'Otevřít nástroj Vltava'}</button>
+ return <section className="vltava-controls" aria-label="Řeky – sestavení vodní plochy"><h3>Řeky – sestavení vodní plochy</h3>
+  <button disabled={disabled} aria-expanded={c.enabled} onClick={()=>c.enabled?onClose():onOpen()}>{c.enabled?'Zavřít editor řek':'Otevřít editor řek'}</button>
   {c.enabled&&<>
-   <p>Výběr původních toků pro ruční revizi. Lokální draft ani schválení nezapíná Measuring.</p>
+   <p>Pracovní vodní plocha Vltavy a Berounky pro ruční revizi.</p>
    {c.busy&&<p role="status">{c.busy}<button onClick={c.reload}>Zrušit a znovu načíst zdroj</button></p>}
    {c.error&&<div role="alert" className="vltava-warning">{c.error}<button disabled={!!c.busy} onClick={c.reload}>Znovu načíst zdroj</button></div>}
-   {c.compatibilityError&&c.source&&<button onClick={()=>{if(confirm('Nahradit pouze starý výběr Vltavy novým prázdným výběrem? Nejprve exportujte starý draft.'))onChange(newVltavaAssembly(c.source!));}}>Založit nový výběr pro tento zdroj</button>}
-   {draft&&<p data-testid="vltava-selection-count">Vybráno: {draft.selectedIds.length} · stav: {draft.status} · vyřazených kandidátů: {draft.excludedCandidateIds.length}</p>}
-   {!draft&&c.source&&<button disabled={disabled||!!c.busy} onClick={()=>onChange(newVltavaAssembly(c.source!))}>Založit prázdný výběr Vltavy</button>}
-   <div className="vltava-actions"><button disabled={disabled||!!c.busy||!canUndo} onClick={onUndo}>Zpět ve výběru</button><button disabled={disabled||!!c.busy||!canRedo} onClick={onRedo}>Znovu ve výběru</button></div>
+   {c.compatibilityError&&c.source&&<button onClick={()=>{if(confirm('Nahradit pouze starý výběr řek novým prázdným výběrem? Nejprve exportujte starý draft.'))onChange(newVltavaAssembly(c.source!));}}>Založit nový výběr pro tento zdroj</button>}
+   {draft&&<p data-testid="vltava-selection-count">Vybráno: {draft.selectedIds.length} · stav: {draft.status} · ručně vyřazeno: {excluded.length}</p>}
+   {!draft&&c.source&&<button disabled={disabled||!!c.busy} onClick={()=>onChange(newVltavaAssembly(c.source!))}>Založit prázdný výběr řek</button>}
+   <div className="vltava-actions"><button disabled={disabled||!!c.busy||drawing||!!c.editingLine||!canUndo} onClick={onUndo}>Zpět ve výběru</button><button disabled={disabled||!!c.busy||drawing||!!c.editingLine||!canRedo} onClick={onRedo}>Znovu ve výběru</button></div>
    <p>Undo/Redo používají společnou historii světa.</p>
    <fieldset disabled={blocked}>
-    <label>Zobrazení toků<select value={c.mode} onChange={e=>c.setMode(e.target.value as VltavaMode)}><option value="candidates">Pouze 62 automatických kandidátů</option><option value="related">Celá propojená skupina 173 polygonů</option><option value="all">Všechny původní vodní toky T</option><option value="selected">Pouze ručně vybrané polygony</option><option value="result" disabled={!c.preview}>Výsledná sjednocená geometrie</option></select></label>
+    <label>Zobrazení toků<select value={c.mode} onChange={e=>c.setMode(e.target.value as VltavaMode)}><option value="candidates">Pouze {candidateIds.length} automatických kandidátů</option><option value="related">Celá propojená skupina ({relatedIds.length} polygonů)</option><option value="all">Všechny původní vodní toky T</option><option value="selected">Pouze ručně vybrané polygony</option><option value="result" disabled={!c.preview}>Výsledná sjednocená geometrie</option><option value="land" disabled={!c.land}>Pevnina a ostrovy</option></select></label>
     <label>Průhlednost vodních polygonů<input type="range" min="0" max="0.8" step="0.05" value={c.opacity} onChange={e=>c.setOpacity(Number(e.target.value))}/></label>
     <label className="vltava-check"><input type="checkbox" checked={c.neighbors} onChange={e=>c.setNeighbors(e.target.checked)}/>Zobrazit sousední nevybrané polygony</label>
     <label className="vltava-check"><input type="checkbox" checked={c.showSites} onChange={e=>c.setShowSites(e.target.checked)}/>Orientační značky ostrovů</label>
-    <div className="vltava-legend"><span className="included">■ zařazeno</span><span className="candidate">■ kandidát</span><span className="other">■ ostatní</span><span className="problem">□ problém</span></div>
-    <button onClick={()=>run(()=>onChange(changeVltavaSelection(draft!,c.source!,c.source!.records.filter(r=>r.candidate).map(r=>r.globalId))))}>Načíst 62 kandidátů z auditu</button>
-    <p>Nahradí výběr kandidátní množinou. Nejde o schválení; změnu lze vrátit.</p>
+    <div className="vltava-legend"><span className="included">■ zařazeno</span><span className="new">□ nově přidáno</span><span className="other">■ nevybráno</span><span className="problem">□ problém</span></div>
+    <button onClick={()=>run(()=>{const ids=candidateIds.filter(id=>!excluded.includes(id));changeSelection(ids,`Načteno ${ids.length} výchozích polygonů.`);c.setMode('candidates');})}>Načíst {candidateIds.length} kandidátů z auditu</button>
+    <p>Načtení nahradí výběr kandidáty a respektuje ruční vyřazení. Ke změně se lze vrátit přes Undo.</p>
+    <button onClick={()=>run(()=>expand(false))}>Vybrat všechny navazující úseky řeky</button>
+    {excluded.some(id=>relatedIds.includes(id))&&<button onClick={()=>{if(confirm('Povolit opětovné přidání ručně vyřazených úseků v propojené skupině?'))run(()=>expand(true));}}>Rozšířit výběr i o ručně vyřazené</button>}
     <button disabled={!draft?.selectedIds.length} onClick={()=>run(async()=>{if(await c.compute(draft!))c.setMode('result');})}>Vytvořit náhled sjednocené řeky</button>
     <button disabled={!draft?.selectedIds.length} onClick={()=>run(async()=>{if(await c.compute(draft!))c.setNotice('Oddělené komponenty a ostrovní otvory jsou v pravém panelu. Žádné mezery nebyly doplněné.');})}>Najít přerušená místa</button>
     <button onClick={()=>{c.setMode('related');c.setNeighbors(true);const r=c.source!.records.find(r=>r.globalId==='{B692D262-C6E7-4A76-AE55-7139B85B96E7}');if(r){c.setSelectedId(r.globalId);onFit(r.geometry);}c.setNotice('Prověřte soutok s Berounkou a navazující toky. Společná hranice není důvodem k zařazení.');}}>Prověřit přítoky</button>
     <label>Hledat tok podle GLOBALID<input value={search} onChange={e=>setSearch(e.target.value)} placeholder="GLOBALID"/></label>
     <p>{search?'Výsledky hledání':'Vybrané GLOBALID'}: {matches.length}</p>
-    <div className="vltava-id-list">{matches.slice(0,200).map(r=><button key={r.globalId} onClick={()=>{c.setSelectedId(r.globalId);if(c.mode==='result'||c.mode==='candidates'&&!r.candidate||c.mode==='related'&&!r.related||c.mode==='selected'&&!draft?.selectedIds.includes(r.globalId))c.setMode(r.candidate?'candidates':r.related?'related':'all');onFit(r.geometry);}}><strong>#{r.row} · {draft?.selectedIds.includes(r.globalId)?'zařazeno':r.candidate?'kandidát':'ostatní'}</strong><small>{r.globalId}</small></button>)}</div>
+    <div className="vltava-id-list">{matches.slice(0,200).map(r=><button key={r.globalId} onClick={()=>{c.setSelectedId(r.globalId);if(c.mode==='land'||c.mode==='result'||c.mode==='candidates'&&!r.candidate||c.mode==='related'&&!r.related||c.mode==='selected'&&!draft?.selectedIds.includes(r.globalId))c.setMode(r.candidate?'candidates':r.related?'related':'all');onFit(r.geometry);}}><strong>#{r.row} · {draft?.selectedIds.includes(r.globalId)?'zařazeno':r.candidate?'kandidát':'ostatní'}</strong><small>{r.globalId}</small></button>)}</div>
     {matches.length>200&&<p>Zpřesněte hledání pro další ID (seznam ukazuje prvních 200).</p>}
-    <button onClick={()=>run(async()=>{await onSave();c.setNotice('Draft Vltavy je uložený společně se světem v tomto prohlížeči.');})}>Uložit draft Vltavy</button>
+    <button onClick={()=>run(async()=>{await onSave();c.setNotice('Draft řek je uložený společně se světem v tomto prohlížeči.');})}>Uložit draft řek</button>
    </fieldset>
-   <button disabled={!draft} onClick={()=>download(draft,'vltava-vyber-draft.json')}>Export výběru Vltavy JSON</button>
-   <label>Import výběru Vltavy JSON<input type="file" accept=".json" disabled={disabled||!c.source||!!c.busy} onChange={e=>{const file=e.target.files?.[0];if(!file)return;run(async()=>{if(file.size>2*1024**2)throw new Error('Výběr překračuje 2 MB; neimportujte geometrii jako draft.');onChange(importVltavaAssembly(JSON.parse(await file.text()),c.source!));c.setNotice('Výběr importován. Ostatní data světa zůstala zachovaná.');});e.target.value='';}}/></label>
+   <button aria-pressed={drawing} disabled={disabled||!draft||!!c.busy||!!c.compatibilityError} onClick={onDraw}>{drawing?'Zrušit kreslení linie':'Oddělit ostrov / pevninu'}</button>
+   {drawing&&<p role="status">Kliknutím přidávejte vrcholy. Dvojklikem dokončíte linii.</p>}
+   <button disabled={blocked||!c.boundary||!draft?.selectedIds.length} onClick={()=>run(()=>c.computeLand(draft!))}>Zobrazit pevninu a ostrovy</button>
+   {!c.boundary&&<p>Pro rozdělení pevniny nastavte polygon herní oblasti.</p>}
+   <button disabled={!draft} onClick={()=>download(draft,'reky-draft.json')}>Export výběru řek JSON</button>
+   <label>Import výběru řek JSON<input type="file" accept=".json" disabled={disabled||drawing||!!c.editingLine||!c.source||!!c.busy} onChange={e=>{const file=e.target.files?.[0];if(!file)return;run(async()=>{if(file.size>10*1024**2)throw new Error('Záloha překračuje 10 MB.');onChange(importVltavaAssembly(JSON.parse(await file.text()),c.source!));c.setNotice('Výběr importován. Ostatní data světa zůstala zachovaná.');});e.target.value='';}}/></label>
    {c.notice&&<p role="status" className="vltava-warning">{c.notice}</p>}
    {draft&&<small>Upraveno: {new Date(draft.updatedAt).toLocaleString('cs-CZ')}</small>}
   </>}
  </section>;
 }
 
-export function VltavaInspector({controller:c,draft,disabled,onChange,onFit,onFocus,onToggle}:{onToggle(id:string):void}&Common){
- const blocked=disabled||!!c.busy||!!c.compatibilityError||!c.source||!draft;
+export function VltavaInspector({controller:c,draft,disabled,drawing,onChange,onFit,onFocus,onToggle,onSaveLine}:{onToggle(id:string):void;onSaveLine():void}&Common){
+ const blocked=disabled||!!c.busy||!!c.compatibilityError||!c.source||!draft||drawing||!!c.editingLine;
  const [working,setWorking]=useState(false);
  const latest=useRef(draft);latest.current=draft;
  const apply=async(operation:()=>Promise<VltavaAssembly>)=>{const before=draft,result=await operation();if(latest.current!==before)throw new Error('Výběr se během kontroly změnil. Novější úpravy zůstaly zachované; zopakujte revizi.');onChange(result);};
  const run=(fn:()=>Promise<unknown>)=>{setWorking(true);c.setError('');void fn().catch(error=>c.setError((error as Error).message)).finally(()=>setWorking(false));};
  const revise=(change:Parameters<typeof reviseVltavaAssembly>[1])=>{if(draft)onChange(reviseVltavaAssembly(draft,change));};
  const preview=c.preview;
- return <div className="vltava-inspector" aria-label="Kontrola Vltavy">
-  <h3>Vltava – kontrola výběru</h3>
+ return <div className="vltava-inspector" aria-label="Kontrola řek">
+  <h3>Řeky – kontrola výběru</h3>
   <p>Kliknutí na polygon jej přidá nebo odebere. Výběr postupuje bez dialogů; podkladové geometrie se nemění.</p>
-  {c.focus&&<section aria-label="Vybraný úsek Vltavy"><h3>Úsek #{c.focus.row}</h3><dl className="feature-facts"><dt>GLOBALID</dt><dd>{c.focus.globalId}</dd><dt>Typ</dt><dd>T</dd><dt>Automatických 62 kandidátů</dt><dd>{c.focus.candidate?'ano':'ne'}</dd><dt>Širší skupina 173</dt><dd>{c.focus.related?'ano':'ne'}</dd><dt>Výběr</dt><dd>{draft?.selectedIds.includes(c.focus.globalId)?'zařazeno do Vltavy':'nezařazeno'}</dd></dl>
-   <button disabled={blocked} onClick={()=>onToggle(c.focus!.globalId)}>{draft?.selectedIds.includes(c.focus.globalId)?'Odebrat z Vltavy':'Přidat do Vltavy'}</button>
+  {c.focus&&<section aria-label="Vybraný úsek řeky"><h3>Úsek #{c.focus.row}</h3><dl className="feature-facts"><dt>GLOBALID</dt><dd>{c.focus.globalId}</dd><dt>Typ</dt><dd>T</dd><dt>Výchozí kandidát</dt><dd>{c.focus.candidate?'ano':'ne'}</dd><dt>Navazující skupina</dt><dd>{c.focus.related?'ano':'ne'}</dd><dt>Výběr</dt><dd>{draft?.selectedIds.includes(c.focus.globalId)?'zařazeno':'nezařazeno'}</dd></dl>
+   <button disabled={blocked} onClick={()=>onToggle(c.focus!.globalId)}>{draft?.selectedIds.includes(c.focus.globalId)?'Odebrat úsek':'Přidat úsek'}</button>
+   <button disabled={blocked||!c.focus.neighbors.some(id=>!draft?.selectedIds.includes(id))}
+    onClick={()=>run(async()=>{
+     const excluded=new Set(excludedRiverIds(draft!));
+     const neighbors=c.focus!.neighbors.filter(id=>!draft!.selectedIds.includes(id));
+     const restore=neighbors.some(id=>excluded.has(id))&&confirm('Přidat také ručně vyřazené sousedy?');
+     const added=neighbors.filter(id=>restore||!excluded.has(id));
+     if(added.length)onChange(changeVltavaSelection(draft!,c.source!,[...draft!.selectedIds,...added],false));
+     c.setHighlight(added);c.setNeighbors(true);
+     c.setNotice(`Pracovní výběr: ${draft!.selectedIds.length+added.length} polygonů (+${added.length}).`);
+    })}>Přidat všechny sousední úseky vybraného polygonu</button>
    <button onClick={()=>onFit(c.focus!.geometry)}>Přiblížit na polygon</button>
    <details><summary>Původní atributy úseku</summary><pre>{JSON.stringify(c.focus.attributes,null,2)}</pre></details>
    <p>{c.focus.neighbors.length} sousedních polygonů. Zvýraznění sousedů může ukazovat rameno i jiný tok.</p>
   </section>}
+  {draft&&<RiverLandPanel controller={c} draft={draft} disabled={disabled||!!c.busy||!!c.compatibilityError||drawing} onChange={onChange} onFocus={onFocus} onFit={onFit} onSaveLine={onSaveLine}/>}
   {preview&&<section aria-label="Sjednocená řeka" data-testid="vltava-preview"><h3>Platný sjednocený náhled</h3>
    <p>{preview.sourceCount} zdrojových polygonů · {preview.geometry.type}<br/>{preview.parts.length} oddělených komponent · {preview.holes.length} otvorů<br/>{preview.areaM2.toLocaleString('cs-CZ',{maximumFractionDigits:1})} m² · {preview.vertices} vrcholů<br/>Topologie GEOS: platná</p>
    <p>Platnost nepotvrzuje úplnost. {preview.parts.length>1?'Oddělené části vyžadují vizuální kontrolu; mezery se automaticky nevyplňují.':'Zkontrolujte také případná chybějící ramena a přítoky.'}</p>
@@ -86,10 +121,10 @@ export function VltavaInspector({controller:c,draft,disabled,onChange,onFit,onFo
    <h3>Ruční kontrolní seznam</h3>
    {Object.entries(VLTAVA_CHECKS).map(([key,label])=><label key={key} className="vltava-check"><input type="checkbox" checked={draft.checks[key as keyof typeof VLTAVA_CHECKS]} disabled={draft.status==='draft'} onChange={e=>revise({checks:{...draft.checks,[key]:e.target.checked}})}/>{label}</label>)}
    <p>Schválení vyžaduje platný náhled, všechna místa a všechny kontroly. Nevyřešené místo schválení blokuje.</p>
-   <button disabled={draft.status!=='review'||!preview||!Object.values(draft.checks).every(Boolean)||draft.sites.some(s=>s.status!=='verified')||!draft.reviewer.trim()||!draft.metadata.dataDate||!draft.metadata.licenseUrl||!draft.metadata.licenseName||!draft.metadata.evidence.trim()} onClick={()=>run(()=>apply(()=>approveVltavaAssembly(draft,c.source!,preview!)))}>Schválit výslednou Vltavu</button>
-   <button disabled={draft.status!=='approved'||!preview} onClick={()=>run(async()=>download(await approvedVltavaInput(draft,c.source!,preview!),'vltava-approved.geojson'))}>Export schválené Vltavy GeoJSON</button>
+   <button disabled={draft.status!=='review'||!draft.waterScope||!preview||!Object.values(draft.checks).every(Boolean)||draft.sites.some(s=>s.status!=='verified')||!draft.reviewer.trim()||!draft.metadata.dataDate||!draft.metadata.licenseUrl||!draft.metadata.licenseName||!draft.metadata.evidence.trim()} onClick={()=>run(()=>apply(()=>approveVltavaAssembly(draft,c.source!,preview!)))}>Schválit společnou vodní plochu</button>
+   <button disabled={draft.status!=='approved'||!draft.waterScope||!preview} onClick={()=>run(async()=>download(await approvedRiverInput(draft,c.source!,preview!),'vltava-berounka-approved.geojson'))}>Export schválené vodní plochy GeoJSON</button>
    {draft.approval&&<p>Schválil {draft.approval.reviewedBy} · {new Date(draft.approval.reviewedAt).toLocaleString('cs-CZ')}</p>}
-   <p>Export je podklad pro následnou publikaci. Současný GameDataRelease Vltavu ještě nepodporuje; veřejná hra a Measuring zůstávají beze změny.</p>
+   <p>Export je podklad pro následnou publikaci. Společná vodní plocha se schvaluje samostatně. Pro použití ve hře je potřeba budoucí publikace.</p>
   </fieldset>}
  </div>;
 }
