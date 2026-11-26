@@ -1,19 +1,18 @@
 {
   "format": "jetlag-praha-pid-catalog",
   "schemaVersion": 2,
-  "file": "snapshot-0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1.json.gz",
-  "checksum": "0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1",
-  "serviceDate": "2026-11-02",
-  "downloadedAt": "2026-11-02T13:30:30.398Z",
+  "file": "snapshot-004d84e41a55c88e92fbc3cf55e3f7079848205d83714da1abb76338abcbbc9b.json.gz",
+  "checksum": "004d84e41a55c88e92fbc3cf55e3f7079848205d83714da1abb76338abcbbc9b",
+  "serviceDate": "2026-11-26",
+  "downloadedAt": "2026-11-26T09:09:25.184Z",
   "quality": {
     "status": "verified",
     "issues": [
-      "689 skupin má místní nejednoznačnost; tyto uzly vyžadují revizi, ostatní zůstávají ověřené."
+      "685 skupin má místní nejednoznačnost; tyto uzly vyžadují revizi, ostatní zůstávají ověřené."
     ],
     "unmappedActiveIds": [],
-    "groupsGeneratedAt": "2026-11-02T03:52:33",
+    "groupsGeneratedAt": "2026-11-26T04:10:21",
     "reviewGroupIds": [
-      "asw:4942:cis:42297:cat:301003:p:2945/451",
       "gtfs-stop:U100V1",
       "gtfs-stop:U100V2",
       "gtfs-stop:U100V3",
@@ -361,7 +360,6 @@
       "gtfs-stop:U2926V6",
       "gtfs-stop:U2926V6L",
       "gtfs-stop:U2926V6P",
-      "gtfs-stop:U2945Z451",
       "gtfs-stop:U2947V2L",
       "gtfs-stop:U2947V3L",
       "gtfs-stop:U2973V1",
@@ -449,8 +447,6 @@
       "gtfs-stop:U3291V2",
       "gtfs-stop:U3291V3",
       "gtfs-stop:U3291V4",
-      "gtfs-stop:U34Z1P",
-      "gtfs-stop:U34Z2P",
       "gtfs-stop:U388V1",
       "gtfs-stop:U388V2",
       "gtfs-stop:U4124V1",
@@ -706,9 +702,19 @@
   },
   "versions": [
     {
+      "file": "snapshot-004d84e41a55c88e92fbc3cf55e3f7079848205d83714da1abb76338abcbbc9b.json.gz",
+      "id": "pid:2026-11-26:004d84e41a55c88e92fbc3cf55e3f7079848205d83714da1abb76338abcbbc9b",
+      "checksum": "004d84e41a55c88e92fbc3cf55e3f7079848205d83714da1abb76338abcbbc9b",
+      "serviceDate": "2026-11-26",
+      "adapterVersion": "pid-gtfs-v1",
+      "preparedAt": "2026-11-26T09:09:56.118Z",
+      "downloadedAt": "2026-11-26T09:09:25.184Z",
+      "quality": "verified"
+    },
+    {
       "file": "snapshot-0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1.json.gz",
-      "id": "pid:2026-11-02:0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1",
       "checksum": "0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1",
+      "id": "pid:2026-11-02:0bad6891e19a3d8679e3d9e443d7b6af619faf0ba0ddd6a2a2fe1202455027d1",
       "serviceDate": "2026-11-02",
       "adapterVersion": "pid-gtfs-v1",
       "preparedAt": "2026-11-02T13:31:02.735Z",
