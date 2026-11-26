@@ -1,9 +1,11 @@
-import {feature, featureCollection, intersect, union} from '@turf/turf';
+import {difference, feature, featureCollection, intersect, union} from '@turf/turf';
 import type {AreaGeometry, GameDataRelease} from '../../../geo-core/src/index';
-import {classifyArea, distanceMeters, makeMetricCircle} from '../../../geo-core/src/index';
+import {classifyArea, distanceMeters,releaseGeography, makeMetricCircle} from '../../../geo-core/src/index';
 import type {Deduction, Point, TargetPolicy} from '../../../game-core/src/index';
 import {areaSegments,featureIndex,project,SpatialIndex,unproject,type Bounds} from './spatial-index';
 import {publishedRailCatalog} from '../rail';
+import {landAreaAt} from '../../../geo-core/src/river-land';
+import {createRiverDistance} from '../river';
 
 export const DEDUCTION_CELL_METERS=64;
 export const DEDUCTION_MARGIN_METERS=2;
@@ -32,6 +34,7 @@ function prepareAdministrative(release:GameDataRelease,category:string){
 }
 export class DeductionComputer {
  private administrative=new Map<string,ReturnType<typeof prepareAdministrative>>();
+ private riverDistance?:ReturnType<typeof createRiverDistance>;
  private predicates=new Map<string,Predicate>();
  private indexes=new Map<string,ReturnType<typeof featureIndex>>();
  private cache=new Map<string,DeductionGeometry>();
@@ -50,6 +53,13 @@ export class DeductionComputer {
   if(p.resolver==='thermometer'){
    if(!p.secondPoint||distanceMeters(p.hunterPoint,p.secondPoint)<1e-6)throw new Error('Chybí uložené měření B.');
    return {value:point=>sign*(distanceMeters(p.hunterPoint,point)-distanceMeters(p.secondPoint!,point)),lipschitz:2};
+  }
+  if(p.resolver==='river_measuring'){
+   const river=releaseGeography(this.release.data).riverArea;
+   if(!river)throw new Error('Chybí publikovaná vodní plocha řek.');
+   const {distanceToRiver,errorMeters}=this.riverDistance??=createRiverDistance(river.feature.geometry);
+   const reference=distanceToRiver(p.hunterPoint);
+   return {value:point=>sign*(reference-distanceToRiver(point)),lipschitz:1,errorMeters:2*errorMeters};
   }
   if(p.resolver==='same_area'){
    let model=this.administrative.get(p.category);if(!model){model=prepareAdministrative(this.release,p.category);this.administrative.set(p.category,model);}
@@ -75,7 +85,13 @@ export class DeductionComputer {
   if(target==='gps'&&active.length>1)throw new Error('GPS z různých otázek nelze automaticky spojovat v jednu polohu.');
   const key=JSON.stringify([this.release.releaseId,active,target,cellMeters]);const cached=this.cache.get(key);if(cached)return cached;
   const unique=new Map(active.map(d=>[JSON.stringify([d.operation,d.parameters,d.geometryTarget]),d]));
-  const predicates=[...unique].map(([key,d])=>{let value=this.predicates.get(key);if(!value){value=this.predicate(d);this.predicates.set(key,value);if(this.predicates.size>128)this.predicates.delete(this.predicates.keys().next().value!);}return {predicate:value,tolerance:d.parameters.toleranceMeters};});
+  const land=releaseGeography(this.release.data).landAreas;
+  const exactLand=[...unique.values()].filter(d=>d.parameters.resolver==='land_matching').map(d=>{
+   const area=landAreaAt(land?.areas??[],d.parameters.hunterPoint);
+   if(!area)throw new Error('Pevninskou oblast hledačů nelze určit.');
+   return {deduction:d,area};
+  });
+  const predicates=[...unique].filter(([,d])=>d.parameters.resolver!=='land_matching').map(([key,d])=>{let value=this.predicates.get(key);if(!value){value=this.predicate(d);this.predicates.set(key,value);if(this.predicates.size>128)this.predicates.delete(this.predicates.keys().next().value!);}return {predicate:value,tolerance:d.parameters.toleranceMeters};});
   const cells:{possible:AreaGeometry[];excluded:AreaGeometry[];neutral:AreaGeometry[]}={possible:[],excluded:[],neutral:[]};
   let evaluatedCells=0,evaluations=0,limited=false;
   const visit=(b:Bounds)=>{
@@ -93,7 +109,7 @@ export class DeductionComputer {
   // Aligned cells make robust union cheap and give a declared maximum leaf size.
   const x=Math.floor(this.bounds[0]/cellMeters)*cellMeters,y=Math.floor(this.bounds[1]/cellMeters)*cellMeters;
   let width=cellMeters;while(width<Math.max(this.bounds[2]-x,this.bounds[3]-y))width*=2;
-  visit([x,y,x+width,y+width]);
+  if(predicates.length||!exactLand.length)visit([x,y,x+width,y+width]);
   const clip=(items:AreaGeometry[]):AreaGeometry|null=>{
    if(!items.length)return null;
    const combined=items.length===1?feature(items[0]):union(featureCollection(items.map(g=>feature(g))));
@@ -125,7 +141,24 @@ export class DeductionComputer {
     const classified=classifyArea(d.parameters.hunterPoint,layer),unit=units.find(a=>a.id===classified.matches[0]?.id);if(unit)guides[d.operation].features.push(feature(unit.geometry,{kind:'administrative',questionId:d.questionId}));
    }
   }
-  const result:DeductionGeometry={guides,possible:clip(cells.possible),excluded:clip(cells.excluded),neutral:clip(cells.neutral),lines,cellMeters,marginMeters:DEDUCTION_MARGIN_METERS,metricErrorMeters:Math.max(0,...predicates.map(p=>p.predicate.errorMeters??0)),limited,evaluatedCells,deductionIds:active.map(d=>d.id),target};
+  for(const {area,deduction} of exactLand){
+   guides[deduction.operation].features.push(feature(area.geometry,{kind:'land',questionId:deduction.questionId}));
+  }
+  let possible=clip(cells.possible),excluded=clip(cells.excluded),neutral=clip(cells.neutral);
+  if(exactLand.length){
+   // Land membership is categorical. Intersect the exact polygons, so even
+   // an island narrower than a raster cell can remain possible.
+   const allowed=land!.areas.filter(area=>exactLand.every(m=>(m.area.id===area.id)===(m.deduction.operation==='include')));
+   const dissolve=(items:AreaGeometry[])=>items.length>1?union(featureCollection(items.map(geometry=>feature(geometry))))?.geometry??null:items[0]??null;
+   const mask=dissolve(allowed.map(area=>area.geometry));
+   const within=(geometry:AreaGeometry|null)=>geometry&&mask?intersect(featureCollection([feature(geometry),feature(mask)]))?.geometry??null:null;
+   possible=predicates.length?within(possible):mask;
+   neutral=within(neutral);
+   const boundary=this.release.data.gameArea.geometry;
+   const excludedByLand=mask?difference(featureCollection([feature(boundary),feature(mask)]))?.geometry??null:boundary;
+   excluded=dissolve([excludedByLand,within(excluded)].filter((geometry):geometry is AreaGeometry=>geometry!==null));
+  }
+  const result:DeductionGeometry={guides,possible,excluded,neutral,lines,cellMeters,marginMeters:DEDUCTION_MARGIN_METERS,metricErrorMeters:Math.max(0,...predicates.map(p=>p.predicate.errorMeters??0)),limited,evaluatedCells,deductionIds:active.map(d=>d.id),target};
   this.cache.set(key,result);if(this.cache.size>12)this.cache.delete(this.cache.keys().next().value!);return result;
  }
 }

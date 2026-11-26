@@ -9,6 +9,8 @@ it('only displays approved published objects with their exact reference coordina
  expect(layers.find(l=>l.id==='hospital')!.features).toHaveLength(10);expect(layers.find(l=>l.id==='municipal')!.features).toHaveLength(57);expect(layers.find(l=>l.id==='cadastral')!.features).toHaveLength(112);expect(JSON.stringify(f.release)).toBe(before);
 });
 it('keeps unknown categories missing and labels reference PID without inventing objects',()=>{
- const layers=publishedGameLayers(f.release);for(const id of ['golf','aquapark','vltava'])expect(layers.find(l=>l.id===id)).toMatchObject({state:'missing',features:[]});
+ const layers=publishedGameLayers(f.release);for(const id of ['golf','aquapark'])expect(layers.find(l=>l.id===id)).toMatchObject({state:'missing',features:[]});
+ expect(layers.find(l=>l.id==='vltava')).toMatchObject({state:'approved'});
+ expect(layers.find(l=>l.id==='landmass')).toMatchObject({state:'approved'});
  expect(layers.find(l=>l.id==='pid')!.features.map(f=>f.id)).toEqual(f.release.data.pidSnapshot.stops.filter(p=>p.eligibility==='allowed').map(s=>s.id));expect(layers.find(l=>l.id==='rail')!.features.map(f=>f.id)).toEqual(publishedRailCatalog(f.release).stations.map(s=>s.id));
 });

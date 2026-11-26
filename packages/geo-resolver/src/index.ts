@@ -1,10 +1,14 @@
-import { VLTAVA_MISSING_DATA_REASON,classifyArea, containsGamePoint, distanceMeters, distanceToPoiMeters, matchingPois, measuringPois, nearestApprovedPoi, type GeographicPoi, type GameDataRelease } from '../../geo-core/src/index';
+import { LAND_MISSING_DATA_REASON,VLTAVA_MISSING_DATA_REASON,releaseGeography,classifyArea, containsGamePoint, distanceMeters, distanceToPoiMeters, matchingPois, measuringPois, nearestApprovedPoi, type GeographicPoi, type GameDataRelease } from '../../geo-core/src/index';
 import { GEOGRAPHIC_EPSILON_METERS, THERMOMETER_TOLERANCE_METERS, type GameEnvironment, type Point, type QuestionDefinition, type QuestionInstance, type Resolution } from '../../game-core/src/index';
 import {publishedRailCatalog} from './rail';
+import {landAreaAt} from '../../geo-core/src/river-land';
+import {createRiverDistance} from './river';
 /** Only a checksum-verified published release is supplied by the release loader.
  * No editor draft/catalog fallback or duplicated distance/POI algorithms. */
 export function createGeoResolver(release:GameDataRelease):GameEnvironment {
   const rail=publishedRailCatalog(release);
+  const {riverArea:river,landAreas:land}=releaseGeography(release.data);
+  let riverDistance:ReturnType<typeof createRiverDistance>|undefined;
   const stopPois=release.data.pidSnapshot.quality==='verified'?release.data.pidSnapshot.stops.filter(s=>s.eligibility==='allowed'&&s.activity==='active').map(s=>({...s,category:'pid',status:'approved' as const})):[];
   // Actual boundary vertices witness a possible displacement. No boxes replace
   // the area or containment tests. This conservative sample may omit a feasible
@@ -15,7 +19,12 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
   const maxMovementMeters=Math.max(...extremes.flatMap(a=>extremes.map(b=>distanceMeters(a,b))));
   function availability(d:QuestionDefinition):{state:QuestionDefinition['availability'];reason:string}{
     if(d.configured===false)return {state:'unsupported',reason:'Work in progress – chybí schválená varianta pravidla a odměna.'};
-    if(d.category==='vltava')return {state:'missing_data',reason:VLTAVA_MISSING_DATA_REASON};
+    if(d.category==='vltava')return river&&d.resolver==='river_measuring'
+      ?{state:'ready',reason:'Vzdálenost v metrech k publikované vodní ploše Vltavy a Berounky.'}
+      :{state:'missing_data',reason:VLTAVA_MISSING_DATA_REASON};
+    if(d.category==='landmass')return land&&d.resolver==='land_matching'
+      ?{state:'ready',reason:'Souvislé pevninské oblasti a ostrovy včetně schválených oddělení.'}
+      :{state:'missing_data',reason:LAND_MISSING_DATA_REASON};
     if(d.category==='stop_name'&&d.referenceVersion===1&&!stopPois.length)return {state:'missing_data',reason:'Chybí ověřené aktivní způsobilé PID zastávky.'};
     if(d.resolver==='manual'||d.resolver==='photo')return {state:'manual',reason:d.testOnly?'Testovací ruční zadání; bez automatického výsledku.':'Ruční vyhodnocení schovaným.'};
     if(d.resolver==='unsupported')return {state:'missing_data',reason:'Chybí publikovaná vrstva nebo ověřený resolver. Nelze automaticky vyhodnotit.'};
@@ -33,6 +42,17 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
     const base={releaseId:release.releaseId,hunterPoint:a,targetPoint:b};
     if(!containsGamePoint(a,release.data.gameArea.geometry)||!containsGamePoint(b,release.data.gameArea.geometry))return {state:'unknown',reason:'Rozhodná poloha leží mimo herní oblast.'};
     if(d.resolver==='radar'){const distance=distanceMeters(a,b);return {state:'known',answer:distance<=d.radiusMeters!+1e-6?'ANO':'NE',details:{...base,distanceMeters:distance,radiusMeters:d.radiusMeters!}};}
+    if(d.resolver==='river_measuring'&&river){
+      const distanceToRiver=(riverDistance??=createRiverDistance(river.feature.geometry)).distanceToRiver;
+      const hunterDistance=distanceToRiver(a),targetDistance=distanceToRiver(b);
+      const answer=Math.abs(hunterDistance-targetDistance)<=GEOGRAPHIC_EPSILON_METERS?'STEJNĚ':targetDistance<hunterDistance?'BLÍŽ':'DÁL';
+      return {state:'known',answer,details:{...base,hunterDistance,targetDistance}};
+    }
+    if(d.resolver==='land_matching'&&land){
+      const hunterArea=landAreaAt(land.areas,a),targetArea=landAreaAt(land.areas,b);
+      if(!hunterArea||!targetArea)return {state:'unknown',reason:'Rozhodná poloha neleží jednoznačně uvnitř jedné pevninské oblasti (voda, hranice nebo překryv).'};
+      return {state:'known',answer:hunterArea.id===targetArea.id?'ANO':'NE',details:{...base,hunterArea:hunterArea.id,targetArea:targetArea.id}};
+    }
     if(d.resolver==='poi_matching'){
       const result=matchingPois(a,b,d.category,release.data.pois,d.distanceMode);if(result.state==='unknown')return result;
       return {state:'known',answer:result.matches?'ANO':'NE',details:{...base,hunterPoi:result.first.poi.id,targetPoi:result.second.poi.id,hunterDistance:result.first.distanceMeters,targetDistance:result.second.distanceMeters}};

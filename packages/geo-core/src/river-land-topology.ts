@@ -84,6 +84,7 @@ export async function previewRiverLand({boundary,water,separations,stops}:LandIn
    byFace.clear();
   }
   const {faces}=partition;
+  const territoryEdge=own(g.GEOSBoundary(territory));
   const areaPointer=allocate(8);
   const planarArea=(geometry:number)=>{
    if(g.GEOSArea(geometry,areaPointer)!==1)throw new Error('GEOS nemůže spočítat plochu.');
@@ -98,12 +99,18 @@ export async function previewRiverLand({boundary,water,separations,stops}:LandIn
    if(g.GEOSisValid(normalized)!==1||g.GEOSNormalize(normalized)!==0)throw new Error('Neplatná pevninská oblast.');
    const geometry=write(normalized);
    if(geometry.type!=='Polygon')throw new Error('Výsledek polygonizace není polygon.');
-   return {geometry:geometry as Polygon,separationIds:byFace.get(polygon)??[]};
+   const shared=own(g.GEOSIntersection(polygon,territoryEdge));
+   if(g.GEOSLength(shared,areaPointer)!==1)throw new Error('Nelze ověřit napojení pevniny na hranici hry.');
+   const touchesGameBoundary=g.Module.HEAPF64[areaPointer/8]>0;
+   return {geometry:geometry as Polygon,separationIds:byFace.get(polygon)??[],touchesGameBoundary};
   })};
  });
- const areas:LandArea[]=await Promise.all(topology.faces.map(async face=>({...face,id:await sha256(canonicalJson(face.geometry)),areaM2:area(face.geometry)})));
+ const classified=await Promise.all(topology.faces.map(async ({touchesGameBoundary,...face})=>({touchesGameBoundary,
+  area:{...face,id:await sha256(canonicalJson(face.geometry)),areaM2:area(face.geometry)} satisfies LandArea})));
+ const areas=classified.map(item=>item.area);
  areas.sort((a,b)=>a.id.localeCompare(b.id));
  const coverage=riverLandCoverage(boundary,water,areas,stops);
  const inputChecksum=await sha256(canonicalJson({boundary,water,separations:ordered}));
- return {areas,problems:topology.problems,coverage,inputChecksum};
+ const boundaryAreaIds=classified.filter(item=>item.touchesGameBoundary).map(item=>item.area.id).sort();
+ return {areas,boundaryAreaIds,problems:topology.problems,coverage,inputChecksum};
 }

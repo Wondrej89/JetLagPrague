@@ -4,7 +4,7 @@ Veřejný klient je na **[JetLagPrague/](https://wondrej89.github.io/JetLagPragu
 
 Panel **Publikace herních podkladů** kontroluje a porovnává samostatný verzovaný herní katalog. Publikace používá autorizovanou GitHub App a Cloudflare Worker; stávající konfigurace a ochrany se zachovávají. V novém prostředí bez konfigurace zůstává zápis zakázaný. Český [postup nastavení, publikace, ověření nasazení a rollbacku](docs/PUBLISHING.md) obsahuje také kompatibilitu verzí a aktualizaci Workeru.
 
-Herní podklady se načítají z neměnných publikací. Poslední zveřejněný katalog navazuje na publikaci z 20. 10. 2026: zachovává **117 parků, 3 letiště, 10 zoo a míst se zvířaty, 10 nemocnic, 45 knihoven, 25 kin, administrativní hranice a stejný PID snapshot** a přidává **307 schválených vodních ploch**. Kvůli staršímu PID je označen jako historická reference. Starší publikace zůstávají dostupné. Soukromé úpravy v prohlížeči se projeví ve hře až po publikaci; multiplayer zatím není dostupný.
+Herní podklady se načítají z neměnných vydání. Referenční katalog schématu 9 obsahuje **Vltavu a Berounku a 24 pevninských oblastí** ke katalogu s 307 schválenými vodními plochami. Simulátor v tomto vydání nabízí otázky **Measuring – Vzdálenost k řece** a **Matching – Pevnina**. PID je ze dne 20. 10. 2026. [Zdroj, licence a audit říčních podkladů](data/source-metadata/vltava-editor.md#řeka-a-pevnina-v-herních-datech).
 
 
 Český desktopový editor geodat podle [specifikace](JETLAG_PRAHA_SPEC.md) a [první iterace](CODEX_UKOL_01_EDITOR.md). Iterace 02 přidává administrativní vrstvy; iterace 03 doplňuje veřejnou dopravu PID a úkrytové zóny. [Iterace 03B](CODEX_UKOL_03B_GTFS.md) používá aktuální obsluhu z GTFS a ruční serverovou publikaci. **Iterace 04A** přidává letiště, správu parků a geografické funkce POI pro Matching a Measuring.
@@ -53,7 +53,7 @@ Pravidla a převody vycházejí z tohoto zadání a [referenčního webu](https:
 
 ## Herní mapa, dedukce a Move
 
-Mapa hledačů má panely **Vrstvy** a **Dedukce**. Veřejné vrstvy používají přesně uzamčený publikovaný katalog, podporují vyhledávání, detail objektu, zvýraznění a samostatnou výplň/hrany polygonů. Chybějící golfová hřiště, aquaparky a Vltava se nevydávají za dostupná data. Zobrazení vrstev funguje i během rozpracované otázky a při vypnuté automatické dedukci.
+Mapa hledačů má panely **Vrstvy** a **Dedukce**. Veřejné vrstvy používají přesně uzamčený publikovaný katalog, podporují vyhledávání, detail objektu, zvýraznění a samostatnou výplň/hrany polygonů. Schémata 8 a 9 obsahují vrstvy Řeky a Pevnina a ostrovy. Golfová hřiště a aquaparky hlásí chybějící data. Zobrazení vrstev funguje i během rozpracované otázky a při vypnuté automatické dedukci.
 
 **Automatické zakreslování je výchozí vypnuté.** Před novou simulací oba týmy výslovně potvrdí zvolený režim. Radar, Measuring, Thermometer a prostorové Matching vytvářejí auditovatelné podmínky z neměnných snapshotů. Podmínky o stanovišti se kombinují v rámci stejné etapy; skutečná GPS je oddělená, navíc se neslučují její různé okamžiky. Zelená znamená potvrzenou možnost, červená vyloučení a neutrální plocha nejistotu.
 
@@ -383,15 +383,13 @@ Validace skutečných 169 geometrií a všech čtyř pražských referenčních 
 PID je implementované podle návodu výše; přibalená časově nesourodá data zůstávají výslovně označená k revizi. Další POI kategorie mimo současný katalog, úplný katalog schválených otázek, multiplayer a obecné GIS union/difference/clipping v editoru zůstávají odložené. Testovací simulátor a publikování neměnných herních release jsou dostupné podle návodů výše. GeoJSON export editoru zůstává draftem. Kreslení nové oddělené části vlastního MultiPolygonu nemá samostatný nástroj; podporuje se import, úprava vrcholů a validovaný editor GeoJSON. Souběžná editace více kartami není podporovaná.
 
 
-## Measuring – Vltava: prostorový audit, neověřené pokrytí
+## Measuring – Řeka a Matching – Pevnina
 
-Editor **Řeky – sestavení vodní plochy** vybírá společnou geometrii Vltavy a Berounky. Z 62 kandidátů spočítá 173 navazujících úseků z 2 755 původních polygonů T. Ruční výběr a vyřazení se ukládají s historií a zálohami. Schválené oddělovací linie pomáhají rozdělit pevninu a ostrovy i tam, kde GIS zdroj vynechává podmostí. Vodní geometrie a odvozená souš mají samostatnou revizi. [Postup práce, ukládání a omezení](data/source-metadata/vltava-editor.md).
+Schválený vodní polygon Vltavy a Berounky a export editoru s linií u Mánesa jsou v `data/raw`. Odečtení vody od herní oblasti a použití linie oddělí Žofín od pravého břehu. Místní audit geometrie a pokrytí PID spustíte příkazem `npx tsx scripts/prepare-river-release.ts --metadata-review data/source-metadata/vltava-berounka-review.json`. [Výsledky a příprava podkladů pro editor](data/source-metadata/vltava-editor.md#řeka-a-pevnina-v-herních-datech).
 
-**Otázka `measuring:vltava` zatím není zprovozněná.** Původní ZIP obsahuje skutečné vodní polygony v trase Vltavy. Prostorový audit všech 2 755 anonymních toků T našel propojenou skupinu 173 objektů zahrnující i jiné řeky. Diagnostický výběr 62 kandidátů tvoří platný polygon s 10 otvory, ale vynechává některá ostrovní ramena. Ani kontrolní sjednocení všech 3 524 vodních polygonů neuzavírá otvor u publikovaného bodu Žofína; je nutné autoritativní ověření břehů a vody pod přemostěními. Samotné referenční body parků nejsou geometrií břehů. **Úplnost a výběr samotné Vltavy nejsou potvrzené, publikovaných objektů Vltavy je 0.** [Audit a přesný další krok](data/source-metadata/vltava.md).
+Referenční vydání schématu 9 poskytuje automatické odpovědi, dedukce a volitelné mapové vrstvy pro obě otázky. Říční data pocházejí od IPR Praha, mají licenci CC BY 4.0 a zdrojovou revizi 31. 7. 2026. [Licence](https://creativecommons.org/licenses/by/4.0/deed.en) · [Záznam zdrojové vrstvy](https://geoportalpraha.cz/data-a-sluzby/e01b4bb6d148496abff4f065686290ff) · [Historický audit výběru](data/source-metadata/vltava.md).
 
-Audit lze zopakovat příkazem `npx tsx scripts/audit-vltava.ts`; [výsledek včetně původních GLOBALID a kontrol ostrovů](data/source-metadata/vltava-audit.json) není herním datasetem. Nejprve je nutné ověřit výběr původních ID a pokrytí ostrovních ramen; případně doplnit chybějící autoritativní geometrii a doložit licenci/datum. Připravený vstupní kontrakt `VltavaWaterAreaInput` přijímá WGS84 GeoJSON Polygon/MultiPolygon s původem, checksumem a revizí pokrytí. Kontrakt sám nemění `GameDataRelease` ani nezpřístupňuje otázku. Původní ZIP, `waterbody` a historické publikace zůstávají beze změny.
-
-Otázka „Jsi blíž, nebo dál od Vltavy než já?“ i mapová vrstva ukazují konkrétní `missing_data`; bez podkladu nevzniká odpověď, časovač, odměna ani dedukční vybarvení. Po dodání a ověření geometrie bude nutná nová publikovaná komponenta/verze s kontrolním součtem a společné napojení na existující polygonovou metriku a dedukční mechanismus. Reálné vzdálenosti k řece a průběh u ostrovů/mostů zatím nelze ověřit.
+Diagnostika v simulátoru ukazuje ID načteného katalogu, dostupnost říční vrstvy, počet pevninských oblastí a stav obou otázek. **Založit novou simulaci s aktuálními podklady** ověří nejnovější katalog a uloží dosavadní partii do seznamu **Uložené starší simulace**. Obnovená partie používá své původní ID vydání.
 
 ## Pomocníci Matching – názvy zastávek a ulic
 

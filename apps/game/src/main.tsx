@@ -1,8 +1,9 @@
 import { StrictMode, useEffect, useState } from 'react';
 import { createRoot } from 'react-dom/client';
-import { gamePublicationErrors, loadGameDataRelease, type GameDataRelease } from '../../../packages/geo-core/src/game-release';
+import { gamePublicationErrors, loadGameDataRelease, releaseGeography, type GameDataRelease } from '../../../packages/geo-core/src/game-release';
 import { pragueDate } from '../../../packages/geo-core/src/pid-snapshot';
 import './styles.css';
+import {RiverAttribution} from '../../../packages/game-ui/src/RiverAttribution';
 import {MobilePreview} from '../../../packages/game-ui/src/Phone';
 import '../../../packages/game-ui/src/styles.css';
 
@@ -15,6 +16,7 @@ function App() {
     loadGameDataRelease(new URL(`${import.meta.env.BASE_URL}releases/`, document.baseURI).href).then(({ release }) => { if (!cancelled) setRelease(release); }).catch(error => { if (!cancelled) setError(error instanceof Error ? error.message : 'Podklady se nepodařilo ověřit.'); });
     return () => { cancelled = true; };
   }, []);
+  const {riverArea,landAreas} = release ? releaseGeography(release.data) : {};
   const issues = release ? gamePublicationErrors(release, today) : [];
   return <div className="game-shell" data-release-id={release?.releaseId ?? ''}>
     <header className="game-header"><a className="game-brand" href="./"><span className="brand-symbol">J<Arrow/></span><span>JETLAG<span className="brand-prague">PRAGUE</span></span></a><span className="header-note">MĚSTO. POHYB. STRATEGIE.</span></header>
@@ -27,6 +29,7 @@ function App() {
         <p>Veřejná aplikace načítá centrálně publikovanou verzi. Žádný vlastní svět ani import geografických souborů nejsou potřeba.</p>
         {error && <p role="alert" className="data-warning">{error} Herní data nebyla nahrazena odhadem.</p>}
         {release && <><dl className="data-counts"><div><dt>Schválené parky</dt><dd>{release.data.pois.filter(p=>p.category==='park').length}</dd></div><div><dt>Letiště</dt><dd>{release.data.pois.filter(p=>p.category==='airport').length}</dd></div><div><dt>Zoo a místa se zvířaty</dt><dd>{release.data.pois.filter(p=>p.category==='zoo').length}</dd></div><div><dt>Nemocnice</dt><dd>{release.data.pois.filter(p=>p.category==='hospital').length}</dd></div><div><dt>Knihovny</dt><dd>{release.data.pois.filter(p=>p.category==='library').length}</dd></div><div><dt>Ambasády a konzuláty</dt><dd>{release.data.pois.filter(p=>p.category==='embassy').length}</dd></div><div><dt>Kina</dt><dd>{release.data.pois.filter(p=>p.category==='cinema').length}</dd></div><div><dt>Vodní plochy</dt><dd>{release.data.pois.filter(p=>p.category==='waterbody').length}</dd></div><div><dt>Zastávky v herní oblasti</dt><dd>{release.data.pidSnapshot.stops.length}</dd></div><div><dt>Administrativní území</dt><dd>{release.data.administrativeAreas.length}</dd></div></dl>
+          {riverArea && <RiverAttribution river={riverArea} land={!!landAreas}/>}
           {issues.length > 0 && <div role="status" className="data-warning"><strong>{release.data.pidSnapshot.serviceDate !== today ? 'Historická referenční data – neověřeno' : 'Podklady zatím nejsou připravené pro ostrou hru.'}</strong><ul>{issues.map(issue=><li key={issue}>{issue}</li>)}</ul></div>}
           <p className="pin-note">Zoo tvoří ruční výběr správce s body převzatými z Mapy.com; nejde o oficiální dataset ani hranice areálů. Nemocnice jsou rovněž ručním herním výběrem z Mapy.com, nikoli úplným registrem zdravotnických zařízení. Kina jsou ručním výběrem správce; multiplex se počítá jako jedno kino. Ambasády a konzuláty tvoří pracovní výběr diplomatických pracovišť; jejich referenční body neurčují hranice areálů.</p>{!release.data.pois.some(p=>p.category==='library') && <p className="pin-note">Katalog zatím neobsahuje ověřené knihovny. Geografické otázky pro knihovny vracejí „nelze určit“.</p>}<div className="release-info"><span>Publikováno {new Date(release.publishedAt).toLocaleString('cs-CZ')}</span><span>PID: {release.data.pidSnapshot.serviceDate}</span><span>Verze <code title={release.releaseId}>{release.releaseId.slice(8,20)}</code></span><span>Kontrolní součty ověřeny</span></div><p className="pin-note">Načtená verze zůstává po dobu otevření stránky uzamčená. Budoucí partie si uchová toto ID podkladů.</p></>}
       </section>

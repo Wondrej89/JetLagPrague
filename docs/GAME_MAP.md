@@ -14,7 +14,7 @@ Nejde o implementaci multiplayeru. Lokální souhlas za dvě role není serverov
 
 Na mapě telefonu hledačů otevřete **Vrstvy**. Každá položka má ikonu, barvu, počet a stav zdroje. Katalog vzniká z ověřeného neměnného `GameDataRelease` a metadat kategorií. Žádná data z pracovního editorového draftu se nečtou.
 
-Dostupné jsou schválené body letišť, zoo, nemocnic, kin a knihoven, polygonové parky a vodní plochy, městské části, katastrální území a publikované způsobilé zastávky PID. Železniční stanice jsou skutečná podmnožina publikovaných zastávek s referenčním módem `train`. Golfová hřiště, aquaparky a Vltava jsou označené jako chybějící; nevznikají náhradní objekty. Metadata mohou doplnit další publikovanou kategorii bez přepisování mapového UI.
+Dostupné jsou schválené body letišť, zoo, nemocnic, kin a knihoven, polygonové parky a vodní plochy, městské části, katastrální území a publikované způsobilé zastávky PID. Železniční stanice jsou skutečná podmnožina publikovaných zastávek s referenčním módem `train`. Schémata 8 a 9 obsahují vrstvy Řeky a Pevnina a ostrovy s atribucí IPR Praha a licencí CC BY 4.0. Golfová hřiště a aquaparky hlásí chybějící data. Metadata mohou doplnit další publikovanou kategorii bez přepisování mapového UI.
 
 Kliknutí na objekt zobrazí jeho název, kategorii, ID, zdroj, případnou adresu a referenční GPS. Souřadnice ani polygon se pro mapu neposouvají. Polygon/MultiPolygon zachovává otvory a oddělené části. Výplň a hranice lze přepínat zvlášť; hledání podle názvu nebo ID umí objekt zvýraznit. Výběr ani změna vrstev nemění GPS nebo rozpracovanou otázku. Z otázky lze přejít na mapu a zpět.
 
@@ -94,4 +94,4 @@ Scénář **DIAGNOSTIKA – konflikt** přidává dvě protikladné geometrické
 
 Jednotkové testy kontrolují geografické nerovnosti na vzorkované mřížce, nepravidelné polygony, otvory a MultiPolygon, kombinace, konzervativní hranice, neměnné zdroje, souhlasy, role DTO, epochy, Move a audit po reloadu. E2E používají skutečný produkční artefakt v cestě `/JetLagPrague/simulator/`, reálný worker, veřejný katalog, mobilní rozložení a audit síťových metod. Kontrolují také zachování dosavadních otázek, editorových úložišť a karetních funkcí.
 
-Nepřibyly žádné npm závislosti ani nové POI datasety. Vyžadují se moderní prohlížeče s Web Workerem a IndexedDB. Chybějící golfová hřiště, aquaparky a Vltava zůstávají datovou závislostí; multiplayer potřebuje vlastní autorizovaný serverový transport.
+Nepřibyly žádné npm závislosti ani nové POI datasety. Vyžadují se moderní prohlížeče s Web Workerem a IndexedDB. Golfová hřiště a aquaparky potřebují vlastní data. Multiplayer potřebuje autorizovaný serverový transport.

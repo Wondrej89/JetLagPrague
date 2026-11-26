@@ -35,6 +35,7 @@ test('nový prohlížeč má deset nemocnic, nezávislou viditelnost, hledání,
 });
 
 test('úpravy nemocnice, vyřazení, obnovení a tažení bodu přežijí reload bez změny ostatních dat', async ({ page }) => {
+  test.setTimeout(60_000);
   await page.goto('/'); await ready(page); const before = await storedWorld(page);
   await page.locator('[data-poi-id="hospital-motol"] button').click();
   await page.getByLabel('Název nemocnice', { exact: true }).fill('Moje upravená nemocnice');

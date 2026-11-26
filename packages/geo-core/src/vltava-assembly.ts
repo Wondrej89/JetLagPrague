@@ -1,7 +1,7 @@
 import {z} from 'zod';
 import {canonicalJson} from './administrative';
 import {sha256} from './pid-snapshot';
-import {readVltavaWaterAreaInput} from './vltava';
+import {readVltavaWaterAreaInput,riverInputSchema,RIVER_ID} from './vltava';
 import {isArea,validateGeometry,type AreaGeometry} from './index';
 
 import {vltavaAssemblySchema,riverApprovalHistory,riverSeparationSchema,type RiverSeparation,type VltavaAssembly} from './vltava-assembly-schema';
@@ -119,7 +119,7 @@ export async function approveVltavaAssembly(draft:VltavaAssembly,source:VltavaSo
 export async function approvedRiverInput(draft:VltavaAssembly,source:VltavaSource,preview:VltavaPreview){
  if(!draft.waterScope)throw new Error('Původní revizi Vltavy je nutné zopakovat pro společnou vodní plochu.');
  const water=await approvedVltavaInput(draft,source,preview);
- return {...water,id:'river:vltava-berounka:prague',properties:{...water.properties,name:'Vltava a Berounka'}};
+ return riverInputSchema.parse({...water,id:RIVER_ID,properties:{...water.properties,name:'Vltava a Berounka'}});
 }
 
 export function importVltavaAssembly(input:unknown,source:VltavaSource):VltavaAssembly {

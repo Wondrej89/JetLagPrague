@@ -113,7 +113,8 @@ it('checks all immutable published versions including the added approved waters 
  const index=readGameReleaseIndex(JSON.parse(await readFile('data/releases/current.json','utf8')));
  const prior=index.versions.find(e=>e.releaseId==='release:1f5e3316c584ad01849e246761882b66e02504382bc12b6b18b504b019f988cd')!;
  const old=await readGameReleaseArtifact(await readFile('data/releases/'+prior.file,'utf8'),prior);
- const newest=await readGameReleaseArtifact(await readFile('data/releases/'+index.current.file,'utf8'),index.current);
+ const waterEntry=index.versions.find(e=>e.releaseId==='release:db8e4958e46888be47302ea9998b787572549856497da3adcd04e5850e32222c')!;
+ const newest=await readGameReleaseArtifact(await readFile('data/releases/'+waterEntry.file,'utf8'),waterEntry);
  expect(newest.schemaVersion).toBe(6);expect(newest.data.pois.filter(p=>p.category==='waterbody')).toHaveLength(307);
  expect(newest.data.pois.filter(p=>p.category!=='waterbody')).toEqual(old.data.pois);
  for(const key of ['gameArea','administrativeAreas','pidSnapshot','rulesConfig'] as const)expect(newest.checksums[key]).toBe(old.checksums[key]);

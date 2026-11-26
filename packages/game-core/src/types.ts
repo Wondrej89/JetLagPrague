@@ -8,7 +8,7 @@ export interface RewardPolicy { draw: number; keep: number }
 export interface QuestionDefinition {
   referenceVersion?:1;
   id: string; type: QuestionType; category: string; label: string; description: string;
-  resolver: 'poi_matching' | 'poi_measuring' | 'same_area' | 'radar' | 'thermometer' | 'tentacles' | 'manual' | 'photo' | 'unsupported';
+  resolver: 'poi_matching' | 'poi_measuring' | 'same_area' | 'river_measuring' | 'land_matching' | 'radar' | 'thermometer' | 'tentacles' | 'manual' | 'photo' | 'unsupported';
   answerMode: 'automatic' | 'manual' | 'photo'; rewardPolicy: RewardPolicy | null; timeoutSeconds: number | null;
   availability: 'ready' | 'manual' | 'missing_data' | 'unsupported'; requirements: string[];
   distanceMode?: 'geometry'; spatialVersion?: 2; toleranceMeters?: number; sourceRule?: string;

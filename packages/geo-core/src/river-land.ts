@@ -13,17 +13,18 @@ export interface LandStop { id:string; point:Position }
 export interface LandPreview {
  inputChecksum: string;
  areas: LandArea[];
+ boundaryAreaIds: string[];
  problems: { id: string; reason: string }[];
  coverage: { checked: number; assigned: number; unresolved: string[] } | null;
 }
 
 /** A point on a shared edge or any other land boundary is unresolved. */
-export function landAreaAt(areas: LandArea[], point: Position): LandArea | null {
+export function landAreaAt<T extends { geometry: AreaGeometry }>(areas: readonly T[], point: Position): T | null {
  const touching = areas.filter(area => booleanPointInPolygon(point, area.geometry));
  return touching.length === 1 && booleanPointInPolygon(point, touching[0].geometry, {ignoreBoundary:true}) ? touching[0] : null;
 }
 
-export function riverLandCoverage(boundary:AreaGeometry,water:AreaGeometry,areas:LandArea[],stops:LandStop[]|null):LandPreview['coverage'] {
+export function riverLandCoverage(boundary:AreaGeometry,water:AreaGeometry,areas:readonly {geometry:AreaGeometry}[],stops:LandStop[]|null):LandPreview['coverage'] {
  if(!stops)return null;
  const onLand=stops.filter(stop=>booleanPointInPolygon(stop.point,boundary)&&!booleanPointInPolygon(stop.point,water,{ignoreBoundary:true}));
  const unresolved=onLand.filter(stop=>!landAreaAt(areas,stop.point)).map(stop=>stop.id);

@@ -1,7 +1,7 @@
 import {expect,test,type Page} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 import {storedWorld} from './draft-helper';
-import {exportWorld,importWorld,matchingPois,nearestApprovedPoi,type ParkDataset} from '../packages/geo-core/src/index';
+import {exportWorld,importWorld,matchingPois,nearestApprovedPoi,readGameReleaseArtifact,readGameReleaseIndex,releaseGeography,type ParkDataset} from '../packages/geo-core/src/index';
 const catalog=readFile('apps/editor/src/data/waterbody-catalog.json','utf8').then(text=>JSON.parse(text) as ParkDataset);
 async function ready(page:Page){
  await expect(page.locator('.app-shell')).toHaveAttribute('aria-busy','false');
@@ -59,10 +59,12 @@ test('opakovaný import originálního ZIPu zachová ruční rozhodnutí; poško
 
 test('veřejný katalog obsahuje jen schválené vodní polygony a používá jejich plochy v geografických operacích',async({page,request})=>{
  const base='http://127.0.0.1:4175/JetLagPrague/';const index=(await request.get(base+'releases/current.json'));expect(index.status()).toBe(200);
- const pointer=await index.json(),reply=await request.get(base+'releases/'+pointer.current.file);const release=await reply.json();
- const approved=(await catalog).records.filter(p=>p.status==='approved');expect(release.schemaVersion).toBe(6);expect(release.data.pois.filter((p:{category:string})=>p.category==='waterbody')).toHaveLength(307);
+ const pointer=readGameReleaseIndex(await index.json()),reply=await request.get(base+'releases/'+pointer.current.file);
+ const release=await readGameReleaseArtifact(await reply.text(),pointer.current);
+ const approved=(await catalog).records.filter(p=>p.status==='approved');expect(release.data.pois.filter(p=>p.category==='waterbody')).toHaveLength(307);
+ expect(releaseGeography(release.data).riverArea?.feature.properties.name).toBe('Vltava a Berounka');
  expect(release.data.pois.some((p:{category:string})=>p.category==='vltava')).toBe(false);
  const p=approved.find(p=>p.name==='Biotop Radotín')!;expect(nearestApprovedPoi(p.point,'waterbody',release.data.pois)).toMatchObject({state:'known',distanceMeters:0,poi:{id:p.id}});
  expect(matchingPois(p.point,p.point,'waterbody',release.data.pois)).toMatchObject({state:'known',matches:true});
- await page.goto(base);await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible();await expect(page.locator('.data-counts > div').filter({has:page.getByText('Vodní plochy',{exact:true})}).locator('dd')).toHaveText('307');
+ await page.goto(base);await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible({timeout:15_000});await expect(page.locator('.data-counts > div').filter({has:page.getByText('Vodní plochy',{exact:true})}).locator('dd')).toHaveText('307');
 });

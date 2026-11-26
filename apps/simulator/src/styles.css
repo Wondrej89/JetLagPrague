@@ -3,3 +3,10 @@ body{margin:0;background:#edf1f5;color:#243847;font:14px/1.5 system-ui,-apple-sy
 .position-panel form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.position-panel form>h3{grid-column:1/-1}.position-panel button{width:100%;white-space:normal;min-height:36px}
 
 .sim-privacy{font-size:12px;color:#536774}.sim-privacy>span{display:block;margin-top:4px}.sim-header>div>span{font-size:11px;letter-spacing:.2px;color:#536774}
+
+.sim-release-diagnostics { display: grid; grid-template-columns: max-content minmax(0,1fr); gap: 4px 16px; }
+.sim-release-diagnostics dd { margin: 0; overflow-wrap: anywhere; }
+@media (max-width: 550px) {
+ .sim-release-diagnostics { grid-template-columns: minmax(0,1fr); gap: 2px; }
+ .sim-release-diagnostics dd { margin-bottom: 8px; }
+}

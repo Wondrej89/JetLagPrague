@@ -1,6 +1,7 @@
+import {RiverAttribution} from './RiverAttribution';
 import {showHunterLocation} from './HunterDistance';
 import {useEffect,useMemo,useState,useRef} from 'react';
-import type {GameDataRelease} from '../../geo-core/src/index';
+import {releaseGeography,type GameDataRelease} from '../../geo-core/src/index';
 import {publishedGameLayers} from '../../geo-resolver/src/catalog';
 import type {Point,RoleView,TargetPolicy} from '../../game-core/src/index';
 import {MapSurface,type MapOverlay,type MapFocus} from './MapSurface';
@@ -16,12 +17,13 @@ export function GameMap({release,view,storageKey,onStationSelect,...mapProps}:Ma
  useEffect(()=>{if(mapProps.focus)setFocus(mapProps.focus);},[mapProps.focus]);
  const [settings,setSettings]=useState(()=>{try{return JSON.parse(localStorage.getItem(storageKey??'jetlag-public-map')??'{}') as {visible?:string[];fill?:boolean;borders?:boolean;target?:TargetPolicy;gpsQuestionId?:string;possible?:boolean;excluded?:boolean};}catch{return {};}});
  const [individual,setIndividual]=useState<{epoch?:string;ids:string[]}>({ids:[]});
+ const {riverArea,landAreas}=release?releaseGeography(release.data):{};
  const layers=useMemo(()=>release?publishedGameLayers(release):[],[release]);
  useEffect(()=>{try{localStorage.setItem(storageKey??'jetlag-public-map',JSON.stringify(settings));}catch{/* Display preferences never block a game. */}},[settings,storageKey]);
  const visible=settings.visible??EMPTY_IDS,target=settings.target??'station',deductions=view?.deductions??EMPTY_DEDUCTIONS;
  const ids=individual.epoch===view?.epochId?individual.ids:EMPTY_IDS;
  const geometry=useDeductionGeometry(release,deductions,target,ids,settings.gpsQuestionId);
- const publicOverlays=useMemo<MapOverlay[]>(()=>layers.filter(layer=>visible.includes(layer.id)).map(layer=>({id:layer.id,data:{type:'FeatureCollection',features:layer.features},color:layer.color,icon:layer.icon,fill:settings.fill!==false,weight:settings.borders===false?0:2,onSelect:props=>{setSelected(layer.id+'|'+String(props.id));if((layer.id==='pid'||layer.id==='rail')&&stationSelect.current){stationSelect.current(String(props.id));setPanel(null);}}})),[layers,visible,settings.fill,settings.borders]);
+ const publicOverlays=useMemo<MapOverlay[]>(()=>layers.filter(layer=>visible.includes(layer.id)).map(layer=>({id:layer.id,data:{type:'FeatureCollection',features:layer.features},color:layer.color,icon:layer.icon,featureColors:layer.id==='landmass',exactGeometry:layer.id==='landmass'||layer.id==='vltava',fill:settings.fill!==false,weight:settings.borders===false?0:2,onSelect:props=>{setSelected(layer.id+'|'+String(props.id));if((layer.id==='pid'||layer.id==='rail')&&stationSelect.current){stationSelect.current(String(props.id));setPanel(null);}}})),[layers,visible,settings.fill,settings.borders]);
  const overlays=useMemo(()=>{
   const items:MapOverlay[]=[...publicOverlays];
   const chosen=layers.flatMap(l=>l.features.map(f=>({layer:l,feature:f}))).find(p=>p.layer.id+'|'+String(p.feature.id)===selected);
@@ -51,6 +53,7 @@ export function GameMap({release,view,storageKey,onStationSelect,...mapProps}:Ma
   {geometry.error&&<p className="deduction-status error" role="alert">{geometry.error} Výsledek nelze určit.</p>}
   {panel&&<section className="game-map-panel" aria-label={panel==='layers'?'Vrstvy mapy':'Dedukční mapa'}>
    <header><strong>{panel==='layers'?'Vrstvy mapy':'Dedukce'}</strong><button onClick={()=>setPanel(null)} aria-label="Zavřít mapový panel">×</button></header>
+   {riverArea&&<RiverAttribution river={riverArea} land={!!landAreas}/>}
    {panel==='layers'?<>
     {!release&&<p>Chybí ověřený publikovaný katalog.</p>}
     <label><input type="checkbox" checked={settings.fill!==false} onChange={e=>setSettings(s=>({...s,fill:e.target.checked}))}/>Výplň polygonů</label><label><input type="checkbox" checked={settings.borders!==false} onChange={e=>setSettings(s=>({...s,borders:e.target.checked}))}/>Hranice polygonů</label>

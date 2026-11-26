@@ -63,7 +63,7 @@ describe('Server authorization and immutable publication',()=>{
     const [expected,changes]=vi.mocked(GitHubClient.prototype.commit).mock.calls[0];expect(expected).toBe(head);expect(changes.map(file=>file.path)).toEqual([`data/releases/release-${release.checksums.content}.json`,'data/releases/current.json']);expect(changes[0].text).not.toContain('PRIVATE NOTE');expect(JSON.parse(changes[1].text).current.releaseId).toBe(release.releaseId);
   });
   it('accepts approved zoo through the protected publisher and keeps schema 2 publication compatible',async()=>{
-    expect(await (await send('/status')).json()).toMatchObject({configured:true,releaseSchemaVersions:[1,2,3,4,5,6]});
+    expect(await (await send('/status')).json()).toMatchObject({configured:true,releaseSchemaVersions:[1,2,3,4,5,6,7,8,9]});
     const {world,snapshot}=await releaseTestInput(),zoos=catalog.zoos.map(poi=>poiSchema.parse(poi));
     world.poi=withPublishedZoos(world.poi!,zoos);world.poi=decidePoi(world.poi,zoos[0],{status:'excluded'});
     release=await buildGameDataRelease(world,releaseTestAirports,snapshot,releaseTestDate);

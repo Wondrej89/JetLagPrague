@@ -1,4 +1,7 @@
 import {expect,test,type Page} from '@playwright/test';
+import {readFile} from 'node:fs/promises';
+import {gameFixture,PRE_RIVER_RELEASE_ID} from '../packages/game-core/src/test-fixtures';
+import {readGameReleaseIndex} from '../packages/geo-core/src/game-release';
 import type {SavedSimulation} from '../apps/simulator/src/storage';
 const base='http://127.0.0.1:4175/JetLagPrague/simulator/';
 const phone=(page:Page,role='hunter')=>page.getByTestId('phone-'+role);
@@ -10,10 +13,13 @@ const map=(page:Page)=>phone(page).getByTestId('game-map-tools');
 const adminMap=(page:Page)=>page.locator('.sim-map').getByTestId('game-map-tools');
 test.beforeEach(async({page})=>{await page.route('https://api.mapy.com/**',r=>r.abort());});
 
-test('missing Vltava has an exact data reason and no fabricated layer or question; Radar still works and survives reload',async({page})=>{
+test('missing Vltava in a historical release has an exact data reason; Radar still works and survives reload',async({page})=>{
+ const index=readGameReleaseIndex(JSON.parse(await readFile('data/releases/current.json','utf8')));
+ const current=index.versions.find(entry=>entry.releaseId===PRE_RIVER_RELEASE_ID)!;
+ await page.route('**/releases/current.json',route=>route.fulfill({json:{...index,current}}));
  test.setTimeout(60000);await create(page);await scenario(page,'deck-100');await tab(page,'hunter','Otázky');await phone(page).getByRole('button',{name:/Measuring/}).click();
- const choice=phone(page).locator('.question-choice').filter({has:page.getByRole('heading',{name:'Vltava – vzdálenost k řece',exact:true})});
- await expect(choice).toContainText('Jsi blíž, nebo dál od Vltavy než já?');await expect(choice).toContainText('polygon vodní plochy Vltavy včetně ostrovů');await expect(choice.getByRole('button',{name:'Položit otázku',exact:true})).toBeDisabled();expect((await stored(page)).state.questions).toEqual([]);
+ const choice=phone(page).locator('.question-choice').filter({has:page.getByRole('heading',{name:'Vzdálenost k řece',exact:true})});
+ await expect(choice).toContainText('Jsi blíž, nebo dál od Vltavy nebo Berounky než já?');await expect(choice).toContainText('vodní plochu Vltavy a Berounky');await expect(choice.getByRole('button',{name:'Položit otázku',exact:true})).toBeDisabled();expect((await stored(page)).state.questions).toEqual([]);
  await phone(page).getByRole('button',{name:'Zobrazit mapu a vrstvy'}).click();await map(page).getByRole('button',{name:'Vrstvy',exact:true}).click();const panel=map(page).getByRole('region',{name:'Vrstvy mapy'});await expect(panel.getByRole('checkbox',{name:/Vltava/})).toBeDisabled();await expect(panel).toContainText('Polygon/MultiPolygon');await expect(map(page).locator('[data-public-layer="vltava"]')).toHaveCount(0);await map(page).getByRole('button',{name:'Zavřít mapový panel'}).click();
  await tab(page,'hunter','Otázky');await phone(page).getByRole('button',{name:/Radar/}).click();await phone(page).locator('.question-choice').filter({has:page.getByRole('heading',{name:'Radar 800 m',exact:true})}).getByRole('button',{name:'Položit otázku',exact:true}).click();await tab(page,'hider','Otázka');await phone(page,'hider').getByRole('button',{name:'Odpovědět nyní'}).click();await expect.poll(async()=>(await stored(page)).state.questions[0].answer).toBe('ANO');
  await phone(page).getByRole('button',{name:'Zobrazit mapu a vrstvy'}).click();await expect(map(page)).toHaveAttribute('data-deduction-state','ready',{timeout:30000});const before=(await stored(page)).state;expect(before.questions).toHaveLength(1);expect(before.deductions!.every(d=>d.parameters.category!=='vltava')).toBe(true);
@@ -65,7 +71,7 @@ test('new game requires explicit decisions of both roles; deduction defaults off
 });
 test('published POI layers, precise reference points, search, popup metadata and missing categories work independently of a pending question',async({page})=>{
  await create(page,false);await scenario(page,'different-hospital');const before=(await stored(page)).state.questions[0];await map(page).getByRole('button',{name:'Vrstvy',exact:true}).click();const panel=map(page).getByRole('region',{name:'Vrstvy mapy'});
- await expect(panel.getByRole('checkbox',{name:/Golfová hřiště/})).toBeDisabled();await expect(panel.getByRole('checkbox',{name:/Vltava/})).toBeDisabled();await panel.getByRole('checkbox',{name:/Nemocnice/}).check();await map(page).getByRole('button',{name:'Zavřít mapový panel'}).click();await expect(map(page).locator('[data-public-layer="hospital"]')).toHaveCount(10);
+ await expect(panel.getByRole('checkbox',{name:/Golfová hřiště/})).toBeDisabled();await expect(panel.getByRole('checkbox',{name:/Vltava/})).toBeEnabled();await panel.getByRole('checkbox',{name:/Nemocnice/}).check();await map(page).getByRole('button',{name:'Zavřít mapový panel'}).click();await expect(map(page).locator('[data-public-layer="hospital"]')).toHaveCount(10);
  await map(page).getByRole('button',{name:'Vrstvy',exact:true}).click();await panel.getByLabel('Hledat objekt v publikovaném katalogu').fill('hospital-motol');await panel.getByRole('button',{name:/Fakultní nemocnice v Motole/}).click();await map(page).locator('[data-public-layer="hospital"][data-public-feature="hospital-motol"]').click();await expect(map(page).locator('.leaflet-popup')).toContainText('V Úvalu 84/1');await expect(map(page).locator('.leaflet-popup')).toContainText('50.0740153');expect((await stored(page)).state.questions[0]).toEqual(before);
  await page.reload();await expect(phone(page)).toBeVisible({timeout:30000});await expect(map(page).locator('[data-public-layer="hospital"]')).toHaveCount(10);expect((await stored(page)).state.questions[0]).toEqual(before);
 });
@@ -105,4 +111,133 @@ test('inspecting a published polygon on the administrator map never teleports a 
  await adminMap(page).getByRole('button',{name:'Vrstvy',exact:true}).click();const panel=adminMap(page).getByRole('region',{name:'Vrstvy mapy'});await panel.getByLabel('Hledat objekt v publikovaném katalogu').fill(park.id);await panel.getByRole('button',{name:new RegExp(park.name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'))}).first().click();
  const path=adminMap(page).locator(`[data-public-layer="park"][data-public-feature="${park.id}"]`);await expect(path).toBeVisible();const position=await path.evaluate(el=>{const path=el as SVGGeometryElement,p=path.getPointAtLength(path.getTotalLength()*.35),screen=new DOMPoint(p.x,p.y).matrixTransform(path.getScreenCTM()!);return {x:screen.x,y:screen.y};});await page.mouse.click(position.x,position.y);await expect(adminMap(page).locator('.leaflet-popup')).toContainText(park.name);expect((await stored(page)).state.fixes).toEqual(before);
  await page.screenshot({path:'test-results/game-map-polygon.png',fullPage:true});
+});
+
+test('river and land questions use one versioned dataset across both phones, deductions, layers and reload',async({page})=>{
+ test.setTimeout(210_000);
+ const {release,env}=await gameFixture();
+ expect(release.schemaVersion).toBe(9);
+ const index=readGameReleaseIndex(JSON.parse(await readFile('data/releases/current.json','utf8')));
+ let current=index.versions.find(entry=>entry.releaseId===PRE_RIVER_RELEASE_ID)!;
+ let catalogueAvailable=true;
+ await page.route('**/releases/current.json',route=>catalogueAvailable
+  ?route.fulfill({json:{...index,current}})
+  :route.fulfill({status:404}));
+ await create(page);
+ await scenario(page,'deck-100');
+ await page.evaluate(()=>localStorage.setItem('jetlag-praha:world:v1','EDITOR_UNCHANGED'));
+ const historical=(await stored(page)).state;
+ current=index.current;
+ await page.reload();
+ await expect(page.getByTestId('active-release-id')).toHaveText(PRE_RIVER_RELEASE_ID,{timeout:30_000});
+ await expect(page.getByTestId('pinned-release-status')).toHaveText('Připnutá ke staršímu vydání');
+ await expect(page.getByTestId('river-area-status')).toHaveText('Chybí');
+ await expect(page.getByTestId('land-area-count')).toHaveText('0');
+ await expect(page.getByTestId('river-question-status')).toHaveText('missing_data');
+ await expect(page.getByTestId('land-question-status')).toHaveText('missing_data');
+ const latest=page.getByRole('button',{name:'Založit novou simulaci s aktuálními podklady',exact:true});
+ catalogueAvailable=false;
+ await latest.click();
+ await expect(page.getByRole('alert')).toContainText('nejsou dostupné');
+ expect((await stored(page)).state).toEqual(historical);
+ catalogueAvailable=true;
+ await latest.click();
+ await expect(page.getByTestId('active-release-id')).toHaveText(release.releaseId,{timeout:30_000});
+ await expect(page.getByTestId('pinned-release-status')).toHaveText('Aktuální ověřené vydání');
+ await expect(page.getByTestId('river-area-status')).toHaveText('Dostupná');
+ await expect(page.getByTestId('land-area-count')).toHaveText('24');
+ await expect(page.getByTestId('river-question-status')).toHaveText('ready');
+ await expect(page.getByTestId('land-question-status')).toHaveText('ready');
+ const fresh=(await stored(page)).state;
+ expect(fresh.id).not.toBe(historical.id);
+ expect(fresh.questions).toEqual([]);
+ expect(fresh.releaseId).toBe(release.releaseId);
+ for(const role of ['hunter','hider'])await phone(page,role).getByRole('button',{name:'Ano, souhlasím',exact:true}).click();
+ for(const role of ['hunter','hider'])await phone(page,role).getByRole('button',{name:'Jsem připraven',exact:true}).click();
+ await page.getByRole('button',{name:'Pozastavit simulaci',exact:true}).click();
+ const hider=phone(page,'hider');
+ await hider.getByTestId('station-search').locator('summary').click();
+ await hider.locator('.station-list button').first().click();
+ await hider.getByRole('button',{name:'Potvrdit stanoviště',exact:true}).click();
+ await page.getByRole('button',{name:'Konec 45 minut',exact:true}).click();
+ await expect.poll(async()=>(await stored(page)).state.phase).toBe('seeking');
+
+ async function setHunter(point:[number,number]){
+  await page.getByLabel('Longitude hunter',{exact:true}).fill(String(point[0]));
+  await page.getByLabel('Latitude hunter',{exact:true}).fill(String(point[1]));
+  await page.getByRole('button',{name:'Nastavit GPS hledačů',exact:true}).click();
+ }
+ async function ask(group:string,name:string,description:string,count:number){
+  await tab(page,'hunter','Otázky');
+  await phone(page).getByRole('button',{name:new RegExp(group)}).click();
+  const choice=phone(page).locator('.question-choice').filter({has:page.getByRole('heading',{name,exact:true})});
+  await expect(choice).toContainText(description);
+  await choice.getByRole('button',{name:'Položit otázku',exact:true}).click();
+  await expect.poll(async()=>(await stored(page)).state.questions.length).toBe(count);
+  const q=(await stored(page)).state.questions[count-1];
+  expect(q.deadline!-q.askedAt).toBe(300_000);
+  await tab(page,'hider','Otázka');
+  await expect(phone(page,'hider').getByRole('heading',{name,exact:true})).toBeVisible();
+  return q;
+ }
+
+ await setHunter(release.data.pidSnapshot.stops.find(stop=>stop.name==='Zličín')!.point);
+ const river=await ask('Measuring','Vzdálenost k řece','Jsi blíž, nebo dál od Vltavy nebo Berounky než já?',1);
+ expect(env.resolve(river)).toMatchObject({state:'known',answer:'BLÍŽ'});
+ await setHunter([14.41,50.0863]);
+ await page.getByRole('button',{name:'+5 minut',exact:true}).click();
+ await expect.poll(async()=>(await stored(page)).state.questions[0]?.answer).toBe('BLÍŽ');
+ expect((await stored(page)).state.questions[0]).toMatchObject({hunterFix:river.hunterFix,targetPoint:river.targetPoint});
+ await tab(page,'hider','Karty');
+ await phone(page,'hider').getByRole('button',{name:'Otevřít karetní odměnu'}).click();
+ await expect(phone(page,'hider').locator('.offered-card')).toHaveCount(3);
+ await phone(page,'hider').locator('.offered-card').first().click();
+
+ await setHunter([14.41317,50.07812]);
+ const land=await ask('Matching','Pevnina','Jsi na stejné pevninské části jako já?',2);
+ expect(env.resolve(land)).toMatchObject({state:'known',answer:'NE'});
+ await phone(page,'hider').getByRole('button',{name:'Odpovědět nyní'}).click();
+ await expect.poll(async()=>(await stored(page)).state.questions[1]?.answer).toBe('NE');
+ // Move the hunter's pin away so the island itself receives the map click.
+ await setHunter([14.48,50.08]);
+ const before=(await stored(page)).state;
+ expect(before.rewards.map(r=>r.policy)).toEqual([{draw:3,keep:1},{draw:3,keep:1}]);
+ expect(before.hand).toHaveLength(1);
+ expect(before.deductions?.map(d=>d.parameters.resolver)).toEqual(['river_measuring','land_matching']);
+ expect(JSON.stringify(before.deductions)).not.toContain(JSON.stringify(before.station!.point));
+
+ await expect(phone(page).getByTestId('last-answer')).toContainText('NE');
+ await phone(page).getByRole('button',{name:'Zobrazit mapu a vrstvy'}).click();
+ await expect(map(page)).toHaveAttribute('data-deduction-state','ready',{timeout:60_000});
+ await expect(map(page)).toHaveAttribute('data-deduction-count','2');
+ await expect(map(page).locator('[data-public-layer="excluded"]')).not.toHaveCount(0);
+ await expect(phone(page).locator('[data-map-marker="station"]')).toHaveCount(0);
+ await map(page).getByRole('button',{name:'Vrstvy',exact:true}).click();
+ const panel=map(page).getByRole('region',{name:'Vrstvy mapy'});
+ await expect(panel.getByRole('link',{name:'CC BY 4.0',exact:true})).toHaveAttribute('href','https://creativecommons.org/licenses/by/4.0/deed.en');
+ await expect(panel.getByRole('link',{name:/IPR Praha/})).toHaveAttribute('href','https://geoportalpraha.cz/data-a-sluzby/e01b4bb6d148496abff4f065686290ff');
+ await panel.getByRole('checkbox',{name:/Řeky/}).check();
+ await panel.getByRole('checkbox',{name:/Pevnina a ostrovy/}).check();
+ await expect(map(page).locator('[data-public-layer="vltava"]')).toHaveCount(1);
+ const landPaths=map(page).locator('[data-public-layer="landmass"]');
+ await expect(landPaths.first()).toBeVisible();
+ expect(await landPaths.evaluateAll(paths=>new Set(paths.map(path=>path.getAttribute('fill'))).size)).toBeGreaterThan(1);
+ await panel.getByLabel('Hledat objekt v publikovaném katalogu').fill('Ostrov Žofín');
+ await panel.getByRole('button',{name:'Ostrov Žofín · Pevnina a ostrovy',exact:true}).click();
+ const island=release.data.landAreas!.areas.find(area=>area.name==='Ostrov Žofín')!;
+ await map(page).locator(`[data-public-layer="landmass"][data-public-feature="${island.id}"]`).click({timeout:10_000});
+ await expect(map(page).locator('.leaflet-popup')).toContainText('Ostrov Žofín');
+
+ await page.reload();
+ await expect(map(page)).toHaveAttribute('data-deduction-count','2',{timeout:60_000});
+ const loaded=(await stored(page)).state;
+ expect(loaded.releaseId).toBe(release.releaseId);
+ expect(loaded.questions).toEqual(before.questions);
+ expect(loaded.deductions).toEqual(before.deductions);
+ expect(loaded.hand).toEqual(before.hand);
+ await page.getByRole('combobox',{name:'Uložené starší simulace',exact:true}).selectOption({index:1});
+ await page.getByRole('button',{name:'Obnovit uloženou simulaci',exact:true}).click();
+ await expect(page.getByTestId('active-release-id')).toHaveText(PRE_RIVER_RELEASE_ID,{timeout:30_000});
+ expect((await stored(page)).state).toEqual(historical);
+ expect(await page.evaluate(()=>localStorage.getItem('jetlag-praha:world:v1'))).toBe('EDITOR_UNCHANGED');
 });

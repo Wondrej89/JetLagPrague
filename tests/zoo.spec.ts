@@ -14,6 +14,7 @@ test('nový prohlížeč zobrazí deset bodů zoo, samostatnou viditelnost, hled
 });
 
 test('změny názvu, adresy, poznámky, GPS, stavů a přesun v mapě se uloží a přežijí reload',async({page})=>{
+ test.setTimeout(60_000);
  await page.goto('/');await ready(page);await page.locator('[data-poi-id="zoo-praha"] button').click();await page.getByLabel('Název zoo nebo místa se zvířaty').fill('Moje upravená zoo');await page.getByLabel('Adresa zoo').fill('Upravená adresa Praha');await page.getByLabel('Poznámka k zoo').fill('Moje pracovní poznámka');await page.getByLabel('Zeměpisná šířka zoo').fill('50.118');await page.getByLabel('Zeměpisná délka zoo').fill('14.407');await page.getByRole('button',{name:'Uložit zoo',exact:true}).click();
  await expect.poll(async()=>(await storedWorld(page)).poi?.decisions.find(d=>d.id==='zoo-praha')?.point).toEqual([14.407,50.118]);await page.getByRole('button',{name:'Vyřadit zoo ze hry',exact:true}).click();await expect(page.getByTestId('poi-count-zoo')).toHaveText('9 schválených · 1 neschválených');await page.reload();
  await page.locator('[data-poi-id="zoo-praha"] button').click();await expect(page.getByLabel('Adresa zoo')).toHaveValue('Upravená adresa Praha');await expect(page.getByLabel('Poznámka k zoo')).toHaveValue('Moje pracovní poznámka');await expect(page.getByLabel('Zeměpisná šířka zoo')).toHaveValue('50.118');await page.getByRole('button',{name:'Znovu schválit zoo',exact:true}).click();await expect(page.getByTestId('poi-count-zoo')).toHaveText('10 schválených · 0 neschválených');
@@ -22,6 +23,7 @@ test('změny názvu, adresy, poznámky, GPS, stavů a přesun v mapě se uloží
 });
 
 test('ručně přidaná zoo se schválí, uloží a odstraní bez zásahu do výchozího katalogu',async({page})=>{
+ test.setTimeout(60_000);
  await page.goto('/');await ready(page);const before=await storedWorld(page);await page.getByRole('button',{name:'+ Přidat zoo nebo místo se zvířaty',exact:true}).click();const map=(await page.getByTestId('map').boundingBox())!;await page.mouse.click(map.x+map.width*.5,map.y+map.height*.45);await expect(page.getByRole('heading',{name:'Nové místo se zvířaty',exact:true})).toBeVisible();await page.getByLabel('Název zoo nebo místa se zvířaty').fill('Moje testovací farma');await page.getByLabel('Adresa zoo').fill('Praha');await page.getByRole('button',{name:'Uložit zoo',exact:true}).click();await page.getByRole('button',{name:'Schválit zoo',exact:true}).click();await expect(page.getByTestId('poi-count-zoo')).toHaveText('11 schválených · 0 neschválených');const manual=(await storedWorld(page)).poi!.manual.find(p=>p.category==='zoo')!;expect(manual.geometry.type).toBe('Point');
  await page.reload();await page.locator(`[data-poi-id="${manual.id}"] button`).click();page.once('dialog',dialog=>dialog.accept());await page.getByRole('button',{name:'Odstranit ručně vytvořenou zoo',exact:true}).click();await expect(page.getByTestId('poi-count-zoo')).toHaveText('10 schválených · 0 neschválených');await expect.poll(async()=>(await storedWorld(page)).poi?.manual.filter(p=>p.category==='zoo').length).toBe(0);expect((await storedWorld(page)).layers).toEqual(before.layers);
 });

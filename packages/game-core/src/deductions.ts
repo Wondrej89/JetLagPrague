@@ -5,8 +5,8 @@ export function deductionFromQuestion(state: Pick<GameState, 'id'|'releaseId'|'e
   if(q.state !== 'answered' || !q.answer || q.answeredAt === undefined || q.manualResolution) return null;
   const source = q.definition;
   const supported = source.resolver === 'radar' && ['ANO','NE'].includes(q.answer)
-    || source.resolver === 'poi_measuring' && ['BLÍŽ','DÁL'].includes(q.answer)
-    || ['poi_matching','same_area'].includes(source.resolver) && ['ANO','NE'].includes(q.answer)
+    || ['poi_measuring','river_measuring'].includes(source.resolver) && ['BLÍŽ','DÁL'].includes(q.answer)
+    || ['poi_matching','same_area','land_matching'].includes(source.resolver) && ['ANO','NE'].includes(q.answer)
     || source.resolver === 'thermometer' && !!q.secondFix && ['TEPLEJI','CHLADNĚJI'].includes(q.answer);
   if(!supported) return null;
   return {

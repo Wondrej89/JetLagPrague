@@ -1,6 +1,8 @@
 # Vltava – prostorový audit a dosud neověřené pokrytí
 
-Stav k 13. 11. 2026, výchozí commit `142e4c3`: **původní ZIP obsahuje vodní polygony v trase Vltavy, ale úplný výběr samotné řeky a jejích ostrovních ramen není ověřený. Measuring není zprovozněné.** Žádná kandidátní geometrie se nepublikuje jako herní zdroj.
+Historický audit k 13. 11. 2026, výchozí commit `142e4c3`: **původní ZIP obsahuje vodní polygony v trase Vltavy, ale úplný výběr samotné řeky a jejích ostrovních ramen není ověřený. Measuring není zprovozněné.** Žádná kandidátní geometrie se nepublikuje jako herní zdroj.
+
+Aktuální stav po dodání schváleného polygonu a exportu s linií u Mánesa popisuje [audit říčních podkladů](vltava-editor.md#řeka-a-pevnina-v-herních-datech).
 
 ## Zdroj a reprodukce
 
@@ -55,7 +57,7 @@ Alternativním bezpečným vstupem je doložený WGS84 GeoJSON celé pražské v
 - Zdroj (`provider`, `url`, `version`, `dataDate`, `retrievedAt`), licenci (`name`, `url`), SHA-256 původního souboru a jedinečné původní `sourceFeatureIds`.
 - Záznam kontroly pokrytí: `pending` / `verified`, celý pražský úsek, otvory ostrovů, návaznost vody pod mosty, autor, datum a poznámka. `verified` vyžaduje všechna tato potvrzení.
 
-`readVltavaWaterAreaInput` kontroluje formát a polygonovou topologii, **nikoli pravdivost deklarované odborné revize nebo geografické identity**. Sám data nepublikuje ani otázku nezapíná. Typ `VltavaDistanceResolver` popisuje budoucí adaptér; neobsahuje náhradní výpočet.
+`readVltavaWaterAreaInput` kontroluje formát a polygonovou topologii, **nikoli pravdivost deklarované odborné revize nebo geografické identity**. Sám data nepublikuje ani otázku nezapíná.
 
 Po ověření dat bude potřebná nová komponenta/verze `GameDataRelease` s kontrolním součtem a jedinou sdílenou geometrií pro mapu, polygonovou vzdálenost a konzervativní dedukce. Následně lze ověřit skutečné vzdálenosti, obě odpovědi, shodu, mosty a ostrovy. Tento krok zatím není implementovaný ani označený za hotový.
 

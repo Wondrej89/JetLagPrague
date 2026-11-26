@@ -2,10 +2,10 @@
   "format": "jetlag-prague-game-catalog",
   "schemaVersion": 1,
   "current": {
-    "releaseId": "release:db8e4958e46888be47302ea9998b787572549856497da3adcd04e5850e32222c",
-    "file": "release-db8e4958e46888be47302ea9998b787572549856497da3adcd04e5850e32222c.json",
-    "checksum": "51ba91dda2b9676d8e3139d2ed03313d16716236f1ffc6c4fe2d0e42bd8cdf77",
-    "publishedAt": "2026-10-21T12:14:24.320Z",
+    "releaseId": "release:b50f43e3da15d92eed74d2c6eed52f152aa162245da51c176f2393499bf6239d",
+    "file": "release-b50f43e3da15d92eed74d2c6eed52f152aa162245da51c176f2393499bf6239d.json",
+    "checksum": "d00dc480ef8c974463a13fc658a6aaa82b96f98a3580ba4f7e2b4f4882f04a00",
+    "publishedAt": "2026-11-26T09:22:34.050Z",
     "kind": "reference"
   },
   "versions": [
@@ -56,6 +56,20 @@
       "file": "release-db8e4958e46888be47302ea9998b787572549856497da3adcd04e5850e32222c.json",
       "checksum": "51ba91dda2b9676d8e3139d2ed03313d16716236f1ffc6c4fe2d0e42bd8cdf77",
       "publishedAt": "2026-10-21T12:14:24.320Z",
+      "kind": "reference"
+    },
+    {
+      "releaseId": "release:4d682371276cac0514ba829e9b1cdd76ccf8b3926b428a36f55c46ff07b2ac45",
+      "file": "release-4d682371276cac0514ba829e9b1cdd76ccf8b3926b428a36f55c46ff07b2ac45.json",
+      "checksum": "59665f74e2ea7f3d8a08b14dbc8812e32b9cd14207426cff780d8776a16a8f29",
+      "publishedAt": "2026-11-26T08:47:31.462Z",
+      "kind": "reference"
+    },
+    {
+      "releaseId": "release:b50f43e3da15d92eed74d2c6eed52f152aa162245da51c176f2393499bf6239d",
+      "file": "release-b50f43e3da15d92eed74d2c6eed52f152aa162245da51c176f2393499bf6239d.json",
+      "checksum": "d00dc480ef8c974463a13fc658a6aaa82b96f98a3580ba4f7e2b4f4882f04a00",
+      "publishedAt": "2026-11-26T09:22:34.050Z",
       "kind": "reference"
     }
   ]

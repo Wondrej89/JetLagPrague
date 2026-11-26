@@ -59,7 +59,11 @@ test('source mismatch import is refused and unresolved checks cannot approve or 
  await page.getByRole('button',{name:'Předat náhled k revizi',exact:true}).click();
  await page.getByLabel('Revize: Ostrov Žofín',{exact:true}).selectOption('unresolved');await page.getByLabel('Poznámka: Ostrov Žofín',{exact:true}).fill('Nelze potvrdit vodu pod lávkou.');
  await expect(page.getByRole('button',{name:'Schválit společnou vodní plochu',exact:true})).toBeDisabled();await expect(page.getByRole('button',{name:'Export schválené vodní plochy GeoJSON',exact:true})).toBeDisabled();
- await page.getByRole('button',{name:'Publikace herních podkladů',exact:true}).click();await expect(page.getByRole('dialog',{name:'Publikace herních podkladů'})).toContainText('Vodní plocha Vltavy a Berounky ani pevninské oblasti nejsou součástí tohoto GameDataRelease');
+ await page.getByRole('button',{name:'Publikace herních podkladů',exact:true}).click();
+ const publication=page.getByRole('dialog',{name:'Publikace herních podkladů'});
+ await expect(publication).toContainText('Publikace vyžaduje doloženou licenci a datum zdroje.');
+ await expect(publication.getByLabel('Import připravených říčních podkladů JSON')).toBeEnabled();
+ await expect(publication.getByRole('button',{name:'Publikovat změny',exact:true})).toBeDisabled();
 });
 
 test('editor řek rozšíří vodní plochu, vykreslí oddělení u Žofína a obnoví pojmenovaný ostrov',async({page})=>{

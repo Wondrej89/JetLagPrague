@@ -74,7 +74,7 @@ Kontrolní součet připravené datové sady: `bd0d2f2a2f5463692a4bc263f9603d0e1
 
 CRS podle PRJ: S-JTSK / Křovák (EPSG:5514); převod pomocí proj4 do WGS84. Zachovány všechny vrcholy, otvory a oddělené části. Stabilní interní ID používá původní GLOBALID, jeho původní zápis včetně závorek zůstává v `sourceId`, `waterbody.globalIds` a původních GIS atributech. Audit importu archivuje i zdrojové souřadnice před transformací. Status není důvodem mazání geometrie.
 
-Oficiální katalogový odkaz je uveden správcem: https://geoportalpraha.cz/data-a-sluzby/ke-stazeni/e01b4bb6d148496abff4f065686290ff. Datum synchronizace v dodaném XML je 5. 10. 2026. Konkrétní licence není uvedena; metadata obsahují jen odkaz na opendata IPR.
+Oficiální katalogový odkaz je uveden správcem: https://geoportalpraha.cz/data-a-sluzby/ke-stazeni/e01b4bb6d148496abff4f065686290ff. Datum synchronizace v dodaném XML je 5. 10. 2026. XML u právních omezení odkazuje na portál otevřených dat IPR. Dodaný výpis Geoportálu pro shodný identifikátor zdrojové vrstvy uvádí CC BY 4.0. [Zdroj a licence](vltava-editor.md#řeka-a-pevnina-v-herních-datech).
 
 ## Aktualizace a publikace
 

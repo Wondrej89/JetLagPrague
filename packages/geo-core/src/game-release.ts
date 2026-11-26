@@ -7,6 +7,8 @@ import { sha256, pragueDate, snapshotReference, type PidSnapshot } from './pid-s
 import { buildGameStops, referenceZoneGeometry } from './game-stops';
 import { defaultGameStopConfiguration } from './game-stop-configuration';
 import { poiSourceSchema, libraryMetadataSchema, waterbodyMetadataSchema, libraryId, isLibraryLocationVerified, resolvePois, verifyPoiSources, type Poi } from './poi';
+import { landLayerSchema, riverLayerSchema } from './vltava';
+import { riverLandCoverage } from './river-land';
 import { transportModes, transportModeSchema, wgs84PointSchema } from './pid-model';
 
 const id = z.string().min(1).max(500), text = z.string().max(10000), digest = z.string().regex(/^[a-f0-9]{64}$/);
@@ -30,10 +32,12 @@ export const gameReleaseDataSchema = z.object({
   gameArea: areaSchema, administrativeAreas: z.array(adminSchema).max(1000), pois: z.array(releasePoiSchema).max(10000), pidSnapshot: pidSchema,
   rulesConfig: z.object({ radiusMeters: z.number().positive().max(100000), gameAreaBoundary: z.literal('included'), allowedModes: z.array(transportModeSchema).min(1) }).strict(),
   sourceVersions: z.array(sourceSchema).max(100),
+  river: riverLayerSchema.optional(), land: landLayerSchema.optional(),
+  riverArea: riverLayerSchema.optional(), landAreas: landLayerSchema.optional(),
 }).strict();
 export type GameReleaseData = z.infer<typeof gameReleaseDataSchema>;
-const checksumShape = { gameArea: digest, administrativeAreas: digest, pois: digest, pidSnapshot: digest, rulesConfig: digest, sourceVersions: digest, content: digest };
-export const gameDataReleaseSchema = z.object({ format: z.literal('jetlag-prague-game-release'), schemaVersion: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6), z.literal(7)]), releaseId: z.string().regex(/^release:[a-f0-9]{64}$/),
+const checksumShape = { river: digest.optional(), land: digest.optional(), riverArea: digest.optional(), landAreas: digest.optional(), gameArea: digest, administrativeAreas: digest, pois: digest, pidSnapshot: digest, rulesConfig: digest, sourceVersions: digest, content: digest };
+export const gameDataReleaseSchema = z.object({ format: z.literal('jetlag-prague-game-release'), schemaVersion: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4), z.literal(5), z.literal(6), z.literal(7), z.literal(8), z.literal(9)]), releaseId: z.string().regex(/^release:[a-f0-9]{64}$/),
   publishedAt: z.iso.datetime(), kind: z.enum(['approved', 'reference']), data: gameReleaseDataSchema, checksums: z.object(checksumShape).strict() }).strict();
 export type GameDataRelease = z.infer<typeof gameDataReleaseSchema>;
 export const gameReleaseEntrySchema = z.object({ releaseId: gameDataReleaseSchema.shape.releaseId, file: z.string().regex(/^release-[a-f0-9]{64}\.json$/), checksum: digest, publishedAt: z.iso.datetime(), kind: gameDataReleaseSchema.shape.kind }).strict();
@@ -41,9 +45,19 @@ export type GameReleaseEntry = z.infer<typeof gameReleaseEntrySchema>;
 export const gameReleaseIndexSchema = z.object({ format: z.literal('jetlag-prague-game-catalog'), schemaVersion: z.literal(1), current: gameReleaseEntrySchema, versions: z.array(gameReleaseEntrySchema).min(1).max(2000) }).strict();
 export type GameReleaseIndex = z.infer<typeof gameReleaseIndexSchema>;
 const components = ['gameArea', 'administrativeAreas', 'pois', 'pidSnapshot', 'rulesConfig', 'sourceVersions'] as const;
+const legacyGeography = ['river', 'land'] as const;
+const geography = ['riverArea', 'landAreas'] as const;
+const optionalComponents = [...legacyGeography,...geography] as const;
+
+export function releaseGeography(data: GameReleaseData) {
+  return { riverArea: data.riverArea ?? data.river, landAreas: data.landAreas ?? data.land };
+}
 const lexical = (a: { id: string }, b: { id: string }) => a.id < b.id ? -1 : a.id > b.id ? 1 : 0;
 function unique(values: string[]) { if (new Set(values).size !== values.length) throw new Error('Duplicitní ID v herním katalogu.'); }
 export function containsGamePoint(point: [number, number], area: AreaGeometry): boolean { return booleanPointInPolygon(point, area); }
+export function eligibleLandStops(data: Pick<GameReleaseData, 'pidSnapshot'>) {
+  return data.pidSnapshot.stops.filter(stop => stop.activity === 'active' && stop.eligibility === 'allowed');
+}
 export function gamePublicationErrors(release: GameDataRelease, date = pragueDate()): string[] {
   const issues: string[] = [];
   if (release.kind !== 'approved') issues.push('Referenční podklady nelze publikovat jako ostrou herní verzi.');
@@ -57,18 +71,48 @@ export function gamePublicationErrors(release: GameDataRelease, date = pragueDat
   }
   return [...new Set(issues)];
 }
-export async function createGameDataRelease(input: GameReleaseData, options: { publishedAt: string; kind: 'approved' | 'reference'; schemaVersion?: 1 | 2 | 3 | 4 | 5 | 6 | 7 }): Promise<GameDataRelease> {
-  const data = gameReleaseDataSchema.parse(input), schemaVersion = options.schemaVersion ?? (data.pois.some(poi => poi.category === 'embassy' || poi.embassy !== undefined) ? 7 : 6);
+export async function createGameDataRelease(input: GameReleaseData, options: { publishedAt: string; kind: 'approved' | 'reference'; schemaVersion?: GameDataRelease['schemaVersion'] }): Promise<GameDataRelease> {
+  const data = gameReleaseDataSchema.parse(input), schemaVersion = options.schemaVersion ?? (data.riverArea || data.landAreas ? 9 : data.river || data.land ? 8 : data.pois.some(poi => poi.category === 'embassy' || poi.embassy !== undefined) ? 7 : 6);
   data.rulesConfig.allowedModes.sort();
   for (const stop of data.pidSnapshot.stops) { stop.groupIds.sort(); stop.modes.sort(); stop.referenceModes.sort(); }
   data.administrativeAreas.sort(lexical); data.pois.sort(lexical); data.pidSnapshot.stops.sort(lexical); data.sourceVersions.sort((a, b) => a.key < b.key ? -1 : a.key > b.key ? 1 : 0);
   const hashes = Object.fromEntries(await Promise.all(components.map(async key => [key, await sha256(canonicalJson(data[key]))]))) as Omit<GameDataRelease['checksums'], 'content'>;
+  for (const key of optionalComponents) if (data[key]) hashes[key] = await sha256(canonicalJson(data[key]));
   const content = await sha256(canonicalJson({ schemaVersion, kind: options.kind, data }));
   const release = { format: 'jetlag-prague-game-release' as const, schemaVersion, releaseId: `release:${content}`, publishedAt: options.publishedAt, kind: options.kind, data, checksums: { ...hashes, content } };
   return verifyGameDataRelease(release);
 }
 export async function verifyGameDataRelease(input: unknown): Promise<GameDataRelease> {
   const release = gameDataReleaseSchema.parse(input), { data } = release;
+  if (release.schemaVersion !== 8 && legacyGeography.some(key => data[key] || release.checksums[key])) {
+    throw new Error('Položky river a land patří do herního schématu 8.');
+  }
+  if (release.schemaVersion !== 9 && geography.some(key => data[key] || release.checksums[key])) {
+    throw new Error('Říční vrstva a pevnina vyžadují herní schéma 9.');
+  }
+  for (const key of optionalComponents) {
+    const digest = data[key] ? await sha256(canonicalJson(data[key])) : undefined;
+    if (digest !== release.checksums[key]) throw new Error(`Nesouhlasí kontrolní součet ${key}.`);
+  }
+  const {riverArea,landAreas} = releaseGeography(data);
+  if (riverArea && await sha256(canonicalJson(riverArea.feature.geometry)) !== riverArea.geometryChecksum) {
+    throw new Error('Nesouhlasí kontrolní součet říční geometrie.');
+  }
+  if (landAreas) {
+    const sourceChecksum = release.checksums.riverArea ?? release.checksums.river;
+    if (!riverArea || landAreas.riverChecksum !== sourceChecksum ||
+        (release.schemaVersion === 9 && landAreas.riverGeometryChecksum !== riverArea.geometryChecksum) ||
+        landAreas.gameAreaChecksum !== await sha256(canonicalJson(data.gameArea.geometry))) {
+      throw new Error('Pevnina neodpovídá verzi říční geometrie nebo hranici hry.');
+    }
+    unique(landAreas.areas.map(area => area.id));
+    unique(landAreas.separations.map(line => line.id));
+    for (const area of landAreas.areas) {
+      if (area.id !== await sha256(canonicalJson(area.geometry))) throw new Error('Nesouhlasí identita pevninské oblasti.');
+    }
+    const coverage = riverLandCoverage(data.gameArea.geometry, riverArea.feature.geometry, landAreas.areas, eligibleLandStops(data));
+    if (coverage?.unresolved.length) throw new Error(`Pevninu nelze jednoznačně přiřadit stanovištím PID: ${coverage.unresolved.join(', ')}.`);
+  }
   if (release.schemaVersion < 7 && data.pois.some(p => p.category === 'embassy' || p.embassy !== undefined)) throw new Error('Ambasády vyžadují herní schéma 7; historické publikace zůstávají beze změny.');
   for (const poi of data.pois.filter(p => p.category === 'embassy')) if (!poi.address?.trim() || poi.geometry.type !== 'Point' || canonicalJson(poi.point) !== canonicalJson(poi.geometry.coordinates) || !isEmbassyLocationVerified(poi)) throw new Error('Ambasáda vyžaduje adresu a ověřený referenční bod.');
   if (release.schemaVersion < 6 && data.pois.some(poi=>poi.category==='waterbody'||poi.waterbody!==undefined)) throw new Error('Vodní plochy vyžadují herní schéma 6.');

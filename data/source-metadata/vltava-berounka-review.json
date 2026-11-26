@@ -1,0 +1,14 @@
+{
+  "sourceUrl": "https://geoportalpraha.cz/data-a-sluzby/e01b4bb6d148496abff4f065686290ff",
+  "dataDate": "2026-07-31",
+  "license": {
+    "name": "CC BY 4.0",
+    "url": "https://creativecommons.org/licenses/by/4.0/deed.en"
+  },
+  "review": {
+    "reviewedBy": "JetLagPrague · revize dodaných metadat",
+    "reviewedAt": "2026-11-26T08:47:25.564Z",
+    "licenseEvidence": "https://geoportalpraha.cz/data-a-sluzby/e01b4bb6d148496abff4f065686290ff",
+    "dataDateEvidence": "https://github.com/Wondrej89/JetLagPrague/blob/c8e0fecd77ed8e3040de0acde06343a3dcacda31/data/raw/AGD_CUR_AGD_OCH_VODNIPLOCHYTOKY_P.zip"
+  }
+}

@@ -10,8 +10,8 @@ export class LocalGameSession {
   private matchingRequests=new Map<string,Promise<void>>();
   private disposed=false;
   private abort=new AbortController();
-  constructor(public state:GameState,public readonly environment:GameEnvironment,private save:(state:GameState)=>void,private streets?:StreetNameProvider){if(state.mode!=='simulation')throw new Error('Lokální transport je určený pouze pro simulaci.');}
-  private publish(next:GameState){if(this.disposed||next===this.state)return;this.save(next);this.state=next;this.listeners.forEach(fn=>fn());}
+  constructor(public state:GameState,public readonly environment:GameEnvironment,private save:(state:GameState,previous:GameState)=>void,private streets?:StreetNameProvider){if(state.mode!=='simulation')throw new Error('Lokální transport je určený pouze pro simulaci.');}
+  private publish(next:GameState){if(this.disposed||next===this.state)return;this.save(next,this.state);this.state=next;this.listeners.forEach(fn=>fn());}
   dispose(){this.disposed=true;this.abort.abort();this.listeners.clear();}
   dispatch(actor:Role|'clock',command:Command,at=this.state.now){if(this.disposed)throw new Error('Tato simulace již není aktivní.');this.publish(transition(this.state,{id:crypto.randomUUID(),at,actor,command},this.environment));if(command.type==='prepare_matching')void this.resumeMatchingPreparation();}
   /** Runs only in the privileged local host; a real hunter transport receives

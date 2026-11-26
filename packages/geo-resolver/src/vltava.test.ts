@@ -1,15 +1,15 @@
 import {beforeAll,expect,it} from 'vitest';
-import {gameFixture} from '../../game-core/src/test-fixtures';
+import {gameFixture,PRE_RIVER_RELEASE_ID} from '../../game-core/src/test-fixtures';
 import {deductionFromQuestion,questionRegistry,viewForRole,type QuestionInstance} from '../../game-core/src/index';
 import {VLTAVA_MISSING_DATA_REASON} from '../../geo-core/src/index';
 import {createGeoResolver} from './index';
 import {publishedGameLayers} from './catalog';
-let f:Awaited<ReturnType<typeof gameFixture>>;beforeAll(async()=>{f=await gameFixture();});
+let f:Awaited<ReturnType<typeof gameFixture>>;beforeAll(async()=>{f=await gameFixture(PRE_RIVER_RELEASE_ID);});
 it('keeps the correct question and policy but reports the specific missing authoritative river geometry',()=>{
- const d=questionRegistry().find(q=>q.id==='measuring:vltava')!;expect(d).toMatchObject({description:'Jsi blíž, nebo dál od Vltavy než já?',resolver:'unsupported',target:'station',timeoutSeconds:300,rewardPolicy:{draw:3,keep:1}});
+ const d=questionRegistry().find(q=>q.id==='measuring:vltava')!;expect(d).toMatchObject({description:'Jsi blíž, nebo dál od Vltavy nebo Berounky než já?',resolver:'river_measuring',target:'station',timeoutSeconds:300,rewardPolicy:{draw:3,keep:1}});
  expect(f.env.availability(d)).toEqual({state:'missing_data',reason:VLTAVA_MISSING_DATA_REASON});expect(f.env.availability(f.rules.questions.find(q=>q.id==='matching:landmass')!).state).toBe('missing_data');
  const q:QuestionInstance={id:'missing-river',definition:d,askedAt:f.now,deadline:f.now+300000,hunterFix:{point:[14.44,50.08],at:f.now,accuracy:5},targetPoint:f.station.point,state:'pending'};
- expect(f.env.resolve(q)).toEqual({state:'unknown',reason:VLTAVA_MISSING_DATA_REASON});expect(deductionFromQuestion(f.state,{...q,state:'answered',answer:'BLÍŽ',answeredAt:f.now})).toBeNull();
+ expect(f.env.resolve(q)).toEqual({state:'unknown',reason:VLTAVA_MISSING_DATA_REASON});expect(deductionFromQuestion(f.state,q)).toBeNull();
 });
 it('does not substitute a waterbody named Vltava, a centroid, island parks or an unsupported adapter',()=>{
  const source=structuredClone(f.release),pond=source.data.pois.find(p=>p.category==='waterbody')!;pond.name='Vltava';

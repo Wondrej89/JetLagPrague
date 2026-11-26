@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { defaultGameStopConfiguration, compareGameReleases, gamePublicationErrors, loadGameDataRelease, readGameReleaseIndex, transportModes, type GameDataRelease, type GameReleaseIndex, type GameStopConfiguration, type WorldDraft } from '@jetlag/geo-core';
+import { canonicalJson, sha256, defaultGameStopConfiguration, compareGameReleases, createGameDataRelease, riverPublicationLayersSchema, gamePublicationErrors, loadGameDataRelease, readGameReleaseIndex, releaseGeography, transportModes, type GameDataRelease, type RiverPublicationLayers, type GameReleaseIndex, type GameStopConfiguration, type WorldDraft } from '@jetlag/geo-core';
 
 interface Session { token: string; csrf: string; expiresAt: number; login: string }
 interface Repository { commit: string; index: GameReleaseIndex | null; deployment: { status: string; conclusion: string | null; url: string } | null }
@@ -8,9 +8,10 @@ const publicBase = new URL(import.meta.env.DEV ? '/releases/' : '../releases/', 
 const message = (error: unknown) => error instanceof Error ? error.message : 'Operace se nezdařila.';
 
 export function PublicationDialog({ world, pidKey, onBuild, onRules, onClose, onBackup }: { world: WorldDraft; pidKey: string; onBuild(): Promise<GameDataRelease>; onRules(value: GameStopConfiguration): void; onClose(): void; onBackup(): void }) {
-  const [configured, setConfigured] = useState(false), [compatible, setCompatible] = useState(false), [session, setSession] = useState<Session | null>(null);
+  const [configured, setConfigured] = useState(false), [supportedSchemas, setSupportedSchemas] = useState<number[]>([]), [session, setSession] = useState<Session | null>(null);
   const [repository, setRepository] = useState<Repository | null>(null), [published, setPublished] = useState<GameDataRelease | null>(null);
-  const [proposal, setProposal] = useState<{ release: GameDataRelease; world: WorldDraft; pidKey: string } | null>(null);
+  const [proposal, setProposal] = useState<{ release: GameDataRelease; world: WorldDraft; pidKey: string; landIssue?: string } | null>(null);
+  const [riverLayers, setRiverLayers] = useState<RiverPublicationLayers | null>(null);
   const [error, setError] = useState(''), [publicError, setPublicError] = useState(''), [notice, setNotice] = useState('');
   const [busy, setBusy] = useState(false), [rollbackId, setRollbackId] = useState('');
   const popup = useRef<Window | null>(null);
@@ -20,10 +21,10 @@ export function PublicationDialog({ world, pidKey, onBuild, onRules, onClose, on
     const result = await response.json(); if (!response.ok) throw new Error(result.error ?? `Publikace selhala (HTTP ${response.status}).`); return result;
   }, [session]);
   const refreshPublic = useCallback(async () => {
-    try { const result = await loadGameDataRelease(publicBase); setPublished(result.release); setPublicError(''); }
-    catch (error) { setPublicError(message(error)); }
+    try { const result = await loadGameDataRelease(publicBase); setPublished(result.release); setPublicError(''); return result.release; }
+    catch (error) { setPublicError(message(error)); return null; }
   }, []);
-  useEffect(() => { void refreshPublic(); if (publisher) void request('/status').then(result => { setConfigured(result.configured === true); setCompatible(result.releaseSchemaVersions?.includes(6) === true); }).catch(error => setError(message(error))); }, [request, refreshPublic]);
+  useEffect(() => { void refreshPublic(); if (publisher) void request('/status').then(result => { setConfigured(result.configured === true); setSupportedSchemas(Array.isArray(result.releaseSchemaVersions) ? result.releaseSchemaVersions : []); }).catch(error => setError(message(error))); }, [request, refreshPublic]);
   useEffect(() => {
     if (!publisher) return;
     const receive = (event: MessageEvent) => {
@@ -48,12 +49,39 @@ export function PublicationDialog({ world, pidKey, onBuild, onRules, onClose, on
   }, [session, request, refreshPublic]);
   const stale = !!proposal && (proposal.world !== world || proposal.pidKey !== pidKey);
   const release = proposal?.release;
+  const {riverArea,landAreas} = release ? releaseGeography(release.data) : {};
+  const compatible = supportedSchemas.includes(release?.schemaVersion ?? 6);
   const issues = release ? gamePublicationErrors(release) : [];
+  if (proposal?.landIssue) issues.push(proposal.landIssue);
   const diff = release && published ? compareGameReleases(published, release) : null;
   async function check() {
     setBusy(true); setError(''); setProposal(null);
-    try { const result = await onBuild(); await refreshPublic(); setProposal({ release: result, world, pidKey }); }
+    try {
+      const base = await onBuild();
+      const current = await refreshPublic();
+      const inherited = current ? releaseGeography(current.data) : null;
+      const layers = riverLayers ?? (inherited?.riverArea ? {river:inherited.riverArea,land:inherited.landAreas} : null);
+      const land = layers?.land;
+      const landIssue = land && land.gameAreaChecksum !== await sha256(canonicalJson(base.data.gameArea.geometry))
+        ? 'Pevninské oblasti mají jinou herní hranici. Před publikací importujte pevninu přepočtenou pro tento svět.'
+        : undefined;
+      const landAreas = !landIssue && land && layers
+        ? {...land,riverGeometryChecksum:land.riverGeometryChecksum??layers.river.geometryChecksum}
+        : undefined;
+      const release = layers
+        ? await createGameDataRelease({...base.data,riverArea:layers.river,landAreas},{kind:base.kind,publishedAt:base.publishedAt})
+        : base;
+      setProposal({ release, world, pidKey, landIssue });
+    }
     catch (error) { setError(message(error)); } finally { setBusy(false); }
+  }
+  async function importRiverLayers(file: File) {
+    setBusy(true); setError('');
+    try {
+      if (file.size > 16 * 1024 * 1024) throw new Error('Soubor říčních podkladů je příliš velký.');
+      const layers = riverPublicationLayersSchema.parse(JSON.parse(await file.text()));
+      setRiverLayers(layers); setProposal(null);
+    } catch (error) { setError(message(error)); } finally { setBusy(false); }
   }
   async function mutate(rollback = false) {
     if (!session || !repository || (!rollback && (!release || stale || issues.length))) return;
@@ -69,10 +97,14 @@ export function PublicationDialog({ world, pidKey, onBuild, onRules, onClose, on
   const rules = world.gameStops ?? defaultGameStopConfiguration();
   return <div className="modal-backdrop"><section role="dialog" aria-modal="true" aria-labelledby="publication-title" className="import-dialog publication-dialog">
     <div className="dialog-heading"><h2 id="publication-title">Publikace herních podkladů</h2><button onClick={onClose}>Zavřít</button></div>
-    {world.vltavaAssembly&&<p className="vltava-warning">Vodní plocha Vltavy a Berounky ani pevninské oblasti nejsou součástí tohoto GameDataRelease. Revize v editoru řek se týká místního draftu.</p>}
+    {world.vltavaAssembly&&<p className="vltava-warning">Místní revizi řek použijte k přípravě říčních podkladů. Publikace vyžaduje doloženou licenci a datum zdroje.</p>}
+    <label>Import připravených říčních podkladů JSON <input type="file" accept=".json" disabled={busy}
+      onChange={event=>{const file=event.target.files?.[0];event.target.value='';if(file)void importRiverLayers(file);}}/></label>
+    {riverLayers&&<p role="status">Připravená vrstva řek{riverLayers.land&&` a ${riverLayers.land.areas.length} pevninských oblastí`}.
+      <button disabled={busy} onClick={()=>{setRiverLayers(null);setProposal(null);}}>Odebrat import</button></p>}
     <p>Pracovní svět zůstává v tomto prohlížeči. Publikace obsahuje schválené POI, hranice a ověřené herní zastávky; úplný GIS audit se neposílá.</p>
     <p className={configured ? '' : 'message warning'}>{configured ? session ? `Správce: ${session.login} · relace platí do ${new Date(session.expiresAt).toLocaleTimeString('cs-CZ')}` : 'Publikace vyžaduje přihlášení správce.' : 'Publikace není nakonfigurována'}</p>
-    {configured && !compatible && <p role="alert" className="message warning">Publikační server zatím nepodporuje vodní plochy (schéma 6). Nasaďte aktuální verzi Cloudflare Workeru.</p>}
+    {configured && !compatible && <p role="alert" className="message warning">Publikační server nepodporuje schéma {release?.schemaVersion ?? 6}. Nasaďte aktuální verzi Cloudflare Workeru.</p>}
     <div className="publication-actions"><button disabled={!configured || !!session || busy} onClick={() => { popup.current = window.open(`${publisher}/auth/start`, 'jetlag-publisher', 'popup,width=620,height=760'); if (!popup.current) setError('Pro přihlášení povolte vyskakovací okno.'); }}>Přihlásit přes GitHub</button>{session && <button onClick={() => { void request('/logout', {}).catch(error => setError(message(error))); setSession(null); setRepository(null); }}>Odhlásit</button>}<button onClick={onBackup}>Stáhnout úplnou zálohu světa</button></div>
     <h3>Veřejně dostupná verze</h3>{published ? <p><code>{published.releaseId}</code><br/>{new Date(published.publishedAt).toLocaleString('cs-CZ')} · {published.kind === 'reference' ? 'Referenční podklady' : 'Schválená publikace'}</p> : <p role="status">{publicError || 'Načítám poslední publikaci…'}</p>}
     {repository && <div className="message warning">{deployed ? 'Aktuální verze repozitáře je dostupná ve veřejné aplikaci.' : repository.deployment?.conclusion && repository.deployment.conclusion !== 'success' ? 'Nasazení nebylo úspěšné. Předchozí veřejné podklady zůstávají dostupné.' : 'Verze repozitáře zatím není potvrzena ve veřejné aplikaci. Čeká na nasazení.'}{repository.deployment && <a href={repository.deployment.url} target="_blank" rel="noreferrer">Průběh GitHub Actions ↗</a>}</div>}
@@ -82,6 +114,8 @@ export function PublicationDialog({ world, pidKey, onBuild, onRules, onClose, on
     {stale && <p role="alert">Svět nebo PID se od kontroly změnil. Znovu zkontrolujte data.</p>}
     {release && <><h3>{diff?.identical ? 'Žádné nepublikované změny' : 'Návrh publikace · lokální změny'}</h3><dl className="publication-counts"><dt>Schválené parky</dt><dd>{release.data.pois.filter(p=>p.category==='park').length}</dd><dt>Letiště</dt><dd>{release.data.pois.filter(p=>p.category==='airport').length}</dd><dt>Zoo a místa se zvířaty</dt><dd>{release.data.pois.filter(p=>p.category==='zoo').length}</dd><dt>Nemocnice</dt><dd>{release.data.pois.filter(p=>p.category==='hospital').length}</dd><dt>Knihovny</dt><dd>{release.data.pois.filter(p=>p.category==='library').length}</dd><dt>Ambasády a konzuláty</dt><dd>{release.data.pois.filter(p=>p.category==='embassy').length}</dd><dt>Kina</dt><dd>{release.data.pois.filter(p=>p.category==='cinema').length}</dd><dt>Vodní plochy</dt><dd>{release.data.pois.filter(p=>p.category==='waterbody').length}</dd><dt>Herní zastávky</dt><dd>{release.data.pidSnapshot.stops.length}</dd><dt>Herní oblast</dt><dd>{release.data.gameArea.name}<br/><code>{release.data.gameArea.id}</code></dd><dt>Verze návrhu</dt><dd><code>{release.releaseId}</code></dd></dl>
     {diff ? <table><thead><tr><th>Objekty</th><th>Přidané</th><th>Změněné</th><th>Odstraněné</th></tr></thead><tbody>{([['POI',diff.pois],['PID',diff.pid],['Administrativní území',diff.areas]] as const).map(([name,counts])=><tr key={name}><th>{name}</th><td>{counts.added}</td><td>{counts.changed}</td><td>{counts.removed}</td></tr>)}</tbody></table> : <p>Porovnání není dostupné: {publicError || 'chybí předchozí veřejná verze'}. Návrh nebyl prohlášen za shodný.</p>}
+    {riverArea&&<p>Řeky · {riverArea.feature.properties.source.license.name} · {riverArea.feature.properties.source.dataDate}
+      {landAreas&&` · ${landAreas.areas.length} pevninských oblastí`}</p>}
     {diff?.gameAreaChanged && <p>Herní hranice se proti veřejné verzi mění.</p>}
     {issues.length ? <div role="alert" className="message error"><ul>{issues.map(issue=><li key={issue}>{issue}</li>)}</ul></div> : <p>Kontrola návrhu prošla. Server před zápisem znovu ověří identitu, data, aktuální PID a očekávaný commit.</p>}
     <details><summary>Verze a licence zdrojů ({release.data.sourceVersions.length})</summary>{release.data.sourceVersions.map(source=><p key={source.key}><strong>{source.provider} · {source.key}</strong><br/><code>{source.version}</code><br/>{source.dataDate ?? 'Datum nedoloženo'} · {source.license.name}{source.url && <> · <a href={source.url} target="_blank" rel="noreferrer">Zdroj</a></>}</p>)}</details></>}

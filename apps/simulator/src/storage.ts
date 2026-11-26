@@ -5,9 +5,75 @@ async function database(){return new Promise<IDBDatabase>((resolve,reject)=>{con
 async function read(store:string,key:string){const db=await database();try{return await new Promise<unknown>((resolve,reject)=>{const tx=db.transaction(store,'readonly'),r=tx.objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);tx.onerror=()=>reject(tx.error);});}finally{db.close();}}
 async function write(store:string,key:string,value:unknown){const db=await database();try{await new Promise<void>((resolve,reject)=>{const tx=db.transaction(store,'readwrite');tx.objectStore(store).put(value,key);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error);});}finally{db.close();}}
 export interface SavedSimulation {version:1;state:GameState;paused:boolean;speed:number;scenario:string}
+interface ArchiveEntry {id:string; savedAt:number; simulation:SavedSimulation}
+export interface SimulationArchive {id:string; savedAt:number; releaseId:string}
+const archiveKey=(id:string)=>`archive:${id}`;
 let writes:Promise<void>=Promise.resolve();
-export async function readSimulation(){const value=await read('games','current');return value as SavedSimulation|undefined;}
-export function saveSimulation(value:SavedSimulation){writes=writes.catch(()=>{}).then(()=>write('games','current',value));return writes;}
+export async function readSimulation(){return await read('games','current') as SavedSimulation|undefined;}
+export async function readArchivedSimulation(id:string){
+ const entry=await read('games',archiveKey(id)) as ArchiveEntry|undefined;
+ if(!entry)throw new Error('Uložená simulace už není k dispozici.');
+ return entry.simulation;
+}
+export async function listSimulationArchives():Promise<SimulationArchive[]>{
+ const db=await database();
+ try{
+  const range=IDBKeyRange.bound('archive:','archive;');
+  const entries=await new Promise<ArchiveEntry[]>((resolve,reject)=>{
+   const request=db.transaction('games','readonly').objectStore('games').getAll(range);
+   request.onsuccess=()=>resolve(request.result);
+   request.onerror=()=>reject(request.error);
+  });
+  return entries.flatMap(({id,savedAt,simulation})=>simulation?.state?.releaseId
+   ?[{id,savedAt,releaseId:simulation.state.releaseId}]:[]).sort((a,b)=>b.savedAt-a.savedAt);
+ }finally{db.close();}
+}
+interface SaveOptions {
+ expectedState?:Pick<GameState,'id'|'releaseId'>;
+ previous?:SavedSimulation;
+ archive?:boolean;
+ restoreId?:string;
+}
+async function writeCurrent(value:SavedSimulation,options?:SaveOptions){
+ const db=await database();
+ try{
+  await new Promise<void>((resolve,reject)=>{
+   const tx=db.transaction('games','readwrite'),store=tx.objectStore('games');
+   tx.oncomplete=()=>resolve();
+   tx.onerror=()=>reject(tx.error);
+   tx.onabort=()=>reject(tx.error??new Error('Uložení simulace bylo přerušeno.'));
+   const abort=(message:string)=>{reject(new Error(message));tx.abort();};
+   const current=store.get('current');
+   current.onsuccess=()=>{
+    const stored=current.result as SavedSimulation|undefined;
+    const expected=options?.expectedState??options?.previous?.state??(!options?value.state:undefined);
+    if(stored&&expected&&(stored.state?.id!==expected.id||stored.state?.releaseId!==expected.releaseId)){
+     abort('Aktivní simulace se změnila v jiné kartě. Obnovte stránku.');return;
+    }
+    const commit=()=>{
+     const previous=options?.previous??stored;
+     if(options?.archive&&previous){
+      const id=crypto.randomUUID();
+      store.add({id,savedAt:Date.now(),simulation:previous} satisfies ArchiveEntry,archiveKey(id));
+     }
+     store.put(value,'current');
+    };
+    if(options?.restoreId){
+     const key=archiveKey(options.restoreId),entry=store.get(key);
+     entry.onsuccess=()=>{
+      if(!entry.result){abort('Uložená simulace již byla otevřena v jiné kartě.');return;}
+      store.delete(key);
+      commit();
+     };
+    }else commit();
+   };
+  });
+ }finally{db.close();}
+}
+export function saveSimulation(value:SavedSimulation,options?:SaveOptions){
+ writes=writes.catch(()=>{}).then(()=>writeCurrent(value,options));
+ return writes;
+}
 export function validateSimulation(input:unknown,env:GameEnvironment):SavedSimulation{const raw=input as Partial<SavedSimulation>;if(!raw||raw.version!==1||typeof raw.paused!=='boolean'||![1,10,60].includes(raw.speed??0))throw new Error('Neplatný scénář simulace.');return {version:1,state:readGameState(raw.state,env),paused:raw.paused,speed:raw.speed!,scenario:typeof raw.scenario==='string'?raw.scenario:'blank'};}
 export const photos:PhotoRepository={
  async putVideo(file){if(!['video/mp4','video/webm'].includes(file.type)||file.size>20*1024**2)throw new Error('Použijte MP4 nebo WebM do 20 MB.');const header=new Uint8Array(await file.slice(0,12).arrayBuffer());if(file.type==='video/mp4'?String.fromCharCode(...header.slice(4,8))!=='ftyp':!(header[0]===0x1a&&header[1]===0x45&&header[2]===0xdf&&header[3]===0xa3))throw new Error('Soubor nemá platnou hlavičku MP4/WebM.');const id=`video:${crypto.randomUUID()}`;await write('photos',id,new Blob([file],{type:file.type}));return id;},
