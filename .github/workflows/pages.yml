@@ -23,6 +23,39 @@ jobs:
         with:
           node-version: '24'
           cache: npm
+      - name: Verify the live multiplayer endpoint accepts Pages
+        id: multiplayer-status
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync } from 'node:fs';
+
+          const origin = 'https://wondrej89.github.io';
+          try {
+            const configured = process.env.VITE_MULTIPLAYER_URL.trim();
+            const endpoint = new URL(configured.includes('://') ? configured : `https://${configured}`);
+            if (endpoint.protocol !== 'https:' || endpoint.username || endpoint.password || endpoint.search || endpoint.hash) {
+              throw new Error('MULTIPLAYER_URL must contain a public HTTPS address.');
+            }
+            const base = endpoint.href.replace(/\/+$/, '');
+            console.log(`Checking ${base}/status for ${origin}`);
+            const response = await fetch(`${base}/status`, { headers: { Origin: origin }, signal: AbortSignal.timeout(15000) });
+            if (!response.ok) throw new Error(`${base}/status returned HTTP ${response.status}.`);
+            const allowedOrigin = response.headers.get('Access-Control-Allow-Origin');
+            if (allowedOrigin !== origin) throw new Error(`The Worker allows origin ${allowedOrigin ?? '(missing)'}. Pages needs ${origin}.`);
+            const status = await response.json();
+            if (status.configured !== true) throw new Error('The multiplayer Worker is waiting for configuration.');
+            appendFileSync(process.env.GITHUB_ENV, `VITE_MULTIPLAYER_URL=${base}\n`);
+            appendFileSync(process.env.GITHUB_OUTPUT, `fixed_medium=${status.size === 'medium'}\n`);
+          } catch (error) {
+            const code = error.cause?.code ? ` (${error.cause.code})` : '';
+            const message = String(error.message).replace(/[\r\n]/g, ' ');
+            console.error(`::error title=Multiplayer endpoint::${message}${code}`);
+            process.exitCode = 1;
+          }
+          JS
+      - name: Cloudflare reports fixed Medium
+        if: steps.multiplayer-status.outputs.fixed_medium == 'true'
+        run: echo 'The production Worker enforces Medium.'
       - run: npm ci
       - run: npm run lint
       - run: npm test
@@ -64,24 +97,6 @@ jobs:
           VITE_PUBLISHER_URL: ${{ vars.PUBLISHER_URL }}
       - name: Verify alignment in the final Pages artifact
         run: npm run release:pid:check -- dist/site/editor/pid dist/site/releases
-      - name: Verify the live multiplayer endpoint accepts Pages
-        id: multiplayer-status
-        run: |
-          node --input-type=module <<'JS'
-          import { appendFileSync } from 'node:fs';
-          const origin = 'https://wondrej89.github.io';
-          const base = process.env.VITE_MULTIPLAYER_URL.replace(/\/$/, '');
-          const response = await fetch(`${base}/status`, { headers: { Origin: origin }, signal: AbortSignal.timeout(15000) });
-          if (!response.ok || response.headers.get('Access-Control-Allow-Origin') !== origin) {
-            throw new Error(`Multiplayer status returned HTTP ${response.status} or a different CORS origin.`);
-          }
-          const status = await response.json();
-          if (status.configured !== true) throw new Error('The multiplayer Worker is waiting for configuration.');
-          appendFileSync(process.env.GITHUB_OUTPUT, `fixed_medium=${status.size === 'medium'}\n`);
-          JS
-      - name: Cloudflare reports fixed Medium
-        if: steps.multiplayer-status.outputs.fixed_medium == 'true'
-        run: echo 'The production Worker enforces Medium.'
       - name: Select E2E Chromium
         shell: bash
         run: |
