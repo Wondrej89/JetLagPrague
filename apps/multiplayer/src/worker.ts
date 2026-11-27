@@ -1,3 +1,4 @@
+import { PUBLIC_GAME_SIZE } from '../../../packages/game-core/src/room-protocol';
 import { sha256 } from '../../../packages/geo-core/src/pid-snapshot';
 import { configured } from './catalog';
 import { errorResponse, json, randomCode, readJson, requireRequest, RequestError } from './http';
@@ -44,11 +45,11 @@ function forward(request: Request, env: MultiplayerEnvironment, code: string, pa
 async function route(request: Request, env: MultiplayerEnvironment) {
   const { pathname } = new URL(request.url);
   const method = request.method;
-  if (pathname === '/status' && method === 'GET') return json({ configured: configured(env) });
+  if (pathname === '/status' && method === 'GET') return json({ configured: configured(env), size: PUBLIC_GAME_SIZE });
   requireRequest(configured(env), 503, 'Herní server čeká na konfiguraci.');
   if (pathname === '/rooms' && method === 'POST') {
     await rate(request, env, 'create');
-    const input = parse(founderSchema, await readJson(request), 'Je nutná GPS poloha a zvolená velikost hry.');
+    const input = parse(founderSchema, await readJson(request), 'Je nutná platná GPS. Veřejná hra používá pravidla Medium.');
     for (let attempt = 0; attempt < 24; attempt++) {
       const code = randomCode(), stub = env.ROOMS.get(env.ROOMS.idFromName(code));
       const response = await stub.fetch(new Request(`https://room.internal/init/${code}`, {

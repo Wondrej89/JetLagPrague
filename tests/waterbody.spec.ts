@@ -1,6 +1,7 @@
 import {expect,test,type Page} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 import {storedWorld} from './draft-helper';
+import { openPublishedLayers } from './published-map';
 import {exportWorld,importWorld,matchingPois,nearestApprovedPoi,readGameReleaseArtifact,readGameReleaseIndex,releaseGeography,type ParkDataset} from '../packages/geo-core/src/index';
 const catalog=readFile('apps/editor/src/data/waterbody-catalog.json','utf8').then(text=>JSON.parse(text) as ParkDataset);
 async function ready(page:Page){
@@ -66,5 +67,7 @@ test('veřejný katalog obsahuje jen schválené vodní polygony a používá je
  expect(release.data.pois.some((p:{category:string})=>p.category==='vltava')).toBe(false);
  const p=approved.find(p=>p.name==='Biotop Radotín')!;expect(nearestApprovedPoi(p.point,'waterbody',release.data.pois)).toMatchObject({state:'known',distanceMeters:0,poi:{id:p.id}});
  expect(matchingPois(p.point,p.point,'waterbody',release.data.pois)).toMatchObject({state:'known',matches:true});
- await page.goto(base);await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible({timeout:15_000});await expect(page.locator('.data-counts > div').filter({has:page.getByText('Vodní plochy',{exact:true})}).locator('dd')).toHaveText('307');
+ const layers = await openPublishedLayers(page);
+ await expect(layers.getByRole('checkbox', { name: /Vodní plochy 307$/ })).toBeEnabled({ timeout: 15000 });
+ await expect(layers.getByRole('link',{name:'CC BY 4.0',exact:true})).toHaveAttribute('href','https://creativecommons.org/licenses/by/4.0/deed.en');
 });

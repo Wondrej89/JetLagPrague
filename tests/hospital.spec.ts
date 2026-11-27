@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { storedWorld } from './draft-helper';
+import { openPublishedLayers } from './published-map';
 import { readGameReleaseArtifact, readGameReleaseIndex } from '../packages/geo-core/src/index';
 
 async function ready(page: Page) {
@@ -88,12 +89,12 @@ test('veřejná produkční hra načte schválené nemocnice i starší publikac
   const release = await readGameReleaseArtifact(await artifact.text(), entry);
   expect(release.data.pois.filter(poi => poi.category === 'hospital')).toHaveLength(10);
   expect(release.data.pois.find(poi => poi.id === 'hospital-sv-alzbety')).toMatchObject({ address: '', point: [14.4203839, 50.0692439] });
-  await page.route('**/releases/current.json', route => route.fulfill({ json: { ...index, current: entry } })); await page.goto(base);
-  await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible();
-  await expect(page.locator('.data-counts > div').filter({ has: page.getByText('Nemocnice', { exact: true }) }).locator('dd')).toHaveText('10');
+  await page.route('**/releases/current.json', route => route.fulfill({ json: { ...index, current: entry } }));
+  const layers = await openPublishedLayers(page);
+  await expect(layers.getByRole('checkbox', { name: /Nemocnice 10$/ })).toBeEnabled({ timeout: 15000 });
   const old = index.versions.find(entry => entry.releaseId === 'release:3b0174b470beb21667464ae5434c30ebd48c199e4aeeb67ffd8055e65fc3af17')!;
-  await page.route('**/releases/current.json', route => route.fulfill({ json: { ...index, current: old } })); await page.reload();
-  await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible();
-  await expect(page.locator('.data-counts > div').filter({ has: page.getByText('Nemocnice', { exact: true }) }).locator('dd')).toHaveText('0');
-  await expect(page.locator('.data-counts > div').filter({ has: page.getByText('Zoo a místa se zvířaty', { exact: true }) }).locator('dd')).toHaveText('10');
+  await page.route('**/releases/current.json', route => route.fulfill({ json: { ...index, current: old } }));
+  await openPublishedLayers(page);
+  await expect(layers.getByRole('checkbox', { name: /Nemocnice 0$/ })).toBeDisabled({ timeout: 15000 });
+  await expect(layers.getByRole('checkbox', { name: /Zoo 10$/ })).toBeEnabled();
 });

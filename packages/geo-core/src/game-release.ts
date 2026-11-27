@@ -4,7 +4,7 @@ import { booleanPointInPolygon } from '@turf/turf';
 import { canonicalJson, verifyAdministrativeSources } from './administrative';
 import { validateGeometry, isArea, validateWorld, type AreaGeometry, type WorldDraft } from './index';
 import { sha256, pragueDate, snapshotReference, type PidSnapshot } from './pid-snapshot';
-import { buildGameStops, referenceZoneGeometry } from './game-stops';
+import { buildGameStops, referenceZoneGeometry, type GameStop } from './game-stops';
 import { defaultGameStopConfiguration } from './game-stop-configuration';
 import { poiSourceSchema, libraryMetadataSchema, waterbodyMetadataSchema, libraryId, isLibraryLocationVerified, resolvePois, verifyPoiSources, type Poi } from './poi';
 import { landLayerSchema, riverLayerSchema } from './vltava';
@@ -149,6 +149,19 @@ export async function verifyGameDataRelease(input: unknown): Promise<GameDataRel
   }
   return release;
 }
+export function releasePidSources(snapshot: PidSnapshot): GameReleaseData['sourceVersions'] {
+  return snapshot.sources.map(source => ({ key: `pid:${source.id}`, version: source.version ?? source.sha256, checksum: source.sha256, provider: 'PID', url: source.url, dataDate: snapshot.serviceDate, license: source.license ?? { name: 'Nedoložena', url: null } }));
+}
+
+export function compileReleaseStops(stops: readonly GameStop[], geometry: AreaGeometry, requireAllowed: boolean): GameReleaseData['pidSnapshot']['stops'] {
+  return stops.flatMap(stop => {
+    if (!stop.point || !stop.dominantMode || stop.activity !== 'active' || stop.eligibility === 'excluded' ||
+        requireAllowed && stop.eligibility !== 'allowed' || !containsGamePoint(stop.point, geometry)) return [];
+    return [{ id: stop.id, name: stop.name, groupIds: [...stop.groupIds].sort(), point: stop.point, modes: [...stop.modes].sort(),
+      referenceModes: [...stop.referenceModes].sort(), dominantMode: stop.dominantMode, eligibility: stop.eligibility, activity: 'active' as const, service: stop.service }];
+  }).sort(lexical);
+}
+
 export async function buildGameDataRelease(worldInput: WorldDraft, airports: Poi[], snapshot: PidSnapshot, publishedAt = new Date().toISOString()): Promise<GameDataRelease> {
   const world = validateWorld(worldInput); await verifyAdministrativeSources(world); await verifyPoiSources(world.poi);
   const areas = world.layers.filter(layer => layer.kind === 'game_area').flatMap(layer => layer.features);
@@ -162,11 +175,11 @@ export async function buildGameDataRelease(worldInput: WorldDraft, airports: Poi
     for (const item of layer.features) { if (!isArea(item.geometry)) throw new Error('Administrativní hranice musí být polygonové.'); administrativeAreas.push({ id: item.id, code: String(item.attributes.code ?? item.id), name: item.name, kind: layer.kind === 'municipal' ? 'municipal' : 'cadastral', geometry: item.geometry, sourceKey: source.id }); }
   }
   const pois = resolvePois(airports, world.poi ?? { version: 1, sources: [], manual: [], decisions: [], visibility: { airports: true, parks: true, referencePoints: false } }).filter(poi => poi.status === 'approved').map(poi => releasePoiSchema.parse({ id: poi.id, category: poi.category, name: poi.name, ...(['zoo', 'hospital', 'library', 'cinema', 'embassy'].includes(poi.category) && poi.address !== undefined ? { address: poi.address } : {}), ...(poi.category === 'library' ? { library: poi.library } : {}), ...(poi.category === 'embassy' ? { embassy: { ...poi.embassy, ...(poi.embassy?.verification ? { verification: { ...poi.embassy.verification, note: '' } } : {}) } } : {}), ...(poi.category==='waterbody'?{waterbody:poi.waterbody}:{}), point: poi.point, geometry: poi.geometry, sourceId: poi.sourceId, source: { ...poi.source, note: '' }, ...(Array.isArray(poi.attributes.origins) ? { origins: poi.attributes.origins.map(origin => { const value = z.object({ id, sourceId: id, source: poiSourceSchema }).parse(origin); return { ...value, source: { ...value.source, note: '' } }; }) } : {}), status: 'approved', reviewedAt: poi.reviewedAt }));
-  for (const source of snapshot.sources) sources.push({ key: `pid:${source.id}`, version: source.version ?? source.sha256, checksum: source.sha256, provider: 'PID', url: source.url, dataDate: snapshot.serviceDate, license: source.license ?? { name: 'Nedoložena', url: null } });
+  sources.push(...releasePidSources(snapshot));
   for (const source of [...(world.poi?.sources ?? []),...(world.poi?.waterSources??[])]) sources.push({ key: `poi:${source.source.id}`, version: source.checksum, checksum: source.source.rawChecksum, provider: source.source.provider, url: source.source.url, dataDate: source.source.dataDate, license: source.source.license });
   for (const poi of pois) for (const origin of [poi.source, ...(poi.origins ?? []).map(item => item.source)]) if (!sources.some(source => source.key === `poi:${origin.id}`)) sources.push({ key: `poi:${origin.id}`, version: origin.rawChecksum ?? 'manual', checksum: origin.rawChecksum, provider: origin.provider, url: origin.url, dataDate: origin.dataDate, license: origin.license });
   const currentPid = snapshot.serviceDate === pragueDate(new Date(publishedAt)) && snapshot.quality?.status !== 'review';
-  const stops = buildGameStops(snapshot, rules, pragueDate(new Date(publishedAt))).filter(stop => (!currentPid || stop.eligibility === 'allowed') && stop.activity === 'active' && stop.point && stop.eligibility !== 'excluded' && stop.referenceModes.length && containsGamePoint(stop.point, geometry)).map(stop => ({ id: stop.id, name: stop.name, groupIds: [...stop.groupIds].sort(), point: stop.point!, modes: stop.modes, referenceModes: stop.referenceModes, dominantMode: stop.dominantMode!, eligibility: stop.eligibility as 'allowed' | 'review', activity: 'active' as const, service: stop.service }));
+  const stops = compileReleaseStops(buildGameStops(snapshot, rules, pragueDate(new Date(publishedAt))), geometry, currentPid);
   const kind = currentPid && stops.length ? 'approved' : 'reference';
   return createGameDataRelease({ gameArea: { id: `game-area:${await sha256(canonicalJson(geometry))}`, name: area.name, geometry, source: area.source }, administrativeAreas, pois,
     pidSnapshot: { ...snapshotReference(snapshot), quality: snapshot.quality?.status ?? 'verified', stops }, rulesConfig: { radiusMeters: rules.radiusMeters, gameAreaBoundary: 'included', allowedModes: rules.allowedModes ?? [...transportModes] }, sourceVersions: sources }, { publishedAt, kind });

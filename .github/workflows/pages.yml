@@ -12,6 +12,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 60
+    env:
+      VITE_MULTIPLAYER_URL: ${{ vars.MULTIPLAYER_URL || 'https://jetlag-prague-multiplayer.wondrej-blogspot.workers.dev' }}
     permissions:
       contents: read
       pages: read
@@ -46,12 +48,40 @@ jobs:
       - name: Stage published PID without upstream downloads
         if: steps.pid-data.outputs.exists == 'true'
         run: npm run pid:stage -- --from .pid-publication/pid
+      - name: Verify the deployed game release uses the current pid-data snapshot
+        env:
+          PID_BRANCH_EXISTS: ${{ steps.pid-data.outputs.exists }}
+        run: |
+          if [ "$PID_BRANCH_EXISTS" != true ]; then
+            echo "::error::Chybí větev pid-data. Spusťte Update PID and game catalog."
+            exit 1
+          fi
+          npm run release:pid:check -- .pid-publication/pid
       - run: npm run pid:check
       - run: npm run build
         env:
           VITE_MAPY_API_KEY: ${{ secrets.VITE_MAPY_API_KEY }}
           VITE_PUBLISHER_URL: ${{ vars.PUBLISHER_URL }}
-          VITE_MULTIPLAYER_URL: ${{ vars.MULTIPLAYER_URL }}
+      - name: Verify alignment in the final Pages artifact
+        run: npm run release:pid:check -- dist/site/editor/pid dist/site/releases
+      - name: Verify the live multiplayer endpoint accepts Pages
+        id: multiplayer-status
+        run: |
+          node --input-type=module <<'JS'
+          import { appendFileSync } from 'node:fs';
+          const origin = 'https://wondrej89.github.io';
+          const base = process.env.VITE_MULTIPLAYER_URL.replace(/\/$/, '');
+          const response = await fetch(`${base}/status`, { headers: { Origin: origin }, signal: AbortSignal.timeout(15000) });
+          if (!response.ok || response.headers.get('Access-Control-Allow-Origin') !== origin) {
+            throw new Error(`Multiplayer status returned HTTP ${response.status} or a different CORS origin.`);
+          }
+          const status = await response.json();
+          if (status.configured !== true) throw new Error('The multiplayer Worker is waiting for configuration.');
+          appendFileSync(process.env.GITHUB_OUTPUT, `fixed_medium=${status.size === 'medium'}\n`);
+          JS
+      - name: Cloudflare reports fixed Medium
+        if: steps.multiplayer-status.outputs.fixed_medium == 'true'
+        run: echo 'The production Worker enforces Medium.'
       - name: Select E2E Chromium
         shell: bash
         run: |

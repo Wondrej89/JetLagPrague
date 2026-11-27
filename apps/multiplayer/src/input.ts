@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PUBLIC_GAME_SIZE } from '../../../packages/game-core/src/room-protocol';
 import type { Command } from '../../../packages/game-core/src/types';
 import { setupSchema } from '../../../packages/game-core/src/card-schemas';
 import { RequestError } from './http';
@@ -14,7 +15,7 @@ export const fixSchema = z.object({
   at: z.number().nonnegative(), accuracy: z.number().nonnegative(),
   speed: z.number().nonnegative().nullable().optional(),
 }).strict();
-export const founderSchema = z.object({ fix: fixSchema, size: z.enum(['small','medium','large']) }).strict();
+export const founderSchema = z.object({ fix: fixSchema, size: z.literal(PUBLIC_GAME_SIZE).optional() }).strict();
 export const recoverySchema = z.object({ roomId: roomIdSchema, secret: z.string().regex(/^[A-Za-z0-9_-]{43}$/) }).strict();
 const noFields = z.object({}).strict();
 const confirmed = z.object({ confirmed: z.boolean() }).strict();

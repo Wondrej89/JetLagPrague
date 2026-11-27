@@ -80,11 +80,11 @@ export class GameRoom {
     if (room && room.expiresAt <= now) { await this.remove(room); room = undefined; }
     if (action === 'init') {
       if (room) return json({ collision: true }, 409);
-      const { fix, size } = parse(founderSchema, input, 'Je nutná platná GPS a velikost hry.');
+      const { fix } = parse(founderSchema, input, 'Je nutná platná GPS. Veřejná hra používá pravidla Medium.');
       validateFounderMeasurement(fix, now);
       const { release } = await this.catalog.current();
       validateFounderLocation(release, fix);
-      const { rules, reference } = liveRules(size, release, this.env);
+      const { rules, reference } = liveRules(release, this.env);
       const id = crypto.randomUUID();
       const auth = await issue({ id, code });
       const seed = crypto.getRandomValues(new Uint32Array(1))[0] || 1;

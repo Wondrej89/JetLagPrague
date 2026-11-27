@@ -4,14 +4,14 @@ Editor používá skutečnou plánovanou obsluhu a geometrii PID. Mapy.com dodá
 
 ## Aktualizace na GitHub Pages
 
-1. V editoru otevřete **Doprava PID → Aktualizovat data PID ↗**. Odkaz vede na [Update PID data from GTFS](https://github.com/Wondrej89/JetLagPrague/actions/workflows/pid-data.yml).
-2. Přihlaste se na GitHub s oprávněním spouštět workflow v repozitáři a zvolte **Run workflow** na větvi `main`. Datum ponechte prázdné pro dnešní **Europe/Prague**, nebo zadejte `YYYY-MM-DD` v platnosti feedu. `force` použijte pouze pro požadované nové sestavení již uloženého dne; běžný požadavek ověřený den opakovaně použije bez stažení.
-3. Workflow stáhne GTFS a volitelně skupiny, ověří je, sestaví neměnnou verzi ve větvi **`pid-data`** a spustí samostatné nasazení **Deploy editor to GitHub Pages**. Počkejte na úspěch obou běhů. Souhrn a artefakt `pid-gtfs-diagnostics` uvádějí jednotlivé URL, HTTP chyby, požadované datum, výsledek a SHA-256. Chyba před zveřejněním nezmění datovou větev; chyba deploye ponechá předchozí web. Při chybě deploye lze ručně zopakovat Pages workflow bez stahování GTFS.
+1. V editoru otevřete **Doprava PID → Aktualizovat data PID ↗**. Odkaz vede na [Update PID and game catalog](https://github.com/Wondrej89/JetLagPrague/actions/workflows/pid-data.yml).
+2. Zvolte **Run workflow** na větvi `main`. Pro ostrý katalog použijte dnešní datum v **Europe/Prague** nebo ponechte pole prázdné. Ověřený snapshot dnešního dne se znovu použije. Volba `force` vynutí nové stažení.
+3. Workflow ověří GTFS, obnoví herní vydání a atomicky zapíše obě větve. Potom spustí Pages. Artefakt `pid-gtfs-diagnostics` obsahuje výsledek zpracování zdrojů i seznam uzlů vyřazených z herní nabídky k revizi. Při chybě validace se větve neposunou. Pokud selže až nasazení, předchozí web zůstane dostupný a Pages workflow lze spustit znovu.
 4. V editoru zvolte **Načíst publikovaný výsledek**. Zkontrolujte datum, čas posledního sestavení, adaptér, kontrolní součet, aktivní stanoviště a rozdíly **skupin i tras**. Přijetí porovnané verze je výslovné. Obnovení stránky rovněž kontroluje hotovou publikaci a může převzít novější ověřenou verzi. Editor přednostně vybírá ověřený dnešek, jinak poslední dostupnou referenci do dneška. Jiný konkrétní den lze prohlédnout importem jeho neměnného snapshotu z katalogu; starší i budoucí datum je výslovně referenční.
 
-**GitHub token se do klienta nevkládá.** Odkaz není přímým spuštěním serveru z veřejné aplikace; tlačítko načtení čte pouze vlastní statický katalog. Oprávnění kontroluje GitHub. Automatický `schedule` je odstraněný. Otevření editoru ani běžný push kódu nestahují GTFS či jiné živé zdroje PID. Ruční CLI je alternativní serverový vstup, nikoli automatický proces prohlížeče.
+GitHub ověřuje oprávnění ke spuštění workflow. Editor čte statický katalog. Pro denní obnovu nastavte proměnnou repozitáře `PID_DAILY_REFRESH_ENABLED=true`. GitHub spouští tentýž postup každý den v 05:17 pražského zimního času a v 06:17 v létě (04:17 UTC). Provozní den určuje pražské datum v okamžiku spuštění.
 
-Běžný Pages build načte katalog a těla ze samostatné větve, ověří je a nasadí s kódem. Při chybě čtení existující větve selže; nevrátí se ke starším datům v `main`. Pouze před prvním založením `pid-data` je bootstrap v `apps/editor/public/pid` výslovně historickou referencí. Datový workflow má jeden sdílený concurrency zámek, neruší běžící sestavení a používá běžný push bez přepisování historie. Také kódové nasazení po datové aktualizaci přebírá `pid-data`, takže nepřepíše novější data starým bootstrapem.
+Pages před i po sestavení porovná datum, ID a checksum snapshotu z `pid-data` s herním vydáním. Chybějící větev nebo nesoulad nasazení zastaví. Běžný push kódu ověřuje hotové soubory. Stažení GTFS patří do synchronizačního workflow. [Podrobnosti o obnovení herního vydání](PUBLISHING.md#synchronizace-pid-a-herního-katalogu)
 
 ## Obsluha pro konkrétní den
 

@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { storedWorld } from './draft-helper';
+import { openPublishedLayers } from './published-map';
 import input from '../data/raw/cinemas-curated.json' with { type: 'json' };
 import { readGameReleaseArtifact, readGameReleaseIndex } from '../packages/geo-core/src/index';
 import { releaseTestInput } from '../packages/geo-core/src/game-release-test-fixtures';
@@ -91,10 +92,11 @@ test('veřejná produkční hra načte 25 schválených kin schématu 5 a histor
   const entry=index.versions.find(row=>row.releaseId==='release:1f5e3316c584ad01849e246761882b66e02504382bc12b6b18b504b019f988cd')!;
   const response=await request.get(base+'releases/'+entry.file);expect(response.status()).toBe(200);
   const release=await readGameReleaseArtifact(await response.text(),entry);expect(release.schemaVersion).toBe(5);expect(release.data.pois.filter(poi=>poi.category==='cinema')).toHaveLength(25);expect(release.data.pois.some(poi=>poi.id==='priemere-citenas-hostivar')).toBe(false);
-  await page.goto(base);await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible();
-  await expect(page.locator('.data-counts > div').filter({has:page.getByText('Kina',{exact:true})}).locator('dd')).toHaveText('25');
+  const layers = await openPublishedLayers(page);
+  await expect(layers.getByRole('checkbox', { name: /Kina 25$/ })).toBeEnabled({ timeout: 15000 });
   const legacy=index.versions.find(row=>row.releaseId==='release:1df560d4f22e6e38ec4df73df52bd34d58b831988ef73f0812753750ae7cff39')!;
-  await page.route('**/releases/current.json',route=>route.fulfill({json:{...index,current:legacy}}));await page.reload();await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible();
-  await expect(page.locator('.data-counts > div').filter({has:page.getByText('Kina',{exact:true})}).locator('dd')).toHaveText('0');
-  await expect(page.locator('.data-counts > div').filter({has:page.getByText('Knihovny',{exact:true})}).locator('dd')).toHaveText('45');
+  await page.route('**/releases/current.json',route=>route.fulfill({json:{...index,current:legacy}}));
+  await openPublishedLayers(page);
+  await expect(layers.getByRole('checkbox', { name: /Kina 0$/ })).toBeDisabled({ timeout: 15000 });
+  await expect(layers.getByRole('checkbox', { name: /Knihovny 45$/ })).toBeEnabled();
 });

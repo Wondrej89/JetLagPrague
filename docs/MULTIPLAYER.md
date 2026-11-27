@@ -4,7 +4,7 @@ Veřejná hra má vlastní Cloudflare Worker v `apps/multiplayer`. Každý čty�
 
 ## Partie a návrat do hry
 
-Zakladatel vybere velikost, povolí GPS a po úspěšné kontrole sdílí čtyřpísmenný kód. Server požaduje měření z posledních 30 sekund s přesností do 100 m a kontroluje, že kruh deklarované přesnosti zůstává bezpečně uvnitř herní oblasti. Polohu hlásí prohlížeč. Druhý tým může vstoupit odkudkoliv a herní GPS se uplatní při hraní.
+Nové veřejné partie používají pravidla Medium. Zakladatel povolí GPS a po úspěšné kontrole sdílí čtyřpísmenný kód. Server požaduje měření z posledních 30 sekund s přesností do 100 m a kontroluje, že kruh deklarované přesnosti zůstává bezpečně uvnitř herní oblasti. Polohu hlásí prohlížeč. Druhý tým může vstoupit odkudkoliv a herní GPS se uplatní při hraní.
 
 Každý tým dostane vlastní relační token a samostatný obnovovací kód. Prohlížeč uloží token místně. Obnovovací kód se zobrazí při vydání a hráč si ho může uložit odděleně. Jeho použití přidělí nový token a nový obnovovací kód, ukončí předchozí spojení a převáže tým na nový telefon. Sdílený odkaz obsahuje pouze kód místnosti. Po připojení se každý telefon řídí autorizovaným snímkem stavu a po výpadku se obnoví poslední uložený snímek včetně historie.
 
@@ -30,10 +30,10 @@ Integrační sada používá lokální workerd přes Miniflare, skutečný dopra
 
 ## Nasazení
 
-1. Připravte schválené aktuální herní vydání s ověřeným PID snapshotem pro den zahájení. Současný referenční katalog s PID z 20. 10. 2026 dovoluje místní testy. Veřejný Worker vytvoření místnosti povolí po ověření schváleného katalogu.
+1. Připravte schválené herní vydání s ověřeným PID snapshotem pro den zahájení přes workflow **Update PID and game catalog**. Veřejný Worker ověřuje katalog při každém zakládání místnosti. [Synchronizace PID](PUBLISHING.md#synchronizace-pid-a-herního-katalogu)
 2. Přihlaste Wrangler do správného Cloudflare účtu. Zkontrolujte povolený origin, adresu statických vydání a plán s kapacitou pro ověřování katalogu a SQLite Durable Objects. [Konfigurace Workeru](../apps/multiplayer/wrangler.toml)
 3. Spusťte `npm run multiplayer:deploy`. Migrace `v1` založí SQLite objekty `GameRoom` a `RoomRateLimiter`. Tento příkaz se týká samostatné služby herních místností.
-4. Nastavte v GitHub Actions proměnnou `MULTIPLAYER_URL` na HTTPS adresu Workeru bez koncového lomítka a spusťte Pages workflow. Klient ji dostane jako `VITE_MULTIPLAYER_URL`. Pro místní Vite ji lze zadat v prostředí. [Vzor prostředí](../.env.example)
+4. Pages používá veřejnou adresu Workeru uvedenou ve workflow. Jinou HTTPS adresu lze nastavit jako `MULTIPLAYER_URL` v GitHub Actions. Klient ji dostane jako `VITE_MULTIPLAYER_URL`. Pages před zveřejněním kontroluje odpověď `/status` a povolení původu GitHub Pages. [Vzor prostředí](../.env.example)
 5. Po zveřejnění ověřte založení místnosti z Prahy, pozvánku, odpojení a obnovu ve dvou skutečných prohlížečích. Zkontrolujte původ požadavků, trvalé uložení a limity na nasazeném Workeru.
 
 Veřejné funkční ověření vyžaduje Cloudflare účet, nasazený Worker, nastavenou proměnnou GitHub Actions a aktuální schválený katalog.

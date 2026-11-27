@@ -17,6 +17,7 @@ async function device(browser:Browser, options:Parameters<Browser['newContext']>
 async function create(context:BrowserContext) {
   const page = await context.newPage();
   await page.goto(origin);
+  await expect(page.getByRole('combobox')).toHaveCount(0);
   await page.getByRole('button',{name:'Vytvořit místnost'}).click();
   await expect(page.getByText('Čekám na protihráče.')).toBeVisible({timeout:30_000});
   const code = await page.getByTestId('room-code').innerText();
@@ -43,6 +44,19 @@ test('founder sees actionable GPS failures for a denied, inaccurate or out-of-ar
     await expect(page.getByRole('alert')).toContainText('uvnitř herního území Prahy',{timeout:30_000});
     await expect(page.getByTestId('room-code')).toHaveCount(0);
   } finally { await Promise.all([noPermission.close(),checks.close()]); }
+});
+
+test('the room reports damaged or missing map data only after entry', async ({browser}) => {
+  const context = await device(browser, { permissions:['geolocation'], geolocation:station });
+  try {
+    await context.addInitScript(() => { indexedDB.open = () => { throw new Error('Hra nesmí otevírat editorové úložiště.'); }; });
+    await context.route('**/releases/release-*.json', route => route.fulfill({ json: {} }));
+    const { page } = await create(context);
+    await expect(page.getByRole('alert')).toContainText('poškozený');
+    await context.route('**/releases/current.json', route => route.fulfill({ status:404, body:'' }));
+    await page.reload();
+    await expect(page.getByRole('alert')).toContainText('nejsou dostupné');
+  } finally { await context.close(); }
 });
 
 test('two independent phones finish a round, reconnect and securely transfer a team',async({browser})=>{

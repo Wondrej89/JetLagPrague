@@ -1,6 +1,8 @@
 import type { RoleView } from './types';
 import type { TeamId } from './match-types';
 
+export const PUBLIC_GAME_SIZE = 'medium';
+
 export interface RoomSession {
   code: string;
   roomId: string;

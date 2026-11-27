@@ -28,7 +28,7 @@ async function accepted<T>(response: Awaited<ReturnType<typeof http>>) {
   expect(response.ok, JSON.stringify(body)).toBe(true);
   return body as T;
 }
-const create = async () => accepted<RoomCredentials>(await http('/rooms', { body: { fix: fix(), size: 'medium' } }));
+const create = async () => accepted<RoomCredentials>(await http('/rooms', { body: { fix: fix() } }));
 const snapshot = async (session: RoomSession) => accepted<RoomSnapshot>(await http(path(session), { session }));
 
 async function connect(session: RoomSession) {
@@ -63,7 +63,7 @@ afterAll(async () => {
 
 describe.sequential('authoritative rooms on SQLite Durable Objects', () => {
   it('keeps reference data blocked when the test authorization is absent', async () => {
-    const restricted=localWorker({reference:false});
+    const restricted=localWorker({reference:false,referenceCatalog:true});
     try {
       const response=await restricted.dispatchFetch('http://localhost/rooms',{
         method:'POST',headers:{Origin:TEST_ORIGIN,'Content-Type':'application/json'},
@@ -79,12 +79,14 @@ describe.sequential('authoritative rooms on SQLite Durable Objects', () => {
     expect((await http('/rooms',{ body: { size:'medium',fix:fix({ at:Date.now()-31_000 }) } })).status).toBe(422);
     expect((await http('/rooms',{ body: { size:'medium',fix:fix({ accuracy:101 }) } })).status).toBe(422);
     expect((await http('/rooms',{ body: { size:'medium',fix:fix({ point:[16,49] }) } })).status).toBe(422);
+    expect((await http('/rooms',{ body: { size:'small', fix:fix() } })).status).toBe(400);
+    expect((await http('/rooms',{ body: { size:'large', fix:fix() } })).status).toBe(400);
     expect((await http('/rooms',{ origin:'https://other.example',body: { size:'medium',fix:fix() } })).status).toBe(403);
   });
 
   it('atomically claims the same code and reuses it only once the prior room is gone',async()=>{
     const ns = await mf.getDurableObjectNamespace('ROOMS') as unknown as Namespace, stub = ns.get(ns.idFromName('TEST'));
-    const init = () => stub.fetch(new Request('http://internal/init/TEST', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({fix:fix(),size:'small'}) }));
+    const init = () => stub.fetch(new Request('http://internal/init/TEST', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({fix:fix()}) }));
     const rows = await Promise.all([init(),init()]);
     expect(rows.map(row=>row.status).sort()).toEqual([201,409]);
     const owner = await rows.find(row=>row.status===201)!.json() as RoomCredentials;
@@ -112,6 +114,7 @@ describe.sequential('authoritative rooms on SQLite Durable Objects', () => {
     expect(replay.status).toBe(401);
 
     const start = await snapshot(a), gameId = start.view.gameId;
+    expect(start.view.size).toBe('medium');
     const id = crypto.randomUUID(), name = {type:'set_team_name',name:'Pražské lišky'} as const;
     const named = await accepted<RoomSnapshot>(await send(a,ac.connection,gameId,name,id));
     const replayed = await accepted<RoomSnapshot>(await send(a,ac.connection,gameId,name,id));

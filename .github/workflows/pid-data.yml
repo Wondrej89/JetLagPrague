@@ -1,9 +1,11 @@
-name: Update PID data from GTFS
+name: Update PID and game catalog
 on:
+  schedule:
+    - cron: '17 4 * * *'
   workflow_dispatch:
     inputs:
       service_date:
-        description: 'Provozní den YYYY-MM-DD (prázdné = dnešek v Europe/Prague)'
+        description: 'Pro ostré vydání dnešní pražský den YYYY-MM-DD. Prázdné = automaticky.'
         required: false
         type: string
       force:
@@ -19,6 +21,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   update:
+    if: github.event_name == 'workflow_dispatch' || vars.PID_DAILY_REFRESH_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -69,24 +72,38 @@ jobs:
           PID_SERVICE_DATE: ${{ inputs.service_date }}
           PID_FORCE_REFRESH: ${{ inputs.force }}
           NODE_OPTIONS: --max-old-space-size=4096
-      - name: Preserve GTFS diagnostics
+      - name: Build, validate and check the replacement game release
+        working-directory: app
+        run: |
+          npm run release:pid:refresh -- "$GITHUB_WORKSPACE/publication/pid"
+          npm run release:pid:check -- "$GITHUB_WORKSPACE/publication/pid"
+          npm run release:check
+      - name: Preserve publication diagnostics
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pid-gtfs-diagnostics
-          path: app/data/reports/pid-gtfs-refresh.json
+          path: |
+            app/data/reports/pid-gtfs-refresh.json
+            app/data/reports/game-release-pid.json
           if-no-files-found: ignore
-      - name: Commit immutable snapshot and catalog
-        working-directory: publication
+      - name: Publish PID and game catalog in one atomic push
         shell: bash
         run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
-          git add pid
-          if ! git diff --cached --quiet; then
-            git commit -m 'Publish verified PID GTFS snapshot'
-            git push origin HEAD:refs/heads/pid-data
+          git -C publication add -- pid
+          git -C app add -- data/releases
+          if git -C publication diff --cached --quiet && git -C app diff --cached --quiet; then
+            exit 0
           fi
+          for tree in app publication; do
+            git -C "$tree" config user.name 'github-actions[bot]'
+            git -C "$tree" config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          done
+          # Advance both refs even when reusing one side. Both old tips then participate in the atomic update.
+          git -C publication commit --allow-empty -m 'Synchronize verified PID snapshot'
+          git -C app commit --allow-empty -m 'Synchronize game release with verified PID'
+          git -C app fetch --no-tags --update-shallow "$GITHUB_WORKSPACE/publication" HEAD:refs/jetlag/pid-candidate
+          git -C app push --atomic origin HEAD:refs/heads/main refs/jetlag/pid-candidate:refs/heads/pid-data
       - name: Deploy web with published data
         working-directory: app
         run: gh workflow run pages.yml --ref main

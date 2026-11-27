@@ -38,6 +38,8 @@
     "build:game": "tsx scripts/stage-game-releases.ts && vite build --config vite.game.config.ts",
     "release:bootstrap": "tsx scripts/bootstrap-game-release.ts",
     "release:check": "tsx scripts/check-game-releases.ts",
+    "release:pid:refresh": "tsx scripts/game-release-pid.ts refresh",
+    "release:pid:check": "tsx scripts/game-release-pid.ts check",
     "preview:editor": "vite preview --host 0.0.0.0",
     "publisher:dev": "wrangler dev --config apps/publisher/wrangler.toml",
     "publisher:deploy": "wrangler deploy --config apps/publisher/wrangler.toml",

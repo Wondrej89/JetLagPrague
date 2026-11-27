@@ -14,7 +14,24 @@
 
 `GameDataRelease` s ambasádami se sestavuje ve schématu 7, bez nich zůstává schéma 6; čtečky nadále ověřují historická schémata 1–6 bez změny jeho obsahu nebo hashů. Zoo a adresy vyžadují nejméně schéma 2; nemocnice vyžadují schéma 3. Nemocnice mohou mít adresu prázdnou nebo neuvedenou. Knihovny vyžadují nejméně schéma 4, adresu, oficiální URL a ověření pro konkrétní referenční bod. Kina vyžadují schéma 5, adresu a shodný referenční bod a geometrii Point. Obsahuje `kind`, `releaseId`, `publishedAt`, `data` (gameArea, administrativeAreas, pois, pidSnapshot, rulesConfig, sourceVersions) a SHA-256 každé části i celku. ID závisí na kanonickém obsahu a typu verze, nikoli na čase sestavení; seřazení záznamů je deterministické. Sestavení používá explicitní datum publikace: pozdější opakování se stejnými vstupy zachová katalog i ID, zatímco dnešní platnost PID se posuzuje samostatně. Ukazatel navíc kontroluje SHA-256 celého souboru včetně času publikace. Starší soubory se nepřepisují. Normální build pouze ověřuje a kopíruje už zaznamenané verze, žádný nový release negeneruje.
 
-PID nadále publikuje samostatný workflow do větve `pid-data`; refresh PID nemění pracovní rozhodnutí ani statické herní release. Aktuální workflow se spouští **ručně**, plánované denní spouštění zůstává vypnuté podle předchozího nastavení. Samotná aktualizace PID nemění uzamčený herní release. Správce přijme nový snapshot v editoru, zkontroluje pravidla a výslovně publikuje nové podklady. Backend vyžaduje nejnovější ověřený snapshot z `pid-data` pro dnešní pražské datum; stará nebo revizní data pro ostrou hru odmítne.
+## Synchronizace PID a herního katalogu
+
+Workflow **Update PID and game catalog** načte ověřenou obsluhu pro dnešní pražské datum. Vychází z posledního herního vydání. V něm nahradí snapshot PID, kompilované zastávky a metadata zdrojů PID. Zachování hranic, pravidel, všech POI, řeky a pevniny ověřuje jejich původními checksumy. Ověřuje také návaznost pevniny na říční polygon a herní oblast. [Spuštění workflow](https://github.com/Wondrej89/JetLagPrague/actions/workflows/pid-data.yml)
+
+Automatická obnova nejprve z přesného předchozího snapshotu reprodukuje seznam herních zastávek. Pokud se zveřejněný seznam liší třeba kvůli ručním výjimkám, obnova končí a vyžaduje doložení původních pravidel. Nový katalog využívá jen aktivní povolené uzly s doloženým bodem uvnitř oblasti. Nejednoznačné uzly dostanou záznam s důvodem v `data/reports/game-release-pid.json` a zůstávají mimo nabídku stanovišť. Chyby kvality GTFS, neodpovídající datum, porušená historie nebo nejednoznačné přiřazení způsobilého bodu k pevnině obnovu zastaví.
+
+Nový soubor vydání je neměnný. Aktualizace zapisuje úplný soubor před atomickým přejmenováním `current.json`. GitHub Actions ověří oba katalogy a posune `main` i `pid-data` jediným atomickým pushem. Vyžaduje právo GitHub Actions zapisovat na obě větve. Neběžný souběžný zápis nebo zamítnutí jedné větve vyžaduje nový běh s aktualizovanými podklady. Pages ověřuje soulad zdrojů a sestaveného artefaktu. Při neúspěšném nasazení nadále obsluhuje předchozí artefakt. Starší hry načítají historické vydání podle svého uloženého `releaseId`.
+
+Místní ověření nad checkoutem větve `pid-data`:
+
+```sh
+npm run release:pid:refresh -- /cesta/k/pid-data/pid
+npm run release:pid:check -- /cesta/k/pid-data/pid
+npm run release:check
+npm run test:multiplayer
+```
+
+Denní běh lze povolit proměnnou `PID_DAILY_REFRESH_ENABLED=true`. Ruční běh je dostupný i bez ní. Aktuální datum pro založení ostrých místností vyhodnocuje samotný multiplayerový Worker.
 
 Historický počáteční release z 18. 10. 2026 má **0 schválených parků, 3 letiště, 169 administrativních území a 1 465 referenčních zastávek v herní oblasti** ze snapshotu PID 2026-10-16. Jde o `kind: reference`, ne schválení dat pro dnešní hru. Schválení parků uložená pouze ve vašem prohlížeči nejsou přístupná automatickému buildu. Vaše rozhodnutí převezme první skutečná publikace z editoru. Licence/datum dodaných administrativních podkladů zůstávají výslovně nedoložené; toto vydání jejich stav nezastírá.
 

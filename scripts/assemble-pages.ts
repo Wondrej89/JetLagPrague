@@ -1,7 +1,16 @@
 import { cp, mkdir, rm } from 'node:fs/promises';
-await rm('dist/site', { recursive: true, force: true });
-await mkdir('dist/site', { recursive: true });
-await cp('dist/game', 'dist/site', { recursive: true });
-await cp('dist/editor', 'dist/site/editor', { recursive: true });
-await cp('dist/simulator', 'dist/site/simulator', { recursive: true });
-console.log('GitHub Pages připraveny: veřejná hra, editor a samostatný prohlížečový simulátor.');
+import { join, resolve } from 'node:path';
+
+export async function assemblePages(dist = 'dist') {
+  const site = join(dist, 'site');
+  await rm(site, { recursive: true, force: true });
+  await mkdir(site, { recursive: true });
+  await cp(join(dist, 'game'), site, { recursive: true });
+  await cp(join(dist, 'editor'), join(site, 'editor'), { recursive: true });
+  await cp(join(dist, 'simulator'), join(site, 'simulator'), { recursive: true });
+}
+
+if (process.argv[1] && resolve(process.argv[1]) === resolve(import.meta.filename)) {
+  await assemblePages();
+  console.log('GitHub Pages připraveny: veřejná hra, editor a samostatný prohlížečový simulátor.');
+}

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type FormEvent } from 'react';
-import type { Fix, GameSize } from '../../../packages/game-core/src/index';
-import type { RoomSession, RoomSnapshot, RoomCredentials } from '../../../packages/game-core/src/room-protocol';
+import type { Fix } from '../../../packages/game-core/src/index';
+import { PUBLIC_GAME_SIZE, type RoomSession, type RoomSnapshot, type RoomCredentials } from '../../../packages/game-core/src/room-protocol';
 import { loadGameDataRelease, type GameDataRelease } from '../../../packages/geo-core/src/game-release';
 import { GamePhone } from '../../../packages/game-ui/src/Phone';
 import { browserLocationProvider } from '../../../packages/game-ui/src/runtime';
@@ -21,12 +21,11 @@ function founderFix(): Promise<Fix> {
   });
 }
 
-export function Rooms({ release }: { release: GameDataRelease | null }) {
-  const [ready, setReady] = useState(false);
+export function Rooms() {
+  const [availability, setAvailability] = useState<'checking' | 'available' | 'unavailable'>(apiBase ? 'checking' : 'unavailable');
   const [session, setSession] = useState<RoomSession | null>(() => apiBase ? readSession() : null);
   const [backup, setBackup] = useState('');
   const [code, setCode] = useState(() => (new URL(location.href).searchParams.get('join') ?? '').replace(/[^A-Z]/gi,'').toUpperCase().slice(0,4));
-  const [size, setSize] = useState<GameSize>('medium');
   const [recovery, setRecovery] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -35,7 +34,9 @@ export function Rooms({ release }: { release: GameDataRelease | null }) {
   useEffect(() => {
     if (!apiBase) return;
     let current = true;
-    void getStatus().then(status => { if (current) setReady(status.configured); }).catch(() => {});
+    void getStatus().then(status => {
+      if (current) setAvailability(status.configured ? 'available' : 'unavailable');
+    }).catch(() => { if (current) setAvailability('unavailable'); });
     return () => { current = false; };
   }, []);
 
@@ -69,30 +70,25 @@ export function Rooms({ release }: { release: GameDataRelease | null }) {
     void enter(() => enterRoom(`/rooms/${code}/recover`, { roomId, secret }));
   }
 
+  const disabled = availability !== 'available' || busy;
   return <section ref={section} className="play-section" aria-labelledby="play-title">
-    <div>
-      <h2 id="play-title">JetLagPrague – hra na území Prahy</h2>
-      <p>Hrají dva soupeřící týmy, každý alespoň s jedním hráčem, ideálně se dvěma. Pro vytvoření nové hry musíš být na území Prahy.</p>
-      <a className="text-link" href="./simulator/">Otevřít simulátor</a>
-      {!session && <p className="preview-links"><a href="?role=hunter">Mobilní náhled hledačů</a> · <a href="?role=hider">Mobilní náhled schovaného</a></p>}
-    </div>
+    <h1 id="play-title">{session ? 'Vaše partie' : 'Schovávaná po Praze'}</h1>
+    {!session && <p className="landing-intro">Dva týmy se střídají v rolích hledačů a schovaných.</p>}
     <div className="room-ui">
       {error && <p role="alert" className="room-note">{error}</p>}
-      {session ? <ActiveRoom key={session.token} session={session} backup={backup} release={release} onLeave={leave}/> : <>
-        {!ready && <p role="status" className="room-note">Herní server zatím není dostupný.</p>}
-        <div className="play-options room-actions">
+      {session ? <ActiveRoom key={session.token} session={session} backup={backup} onLeave={leave}/> : <>
+        {availability === 'unavailable' && <p role="status" className="room-note">Herní server zatím není dostupný.</p>}
+        <div className="room-actions" aria-busy={availability === 'checking'}>
           <article>
-            <h3>Vlastní místnost</h3>
-            <label>Velikost partie<select value={size} onChange={event => setSize(event.target.value as GameSize)}>
-              <option value="small">Small</option><option value="medium">Medium</option><option value="large">Large</option>
-            </select></label>
-            <button disabled={!ready || busy} onClick={() => void enter(async () => enterRoom('/rooms', { fix: await founderFix(), size }))}>Vytvořit místnost</button>
+            <h2>Nová hra</h2>
+            <p>Pro založení musíš být v herní oblasti Prahy a povolit polohu.</p>
+            <button className="create-room" disabled={disabled} onClick={() => void enter(async () => enterRoom('/rooms', { fix: await founderFix(), size: PUBLIC_GAME_SIZE }))}>Vytvořit místnost</button>
           </article>
           <article>
-            <h3>Připojení k týmu</h3>
+            <h2>Připojení ke hře</h2>
             <form onSubmit={join}>
               <label>Čtyřpísmenný kód<input autoComplete="off" autoCapitalize="characters" maxLength={4} value={code} onChange={event => setCode(event.target.value.replace(/[^A-Z]/gi,'').toUpperCase())}/></label>
-              <button disabled={!ready || busy || code.length !== 4}>Připojit se</button>
+              <button disabled={disabled || code.length !== 4}>Připojit se</button>
             </form>
           </article>
         </div>
@@ -100,16 +96,24 @@ export function Rooms({ release }: { release: GameDataRelease | null }) {
           <summary>Obnovit tým na tomto telefonu</summary>
           <form onSubmit={restore}>
             <label>Obnovovací kód týmu<input autoComplete="off" spellCheck={false} maxLength={90} value={recovery} onChange={event => setRecovery(event.target.value)}/></label>
-            <button disabled={!ready || busy || !recovery}>Obnovit relaci</button>
+            <button disabled={disabled || !recovery}>Obnovit relaci</button>
           </form>
         </details>
         {busy && <p role="status">Ověřuji požadavek…</p>}
       </>}
     </div>
+    {!session && <section className="landing-rules" aria-labelledby="rules-title">
+      <h2 id="rules-title">Jak se hraje</h2>
+      <ul>
+        <li><strong>Schovaní</strong> mají 45 minut na výběr úkrytu. Při hledání zůstávají do 400 metrů od potvrzené zastávky.</li>
+        <li><strong>Hledači</strong> pokládají otázky o poloze a podle odpovědí zužují oblast hledání. Schovaní za odpovědi získávají karty.</li>
+        <li><strong>Po prvním kole</strong> si týmy vymění role. Vyhraje tým s delším výsledným časem schovávání po započtení bonusů a postihů.</li>
+      </ul>
+    </section>}
   </section>;
 }
 
-function ActiveRoom({ session, backup, release, onLeave }: { session: RoomSession; backup: string; release: GameDataRelease | null; onLeave(): void }) {
+function ActiveRoom({ session, backup, onLeave }: { session: RoomSession; backup: string; onLeave(): void }) {
   const [snapshot, setSnapshot] = useState<RoomSnapshot>();
   const [link, setLink] = useState<LinkState>('connecting');
   const [transport, setTransport] = useState<RoomTransport>();
@@ -129,13 +133,13 @@ function ActiveRoom({ session, backup, release, onLeave }: { session: RoomSessio
 
   const releaseId = snapshot?.view.releaseId;
   useEffect(() => {
-    if (!releaseId || release?.releaseId === releaseId) return;
+    if (!releaseId) return;
     let current = true;
     void loadGameDataRelease(releaseBase, fetch, releaseId).then(result => {
       if (current) setPinned(result.release);
     }).catch(error => { if (current) setError(displayError(error)); });
     return () => { current = false; };
-  }, [release,releaseId]);
+  }, [releaseId]);
 
   const playing = snapshot?.status === 'playing';
   useEffect(() => {
@@ -160,11 +164,11 @@ function ActiveRoom({ session, backup, release, onLeave }: { session: RoomSessio
     catch { setError('Kopírování není dostupné. Označ a zkopíruj text ručně.'); }
   }
 
-  const data = release?.releaseId === releaseId ? release : pinned?.releaseId === releaseId ? pinned : undefined;
+  const data = pinned?.releaseId === releaseId ? pinned : undefined;
   const waiting = snapshot?.status === 'waiting';
   const expired = link === 'expired';
   return <div className="active-room">
-    <h3>{waiting ? 'Místnost vytvořena' : 'Herní místnost'} <code data-testid="room-code">{session.code}</code></h3>
+    <h2>{waiting ? 'Místnost vytvořena' : 'Herní místnost'} <code data-testid="room-code">{session.code}</code></h2>
     {link !== 'online' && <p role="status" className="room-note">{expired ? 'Týmová relace už neplatí.'
       : link === 'replaced' ? 'Tento tým se připojil v jiném okně.' : link === 'offline' ? 'Spojení vypadlo. Obnovuji relaci…' : 'Připojuji tým…'}</p>}
     {snapshot?.reference && <p className="room-note">Testovací místnost s referenčními podklady.</p>}

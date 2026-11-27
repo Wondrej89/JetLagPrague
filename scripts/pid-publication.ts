@@ -11,6 +11,11 @@ export async function readPublication(directory: string): Promise<PidSnapshot> {
   const index = readPidCatalog(JSON.parse(await readFile(join(directory, 'index.json'), 'utf8')));
   return readVersion(directory, index.versions?.find(entry => entry.checksum === index.checksum) ?? index);
 }
+export async function readPublicationByChecksum(directory: string, checksum: string): Promise<PidSnapshot | null> {
+  const index = readPidCatalog(JSON.parse(await readFile(join(directory, 'index.json'), 'utf8')));
+  const entry = index.versions?.find(version => version.checksum === checksum) ?? (index.checksum === checksum ? index : undefined);
+  return entry ? readVersion(directory, entry) : null;
+}
 export async function readPublicationForDate(directory: string, date: string): Promise<PidSnapshot | null> {
   let input: unknown;
   try { input = JSON.parse(await readFile(join(directory, 'index.json'), 'utf8')); }

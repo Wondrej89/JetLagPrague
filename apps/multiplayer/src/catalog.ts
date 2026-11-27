@@ -1,5 +1,6 @@
 import { booleanPointInPolygon, pointToPolygonDistance } from '@turf/turf';
-import { deckRules, type Fix, type GameSize } from '../../../packages/game-core/src/index';
+import { deckRules, type Fix } from '../../../packages/game-core/src/index';
+import { PUBLIC_GAME_SIZE } from '../../../packages/game-core/src/room-protocol';
 import { gamePublicationErrors, loadGameDataRelease, type GameDataRelease } from '../../../packages/geo-core/src/game-release';
 import { createGeoResolver } from '../../../packages/geo-resolver/src/index';
 import { requireRequest, RequestError } from './http';
@@ -68,12 +69,12 @@ export function validateFounderLocation(release: GameDataRelease, fix: Fix) {
     'Poloha je příliš blízko hranice herního území. Změřte ji opět s větší přesností nebo uvnitř Prahy.');
 }
 
-export function liveRules(size: GameSize, release: GameDataRelease, env: MultiplayerEnvironment) {
+export function liveRules(release: GameDataRelease, env: MultiplayerEnvironment) {
   const reference = gamePublicationErrors(release).length > 0;
   requireRequest(!reference || testConfiguration(env), 409, 'Nové místnosti vyžadují schválené herní podklady s aktuálními daty PID.');
-  const rules = deckRules(size);
+  const rules = deckRules(PUBLIC_GAME_SIZE);
   rules.testOnly = false;
-  rules.label = `Dvě kola · 100 karet · ${size}`;
+  rules.label = 'Dvě kola · 100 karet · Medium';
   rules.id = `${rules.id}:live-v1`;
   rules.questions = rules.questions.filter(question => !question.testOnly);
   // Available only with a loopback origin and the explicit test setting.

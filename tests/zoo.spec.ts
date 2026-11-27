@@ -1,6 +1,7 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { storedWorld } from './draft-helper';
+import { openPublishedLayers } from './published-map';
 import { readGameReleaseIndex } from '../packages/geo-core/src/index';
 async function ready(page:Page){await expect(page.locator('.app-shell')).toHaveAttribute('aria-busy','false');await expect(page.getByTestId('poi-count-zoo')).toHaveText('10 schválených · 0 neschválených');await expect.poll(async()=>(await storedWorld(page)).poi?.pointCatalog?.filter(poi=>poi.category==='zoo').length).toBe(10);}
 test.beforeEach(async({page})=>{await page.route('https://api.mapy.com/**',route=>route.abort());});
@@ -30,6 +31,11 @@ test('ručně přidaná zoo se schválí, uloží a odstraní bez zásahu do vý
 
 test('veřejná aplikace načte publikovaný katalog zoo a historický release zůstane dostupný',async({page})=>{
  const index=readGameReleaseIndex(JSON.parse(await readFile('data/releases/current.json','utf8')));const zooEntry=index.versions.find(entry=>entry.releaseId==='release:3b0174b470beb21667464ae5434c30ebd48c199e4aeeb67ffd8055e65fc3af17')!;
- await page.route('**/releases/current.json',route=>route.fulfill({json:{...index,current:zooEntry}}));await page.goto('http://127.0.0.1:4175/JetLagPrague/');await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible();await expect(page.locator('.data-counts > div').filter({has:page.getByText('Zoo a místa se zvířaty',{exact:true})}).locator('dd')).toHaveText('10');
- const old=index.versions.find(entry=>entry.releaseId==='release:ec2c0804b7609826ba0be9d42799718f03dcd6136a6ebdb2e6a82341e64ecf76')!;await page.route('**/releases/current.json',route=>route.fulfill({json:{...index,current:old}}));await page.reload();await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible();await expect(page.locator('.data-counts > div').filter({has:page.getByText('Zoo a místa se zvířaty',{exact:true})}).locator('dd')).toHaveText('0');
+ await page.route('**/releases/current.json',route=>route.fulfill({json:{...index,current:zooEntry}}));
+ const layers = await openPublishedLayers(page);
+ await expect(layers.getByRole('checkbox', { name: /Zoo 10$/ })).toBeEnabled({ timeout: 15000 });
+ const old=index.versions.find(entry=>entry.releaseId==='release:ec2c0804b7609826ba0be9d42799718f03dcd6136a6ebdb2e6a82341e64ecf76')!;
+ await page.route('**/releases/current.json',route=>route.fulfill({json:{...index,current:old}}));
+ await openPublishedLayers(page);
+ await expect(layers.getByRole('checkbox', { name: /Zoo 0$/ })).toBeDisabled({ timeout: 15000 });
 });

@@ -1,5 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {storedWorld} from './draft-helper';
+import { openPublishedLayers } from './published-map';
 import input from '../data/raw/embassies-selection.json' with {type:'json'};
 import {resolvePois,buildGameDataRelease,createGameDataRelease,releaseEntry,releasePoiSchema,sha256,canonicalJson} from '../packages/geo-core/src/index';
 import {releaseTestInput,releaseTestAirports,releaseTestDate} from '../packages/geo-core/src/game-release-test-fixtures';
@@ -43,5 +44,7 @@ test('veřejný katalog načte schválenou kategorii embassy a její kontrolní 
  const source={id:'test-embassy',provider:'Synthetic fixture',url:'https://example.org/test',license:{name:'Test',url:null},dataDate:null,retrievedAt:releaseTestDate,rawChecksum:null,verification:'user_supplied' as const,note:''},point:[number,number]=[14.41,50.09];
  baseline.data.pois.push(releasePoiSchema.parse({id:'test:embassy',category:'embassy',name:'Testovací ambasáda',address:'Testovací adresa',point,geometry:{type:'Point',coordinates:point},embassy:{country:'Test',countryCode:null,officeType:'embassy',officialSourceUrl:null,verification:{point,inputAddress:'Testovací adresa',method:'manual_review',checkedAt:releaseTestDate,sourceUrl:'https://example.org/test',dataDate:null,rawChecksum:null,note:''}},sourceId:'test',source,status:'approved',reviewedAt:releaseTestDate}));
  baseline.data.sourceVersions.push({key:'poi:test-embassy',version:'test',checksum:null,provider:source.provider,url:source.url,dataDate:null,license:source.license});const release=await createGameDataRelease(baseline.data,{publishedAt:releaseTestDate,kind:'reference'}),entry=await releaseEntry(release),index={format:'jetlag-prague-game-catalog',schemaVersion:1,current:entry,versions:[entry]},text=canonicalJson(release);expect(await sha256(text)).toBe(entry.checksum);
- await page.route('**/releases/**',route=>route.fulfill({contentType:'application/json',body:route.request().url().endsWith('current.json')?JSON.stringify(index):text}));await page.goto('http://127.0.0.1:4175/JetLagPrague/');await expect(page.getByText('Ambasády a konzuláty',{exact:true})).toBeVisible();await expect(page.locator('.data-counts div').filter({hasText:'Ambasády a konzuláty'})).toContainText('1');
+ await page.route('**/releases/**',route=>route.fulfill({contentType:'application/json',body:route.request().url().endsWith('current.json')?JSON.stringify(index):text}));
+ const layers = await openPublishedLayers(page);
+ await expect(layers.getByRole('checkbox', { name: /Ambasády a konzuláty 1$/ })).toBeEnabled({ timeout: 15000 });
 });

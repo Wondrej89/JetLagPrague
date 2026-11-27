@@ -1,11 +1,11 @@
 import { expect, test, type Page } from '@playwright/test';
 import { readFile } from 'node:fs/promises';
 import { storedWorld } from './draft-helper';
+import { openPublishedLayers } from './published-map';
 import catalog from '../apps/editor/src/data/poi-catalog.json' with { type: 'json' };
 import { addLibrary, buildGameDataRelease, createGameDataRelease, canonicalJson, readGameReleaseIndex, releaseEntry, verifyLibraryDecision, defaultPoiConfiguration, unlocatedLibrarySchema, withPublishedLibraries, decideUnlocatedLibrary } from '../packages/geo-core/src/index';
 import { releaseTestAirports, releaseTestDate, releaseTestInput } from '../packages/geo-core/src/game-release-test-fixtures';
 
-const base = 'http://127.0.0.1:4175/JetLagPrague/';
 async function ready(page: Page) {
   await expect(page.locator('.app-shell')).toHaveAttribute('aria-busy', 'false');
   await expect.poll(async () => (await storedWorld(page)).poi?.pointCatalog?.filter(row=>row.category==='library').length).toBe(45);
@@ -107,11 +107,11 @@ test('veřejný klient načte ověřené knihovny schématu 4 i historickou publ
   const release = await createGameDataRelease(built.data,{publishedAt:releaseTestDate,kind:built.kind,schemaVersion:4}), entry = await releaseEntry(release);
   await page.route('**/releases/current.json', route => route.fulfill({ json: { format: 'jetlag-prague-game-catalog', schemaVersion: 1, current: entry, versions: [entry] } }));
   await page.route('**/releases/' + entry.file, route => route.fulfill({ contentType: 'application/json', body: canonicalJson(release) }));
-  await page.goto(base); await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible();
-  await expect(page.locator('.data-counts > div').filter({ has: page.getByText('Knihovny', { exact: true }) }).locator('dd')).toHaveText('1');
+  const layers = await openPublishedLayers(page);
+  await expect(layers.getByRole('checkbox', { name: /Knihovny 1$/ })).toBeEnabled({ timeout: 15000 });
   const history = readGameReleaseIndex(JSON.parse(await readFile('data/releases/current.json', 'utf8')));
   const legacy = history.versions.find(entry => entry.releaseId === 'release:2a63e4db546a77e616eb0a46d5fb0a15a5defd6f6f28a80e51c185280fe553c5')!;
-  await page.route('**/releases/current.json', route => route.fulfill({ json: { ...history, current: legacy } })); await page.reload(); await expect(page.getByText('Kontrolní součty ověřeny')).toBeVisible();
-  await expect(page.locator('.data-counts > div').filter({ has: page.getByText('Knihovny', { exact: true }) }).locator('dd')).toHaveText('0');
-  await expect(page.getByText(/Katalog zatím neobsahuje ověřené knihovny/)).toBeVisible();
+  await page.route('**/releases/current.json', route => route.fulfill({ json: { ...history, current: legacy } }));
+  await openPublishedLayers(page);
+  await expect(layers.getByRole('checkbox', { name: /Knihovny 0$/ })).toBeDisabled({ timeout: 15000 });
 });
