@@ -24,6 +24,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - run: npm run test:multiplayer
       - run: npm run data:check
       - name: Locate published PID data branch
         id: pid-data
@@ -50,6 +51,7 @@ jobs:
         env:
           VITE_MAPY_API_KEY: ${{ secrets.VITE_MAPY_API_KEY }}
           VITE_PUBLISHER_URL: ${{ vars.PUBLISHER_URL }}
+          VITE_MULTIPLAYER_URL: ${{ vars.MULTIPLAYER_URL }}
       - name: Select E2E Chromium
         shell: bash
         run: |
@@ -67,6 +69,10 @@ jobs:
         env:
           CI: 'true'
           PLAYWRIGHT_SKIP_BUILD: '1'
+      - name: Two-phone multiplayer E2E
+        run: npm run test:multiplayer:e2e
+        env:
+          CI: 'true'
       - name: Upload E2E failure diagnostics
         if: failure()
         uses: actions/upload-artifact@v4

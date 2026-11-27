@@ -4,6 +4,15 @@ import type {Command,GameState,Role} from './types';
 /** A new party starts here. createGame retains the historical/scenario API. */
 export function createLobbyGame(options:Parameters<typeof createGame>[0]):GameState {
  if(options.mode==='live')throw new Error('Úvod ostré hry vyžaduje autorizovaný serverový transport.');
+ return initializeLobby(options);
+}
+
+/** Called by the server after it has authenticated the room owner and verified the release. */
+export function createServerLobbyGame(options:Omit<Parameters<typeof createGame>[0],'mode'>):GameState {
+ return initializeLobby({...options,mode:'live'});
+}
+
+function initializeLobby(options:Parameters<typeof createGame>[0]):GameState {
  const rules={...structuredClone(options.rules),uxVersion:1 as const,stationSelectionVersion:1 as const,automaticDeductionMap:false};delete rules.deductionConsent;
  const s=createGame({...options,rules});initializeMatch(s);s.phase='awaiting_map_consent';s.lobby={choices:{},ready:{hunter:false,hider:false}};s.events=[];s.sequence=0;return s;
 }
@@ -21,7 +30,7 @@ export function lobbyCommand(s:GameState,c:Command,actor:Role|'clock'):boolean {
   s.lobby.choices[actor]=c.enabled;
   if(s.lobby.choices.hunter!==undefined&&s.lobby.choices.hider!==undefined){
    s.rules.automaticDeductionMap=s.lobby.choices.hunter&&s.lobby.choices.hider;
-   s.rules.deductionConsent={hunter:s.lobby.choices.hunter,hider:s.lobby.choices.hider,authority:'simulator'};s.phase='awaiting_ready';
+   s.rules.deductionConsent={hunter:s.lobby.choices.hunter,hider:s.lobby.choices.hider,authority:s.mode==='live'?'server':'simulator'};s.phase='awaiting_ready';
   }
  }else{
   if(s.lobby.ready[actor])return true;

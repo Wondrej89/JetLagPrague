@@ -22,7 +22,7 @@ export interface CardDefinition {
 }
 export interface GameRules {
   stationSelectionVersion?: 1; uxVersion?: 1; hangmanVersion?: 1; manualHangmanResponses?: boolean;
-  mapVersion?: 1; moveVersion?: 2; automaticDeductionMap?: boolean; deductionConsent?: { hunter: boolean; hider: boolean; authority: 'simulator' };
+  mapVersion?: 1; moveVersion?: 2; automaticDeductionMap?: boolean; deductionConsent?: { hunter: boolean; hider: boolean; authority: 'simulator' | 'server' };
   cardVersion?: 2; questionVersion?: 2; size?: GameSize;
   id: string; label: string; testOnly: boolean; hideMs: number; radiusMeters: number; gpsMaxAgeMs: number; gpsMaxAccuracyM: number;
   handLimit: number; veto: { enabled: boolean; reward: boolean }; randomize: { enabled: boolean; restartTimer: boolean };

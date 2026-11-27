@@ -42,7 +42,12 @@
     "publisher:dev": "wrangler dev --config apps/publisher/wrangler.toml",
     "publisher:deploy": "wrangler deploy --config apps/publisher/wrangler.toml",
     "dev:simulator": "vite --config vite.simulator.config.ts",
-    "build:simulator": "vite build --config vite.simulator.config.ts"
+    "build:simulator": "vite build --config vite.simulator.config.ts",
+    "multiplayer:dev": "wrangler dev --config apps/multiplayer/wrangler.toml",
+    "multiplayer:build": "tsx scripts/build-multiplayer.ts",
+    "multiplayer:deploy": "wrangler deploy --config apps/multiplayer/wrangler.toml",
+    "test:multiplayer": "npm run multiplayer:build && vitest run --config vitest.multiplayer.config.ts",
+    "test:multiplayer:e2e": "npm run multiplayer:build && playwright test --config playwright.multiplayer.config.ts"
   },
   "dependencies": {
     "@geoman-io/leaflet-geoman-free": "2.20.2",
@@ -72,6 +77,7 @@
     "eslint-plugin-react-hooks": "^7.0.0",
     "fflate": "^0.8.3",
     "globals": "^16.5.0",
+    "miniflare": "5.20261012.1-beta",
     "tsx": "^4.23.15",
     "typescript": "^5.9.0",
     "typescript-eslint": "^8.46.0",

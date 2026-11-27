@@ -5,3 +5,28 @@
 @media(min-width:601px){.data-counts{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
 @media(min-width:1100px){.data-counts{grid-template-columns:repeat(4,minmax(0,1fr))}}
+
+.play-section .room-ui { min-width: 0; }
+.play-section .room-actions { grid-template-columns: repeat(2,minmax(0,1fr)); margin-top: 0; }
+:is(.room-actions, .room-recovery) :is(form, label) { display: grid; gap: 8px; }
+:is(.room-actions, .room-recovery) label { font-size: .9rem; }
+:is(.room-actions, .room-recovery) :is(input, select), .active-room > input { width: 100%; min-width: 0; font: inherit; padding: 10px; border: 1px solid #97ad9d; border-radius: 8px; background: #fff; color: #233f35; }
+:is(.room-actions, .room-recovery, .room-buttons, .room-note) button, .active-room > button { min-height: 40px; font: inherit; padding: 9px 13px; border-radius: 8px; border: 1px solid #97ad9d; color: #173c30; background: #e9f2e8; cursor: pointer; }
+:is(.room-actions, .room-recovery, .room-buttons) button:disabled { opacity: .55; cursor: default; }
+.room-actions button { margin-top: 10px; }
+.room-note { margin: 0 0 14px; padding: 11px 14px; background: #e5eee4; color: #173c30; border-radius: 8px; }
+.active-room, .room-recovery { padding: 14px; background: #edf3e9; color: #243f35; border: 1px solid #cad9c7; border-radius: 12px; }
+.room-recovery { margin-top: 12px; }
+.room-recovery summary { cursor: pointer; font-weight: 700; }
+.room-recovery form { margin-top: 10px; }
+.room-recovery input + button { margin-top: 8px; }
+.room-buttons { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 8px; }
+.active-room h3 { margin: 0 0 12px; }
+.active-room code { font-size: 1.4em; letter-spacing: .12em; }
+.room-teams { display: grid; gap: 5px; margin: 0 0 12px; padding-inline-start: 22px; }
+.live-phone { margin: 16px auto 0; max-width: 530px; height: min(86dvh,830px); min-height: 460px; }
+.live-phone .game-phone { height: 100%; }
+@media(max-width: 600px) {
+  .play-section .room-actions { grid-template-columns: minmax(0,1fr); }
+  .active-room { padding: 9px; }
+}

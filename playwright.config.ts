@@ -2,6 +2,7 @@ import { defineConfig } from '@playwright/test';
 import { existsSync } from 'node:fs';
 export default defineConfig({
   testDir: './tests',
+  testIgnore: '**/multiplayer/**',
   workers: 1,
   // Keep assertion details available in Checks annotations as well as the
   // downloadable logs/traces, including on restricted cloud networks.

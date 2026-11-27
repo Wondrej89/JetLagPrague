@@ -2,7 +2,7 @@ import {booleanPointInPolygon, pointToPolygonDistance} from '@turf/turf';
 import {beforeAll,expect,it} from 'vitest';
 import {canonicalJson,createGameDataRelease,readGameReleaseArtifact,releaseEntry,sha256,type GameDataRelease} from '../../geo-core/src/index';
 import {landAreaAt} from '../../geo-core/src/river-land';
-import {deductionFromQuestion,questionRegistry,type Point,type QuestionInstance} from '../../game-core/src/index';
+import {deductionFromQuestion,questionRegistry,readGameState,viewForRole,type Fix,type Point,type QuestionInstance} from '../../game-core/src/index';
 import {prepareRiverLayers,reviewRiverLayers} from '../../../scripts/river-release-preparation';
 import {createGeoResolver} from './index';
 import {publishedGameLayers} from './catalog';
@@ -18,10 +18,89 @@ const left:Point=[14.36,50.08],right:Point=[14.48,50.08];
 const bridge:Point=[14.411,50.0813],vltava:Point=[14.41,50.0863],berounka:Point=[14.35,49.974];
 function question(id:'measuring:vltava'|'matching:landmass',a:Point,b:Point):QuestionInstance {
  const definition=questionRegistry().find(q=>q.id===id)!;
- return {id,definition,hunterFix:{point:a,at:f.base.now,accuracy:5},targetPoint:b,askedAt:f.base.now,deadline:f.base.now+300_000,state:'pending'};
+ const snapshot=(point:Point)=>({point,at:f.base.now,accuracy:5});
+ return {id,definition,hunterFix:snapshot(a),targetPoint:b,...(definition.target==='gps'?{targetFix:snapshot(b)}:{}),askedAt:f.base.now,deadline:f.base.now+300_000,state:'pending'};
 }
 const stop=(name:string)=>f.release.data.pidSnapshot.stops.find(stop=>stop.name===name)!.point;
 const park=(name:string)=>f.release.data.pois.find(poi=>poi.name===name)!.point;
+
+async function landGame(target:'station'|'gps'='gps'){
+ const game=await gameFixture();
+ const station=game.env.stops.find(stop=>stop.name==='Národní divadlo')!;
+ const rules=game.state.rules;
+ const definition=rules.questions.find(q=>q.id==='matching:landmass')!;
+ expect(definition.target).toBe('gps');
+ definition.target=target;
+ rules.automaticDeductionMap=true;
+ rules.deductionConsent={hunter:true,hider:true,authority:'simulator'};
+ game.location('hider',station.point);
+ game.command('hider',{type:'lock_station',stopId:station.id});
+ return {game,station};
+}
+
+it('uses the private GPS of both players at ask time for Pevnina and draws a GPS deduction',async()=>{
+ const {game,station}=await landGame(),zofin=park('Ostrov Žofín');
+ game.location('hunter',right);
+ game.location('hider',zofin);
+ game.command('hunter',{type:'ask',questionId:'matching:landmass'});
+ const first=structuredClone(game.state.questions[0]);
+ expect(first).toMatchObject({definition:{target:'gps'},hunterFix:{point:right},targetFix:{point:zofin},targetPoint:zofin});
+ expect(game.env.resolve(first)).toMatchObject({state:'known',answer:'NE'});
+ game.location('hider',station.point);
+ game.state=readGameState(game.state,game.env);
+ game.command('clock',{type:'tick'},first.deadline!);
+ expect(game.state.questions[0]).toMatchObject({answer:'NE',hunterFix:first.hunterFix,targetFix:first.targetFix});
+ expect(game.state.deductions).toMatchObject([{geometryTarget:'gps',result:'NE',parameters:{hunterPoint:right}}]);
+ const hunter=JSON.stringify(viewForRole(game.state,'hunter',game.env));
+ expect(hunter).not.toContain(JSON.stringify(zofin));
+ expect(hunter).not.toContain('"targetFix"');
+ expect(hunter).not.toContain('"targetPoint"');
+
+ game.location('hunter',[14.41317,50.07812]);
+ game.location('hider',zofin);
+ game.command('hunter',{type:'ask',questionId:'matching:landmass'});
+ game.location('hunter',right);
+ game.command('hider',{type:'answer'});
+ expect(readGameState(game.state,game.env).questions[1]).toMatchObject({answer:'ANO',targetFix:{point:zofin}});
+ expect(game.state.deductions?.[1]).toMatchObject({geometryTarget:'gps',result:'ANO'});
+ delete game.state.questions[1].targetFix;
+ expect(()=>readGameState(game.state,game.env)).toThrow('GPS snapshoty');
+});
+
+it('rejects unavailable or ambiguous GPS for either role before starting the question',async()=>{
+ const {game}=await landGame(),zofin=park('Ostrov Žofín');
+ const area=landAreaAt(f.release.data.landAreas!.areas,zofin)!;
+ const [longitude,latitude]=(area.geometry.type==='Polygon'?area.geometry.coordinates:area.geometry.coordinates[0])[0][0];
+ const ask=()=>game.command('hunter',{type:'ask',questionId:'matching:landmass'});
+ game.location('hunter',right);
+ game.location('hider',zofin);
+ for(const role of ['hunter','hider'] as const){
+  const point=game.state.fixes[role]!.point,at=game.state.now;
+  const badFixes:(Fix|null)[]=[null,{point,at:at-game.rules.gpsMaxAgeMs-1,accuracy:5},{point,at,accuracy:game.rules.gpsMaxAccuracyM+1}];
+  for(const fix of badFixes){
+   game.command(role,{type:'location',role,fix});
+   expect(ask).toThrow('Chybí aktuální přesná GPS');
+  }
+  game.location(role,[longitude,latitude]);
+  expect(ask).toThrow('jednoznačně uvnitř');
+  expect(game.state.questions).toEqual([]);
+  expect(game.state.rewards).toEqual([]);
+  game.location(role,point);
+ }
+});
+
+it('reloads a historical Pevnina question and still answers using its station target',async()=>{
+ const {game,station}=await landGame('station');
+ game.location('hunter',right);
+ game.location('hider',park('Ostrov Žofín'));
+ game.command('hunter',{type:'ask',questionId:'matching:landmass'});
+ game.state=readGameState(game.state,game.env);
+ expect(game.state.questions[0]).toMatchObject({definition:{target:'station'},targetPoint:station.point});
+ expect(game.state.questions[0].targetFix).toBeUndefined();
+ game.command('hider',{type:'answer'});
+ expect(readGameState(game.state,game.env).questions[0].answer).toBe('ANO');
+ expect(game.state.deductions?.[0].geometryTarget).toBe('station');
+});
 
 it('preserves the river polygon and measures the closest water or bank on both rivers, including holes and bridges',()=>{
  const water=f.candidate.feature.geometry;
@@ -113,10 +192,10 @@ it('uses the exact island for ANO, excludes that island for NE, and clips measur
    {...q,answer,state:'answered',answeredAt:f.base.now})!;
  const calculator=new DeductionComputer(f.release),zofin=park('Ostrov Žofín');
  const landQuestion=question('matching:landmass',zofin,stop('Národní divadlo'));
- const include=calculator.compute([make(landQuestion,'ANO')],'station');
+ const include=calculator.compute([make(landQuestion,'ANO')],'gps');
  expect(include.possible).toEqual(landAreaAt(f.layers.land.areas,zofin)?.geometry);
  expect(include.guides.include.features[0].geometry).toEqual(include.possible);
- const exclude=calculator.compute([make(landQuestion,'NE')],'station');
+ const exclude=calculator.compute([make(landQuestion,'NE')],'gps');
  expect(booleanPointInPolygon(zofin,exclude.excluded!)).toBe(true);
  expect(booleanPointInPolygon(right,exclude.possible!)).toBe(true);
  const measuring=make(question('measuring:vltava',left,zofin),'BLÍŽ');
@@ -127,7 +206,8 @@ it('uses the exact island for ANO, excludes that island for NE, and clips measur
  const farther=calculator.compute([{...measuring,operation:'exclude',result:'DÁL'}],'station');
  expect(booleanPointInPolygon(stop('Běchovice'),farther.possible!)).toBe(true);
  expect(booleanPointInPolygon(zofin,farther.excluded!)).toBe(true);
- const intersection=calculator.compute([measuring,make(landQuestion,'ANO')],'station');
+ const historical={...landQuestion,definition:{...landQuestion.definition,target:'station' as const},targetFix:undefined};
+ const intersection=calculator.compute([measuring,make(historical,'ANO')],'station');
  expect(booleanPointInPolygon(zofin,intersection.possible!)).toBe(true);
  expect(booleanPointInPolygon(right,intersection.excluded!)).toBe(true);
  expect(make(question('measuring:vltava',vltava,bridge),'STEJNĚ')).toBeNull();

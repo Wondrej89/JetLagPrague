@@ -37,8 +37,10 @@ export function createGeoResolver(release:GameDataRelease):GameEnvironment {
     return release.data.pois.some(p=>p.category===d.category&&p.status==='approved')?{state:'ready',reason:d.resolver==='tentacles'?'Schválené publikované POI; u polygonů vzdálenost ke skutečné ploše.':d.category==='waterbody'||d.distanceMode==='geometry'?'Vzdálenost k publikované geometrii (Point nebo plocha polygonu).':'Vzdálenost k publikovanému referenčnímu bodu.'}:{state:'missing_data',reason:'Katalog neobsahuje schválené objekty této kategorie.'};
   }
   function resolve(q:QuestionInstance):Resolution{
-    const d=q.definition,a=q.hunterFix.point,b=q.targetPoint,check=availability(d);
+    const d=q.definition,a=q.hunterFix.point,check=availability(d);
     if(check.state!=='ready')return {state:'unknown',reason:check.reason};
+    const b=d.resolver==='land_matching'&&d.target==='gps'?q.targetFix?.point:q.targetPoint;
+    if(!b)return {state:'unknown',reason:'Chybí uložená GPS schovaného v okamžiku položení otázky.'};
     const base={releaseId:release.releaseId,hunterPoint:a,targetPoint:b};
     if(!containsGamePoint(a,release.data.gameArea.geometry)||!containsGamePoint(b,release.data.gameArea.geometry))return {state:'unknown',reason:'Rozhodná poloha leží mimo herní oblast.'};
     if(d.resolver==='radar'){const distance=distanceMeters(a,b);return {state:'known',answer:distance<=d.radiusMeters!+1e-6?'ANO':'NE',details:{...base,distanceMeters:distance,radiusMeters:d.radiusMeters!}};}

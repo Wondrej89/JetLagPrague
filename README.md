@@ -51,6 +51,10 @@ Simulátor přidává 15 scénářů včetně přiblížení/vzdálení, přesn�
 
 Pravidla a převody vycházejí z tohoto zadání a [referenčního webu](https://jetlag.denull.ru/en/rules/questions/); přímé načtení webu 22. 10. 2026 blokovalo prostředí HTTP 403. **Zvýšená karetní cena opakované otázky dosud není implementována** a zůstává samostatnou nedokončenou mechanikou; tato změna ji nevydává za hotovou. Editor, katalogy a původní Matching/Measuring/Radar zůstávají zachované. Historický PID stále omezuje použití na referenční simulaci.
 
+## Herní místnosti
+
+Dva telefony se připojují čtyřpísmenným kódem. Po nasazení samostatného Workeru a nastavení `VITE_MULTIPLAYER_URL` nabízí veřejná hra vlastní místnosti a obnovu týmové relace. [Multiplayer, testy a nasazení](docs/MULTIPLAYER.md).
+
 ## Herní mapa, dedukce a Move
 
 Mapa hledačů má panely **Vrstvy** a **Dedukce**. Veřejné vrstvy používají přesně uzamčený publikovaný katalog, podporují vyhledávání, detail objektu, zvýraznění a samostatnou výplň/hrany polygonů. Schémata 8 a 9 obsahují vrstvy Řeky a Pevnina a ostrovy. Golfová hřiště a aquaparky hlásí chybějící data. Zobrazení vrstev funguje i během rozpracované otázky a při vypnuté automatické dedukci.
@@ -380,7 +384,7 @@ Datum platnosti celé sady a její licence nejsou v dodaných souborech doložen
 
 Validace skutečných 169 geometrií a všech čtyř pražských referenčních bodů prošla. Při opakované práci se už ověřené geometrie používají jako neměnné objekty, aby každá úprava vlastností znovu neověřovala všech téměř 100 tisíc vrcholů. Po obnovení stránky proběhne validace uloženého draftu znovu. Pro plnou sadu je určená IndexedDB; pokud ji prohlížeč zakáže a localStorage nemá dost místa, editor oznámí neuložené změny a je potřeba použít export.
 
-PID je implementované podle návodu výše; přibalená časově nesourodá data zůstávají výslovně označená k revizi. Další POI kategorie mimo současný katalog, úplný katalog schválených otázek, multiplayer a obecné GIS union/difference/clipping v editoru zůstávají odložené. Testovací simulátor a publikování neměnných herních release jsou dostupné podle návodů výše. GeoJSON export editoru zůstává draftem. Kreslení nové oddělené části vlastního MultiPolygonu nemá samostatný nástroj; podporuje se import, úprava vrcholů a validovaný editor GeoJSON. Souběžná editace více kartami není podporovaná.
+PID je implementované podle návodu výše; přibalená časově nesourodá data zůstávají výslovně označená k revizi. Další POI kategorie mimo současný katalog, úplný katalog schválených otázek a obecné GIS union/difference/clipping v editoru zůstávají odložené. Testovací simulátor a publikování neměnných herních release jsou dostupné podle návodů výše. GeoJSON export editoru zůstává draftem. Kreslení nové oddělené části vlastního MultiPolygonu nemá samostatný nástroj; podporuje se import, úprava vrcholů a validovaný editor GeoJSON. Souběžná editace více kartami není podporovaná.
 
 
 ## Measuring – Řeka a Matching – Pevnina
@@ -402,7 +406,7 @@ Asynchronní poskytovatel používá **`GET https://api.mapy.com/v1/rgeocode`** 
 
 **Omezení:** reverse geocoding navrhuje pojmenovanou ulici podle Mapy.com, nezaručuje geometricky nejbližší ulici. Schovaný musí oba názvy ověřit a může svou ulici opravit. Při neúspěšné přípravě může každý tým zadat vlastní název ručně; schovaný přípravu otevře tlačítkem **Ověřit připravovanou ulici** nebo v záložce Otázka. Zdroj, ruční určení, původní název, opravy a čas potvrzení zůstávají v historii. Shodu názvů normalizujeme pomocí NFC, velikosti písmen a mezer, bez odstraňování diakritiky; výpočet je pouze pomůcka, nikoli automatická odpověď. Nevytvářejí se uliční dedukční polygony ani nový katalog ulic.
 
-HTTP se provádí v hostiteli simulátoru mimo synchronní Game Core, nikoli v telefonu hledačů. Při přípravě ulice jsou **oba simulované GPS body odeslané Mapy.com**, což výslovně uvádí UI; karty, fotografie a ostatní herní stav se neodesílají. Ulice a GPS schovaného se nepředávají v `RoleView` hledačů ani po odpovědi. Budoucí multiplayer musí tuto soukromou část provádět na důvěryhodném serveru. Rozhraní `StreetNameProvider` dovoluje výměnu poskytovatele bez změny herního UI. Výsledky se ukládají k přípravě/otázce; nové rendery nevyvolávají další HTTP, po reloadu se dokončí jen chybějící výsledky. Opuštěná simulace ani pozdní odpověď nemůže přepsat novou hru.
+HTTP se provádí v hostiteli simulátoru mimo synchronní Game Core, nikoli v telefonu hledačů. Při přípravě ulice jsou **oba simulované GPS body odeslané Mapy.com**, což výslovně uvádí UI; karty, fotografie a ostatní herní stav se neodesílají. Ulice a GPS schovaného se nepředávají v `RoleView` hledačů ani po odpovědi. Herní místnosti umožňují oběma týmům ručně potvrdit název ulice přes ověřenou relaci. Rozhraní `StreetNameProvider` dovoluje výměnu poskytovatele bez změny herního UI. Výsledky se ukládají k přípravě/otázce; nové rendery nevyvolávají další HTTP, po reloadu se dokončí jen chybějící výsledky. Opuštěná simulace ani pozdní odpověď nemůže přepsat novou hru.
 
 Testy API a E2E používají mocky a nečerpají kvótu. Pro místní E2E sestavení stačí neplatný testovací klíč, např. `VITE_MAPY_API_KEY=public-e2e-placeholder npm run build` a následně `PLAYWRIGHT_SKIP_BUILD=1 npm run test:e2e`. Produkční nasazení nadále používá nastavený klientský klíč.
 

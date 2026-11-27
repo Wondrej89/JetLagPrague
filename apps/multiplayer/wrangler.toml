@@ -1,0 +1,23 @@
+name = "jetlag-prague-multiplayer"
+main = "src/worker.ts"
+compatibility_date = "2026-10-18"
+workers_dev = true
+
+[observability]
+enabled = false
+
+[vars]
+ALLOWED_ORIGIN = "https://wondrej89.github.io"
+RELEASE_BASE_URL = "https://wondrej89.github.io/JetLagPrague/releases/"
+
+[[durable_objects.bindings]]
+name = "ROOMS"
+class_name = "GameRoom"
+
+[[durable_objects.bindings]]
+name = "LIMITS"
+class_name = "RoomRateLimiter"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["GameRoom", "RoomRateLimiter"]

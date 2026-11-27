@@ -21,7 +21,7 @@ function requireValue(value:unknown,message:string):asserts value {if(!value)thr
 export function createGame(options:{id:string;releaseId:string;now:number;seed:number;rules:GameRules;mode?:'simulation'|'live'}):GameState {
   requireValue(options.id&&Number.isFinite(options.now)&&Number.isInteger(options.seed)&&options.seed>0&&options.seed<=4294967295,'Neplatná identita, čas nebo seed hry.');
   requireValue(options.rules.cardVersion!==2||['small','medium','large'].includes(options.rules.size??''),'Vyberte variantu Small / Medium / Large.');
-  requireValue(!options.rules.automaticDeductionMap || options.mode !== 'live' && options.rules.deductionConsent?.authority === 'simulator' && options.rules.deductionConsent.hunter && options.rules.deductionConsent.hider, 'Automatická dedukce vyžaduje výslovný souhlas obou rolí; ostrá hra vyžaduje serverové ověření souhlasů.');
+  requireValue(!options.rules.automaticDeductionMap || options.rules.deductionConsent?.authority === (options.mode === 'live' ? 'server' : 'simulator') && options.rules.deductionConsent.hunter && options.rules.deductionConsent.hider, 'Automatická dedukce vyžaduje výslovný souhlas obou rolí; ostrá hra vyžaduje serverové ověření souhlasů.');
   requireValue(options.rules.hideMs>0&&options.rules.radiusMeters>0&&options.rules.handLimit>0,'Neplatná konfigurace hry.');
   requireValue(options.rules.questions.every(q=>!q.rewardPolicy||Number.isInteger(q.rewardPolicy.keep)&&Number.isInteger(q.rewardPolicy.draw)&&q.rewardPolicy.keep>0&&q.rewardPolicy.keep<=q.rewardPolicy.draw&&q.rewardPolicy.draw<=20),'Odměna vyžaduje celá čísla 0 < keep <= draw <= 20.');
   requireValue(options.mode!=='live'||!options.rules.testOnly,'Testovací pravidla nejsou povolená pro ostrou hru.');
@@ -63,11 +63,18 @@ function questionForAsk(s:GameState,id:string,env:GameEnvironment,confirmations:
 function ask(s:GameState,id:string,env:GameEnvironment,confirmations:string[]=[],ransomText='',preparationId?:string){
   const definition=questionForAsk(s,id,env,confirmations,ransomText);
   const matching=definition.referenceVersion===1?captureMatchingReferences(s,definition,preparationId):undefined;
-  const target=definition.target==='station'?s.station!.point:validFix(s.fixes.hider,s.now,s.rules)?s.fixes.hider.point:null;requireValue(target,'Chybí aktuální přesná GPS schovaného.');
+  const targetFix=definition.target==='gps'&&validFix(s.fixes.hider,s.now,s.rules)?s.fixes.hider:undefined;
+  const target=definition.target==='station'?s.station!.point:targetFix?.point;
+  requireValue(target,'Chybí aktuální přesná GPS schovaného.');
   if(definition.spatialVersion===2)requireValue(env.insideArea(s.fixes.hunter!.point)&&env.insideArea(target),'Rozhodná poloha leží mimo herní oblast.');
   const measuring=definition.spatialVersion===2&&definition.type==='thermometer';
   const q:QuestionInstance={id:`${s.id}:question:${++s.sequence}`,epochId:s.epochId??`${s.id}:epoch:0`,definition:structuredClone(definition),askedAt:s.now,...(definition.spatialVersion===2?{phase:measuring?'awaiting_second_measurement' as const:'awaiting_response' as const,...(!measuring?{responseStartedAt:s.now}:{})}:{}),deadline:measuring||definition.timeoutSeconds===null?null:s.now+definition.timeoutSeconds*1000,hunterFix:structuredClone(s.fixes.hunter!),targetPoint:[...target] as Point,state:'pending'};
-  if(matching){q.matchingReferences=matching;if(definition.target==='gps')q.targetFix=structuredClone(s.fixes.hider!);}
+  if(targetFix)q.targetFix=structuredClone(targetFix);
+  if(matching)q.matchingReferences=matching;
+  if(definition.resolver==='land_matching'&&definition.target==='gps'){
+    const resolution=env.resolve(q);
+    requireValue(resolution.state==='known',resolution.reason??'Pevninskou oblast nelze jednoznačně určit.');
+  }
   delete s.matchingPreparation;
   if(!measuring)applyQuestionEffects(s,q,confirmations);
   s.questions.push(q);emit(s,measuring?'measurement_started':'question_asked',measuring?`Thermometer zahájen: ${definition.label}. Čeká se na druhé měření.`:`Otázka: ${definition.label}.`);
@@ -155,7 +162,7 @@ export function transition(input:GameState,envelope:Envelope,env:GameEnvironment
       }
       if(card.effect==='randomize'){
         requireValue(s.rules.randomize.enabled,'Randomize nemá povolená pravidla.');const q=pendingQuestion(s);requireValue(q,'Randomize vyžaduje čekající otázku.');
-        const candidates=s.rules.questions.filter(d=>d.type===q.definition.type&&d.id!==q.definition.id&&d.answerMode==='automatic'&&d.target===q.definition.target&&env.availability(d).state==='ready'&&(!q.secondFix||d.type!=='thermometer'||env.distance(q.hunterFix.point,q.secondFix.point)+GEOGRAPHIC_EPSILON_METERS>=(d.minMoveMeters??Infinity))&&!questionRestriction(s,d,env,s.curses.flatMap(c=>(c.effects??[]).map(e=>e.id)),'kontrolní text otázky pro kontrolu dostupnosti'));requireValue(candidates.length,'Není jiná kompatibilní otázka pro Randomize.');const free=q.definition.rewardPolicy===null&&q.phase!=='awaiting_second_measurement';q.definition=structuredClone(candidates[Math.floor(nextRandom(s)*candidates.length)]);delete q.matchingReferences;delete q.targetFix;if(free)q.definition.rewardPolicy=null;for(const curse of s.curses)for(const effect of curse.effects??[])if(q.rewardModifierIds?.includes(effect.id)&&effect.spec.kind==='reward_draw'&&q.definition.rewardPolicy)q.definition.rewardPolicy.draw+=effect.spec.amount;if(s.rules.randomize.restartTimer&&q.phase!=='awaiting_second_measurement'){q.deadline=q.definition.timeoutSeconds===null?null:s.now+q.definition.timeoutSeconds*1000;if(q.phase)q.responseStartedAt=s.now;}q.state='pending';if(q.phase&&q.phase!=='awaiting_second_measurement')q.phase='awaiting_response';delete q.error;delete q.errorCode;emit(s,'randomized',`Otázka změněna: ${q.definition.label}.`);
+        const candidates=s.rules.questions.filter(d=>d.type===q.definition.type&&d.id!==q.definition.id&&d.answerMode==='automatic'&&d.target===q.definition.target&&env.availability(d).state==='ready'&&(d.resolver!=='land_matching'||d.target!=='gps'||env.resolve({...q,definition:d}).state==='known')&&(!q.secondFix||d.type!=='thermometer'||env.distance(q.hunterFix.point,q.secondFix.point)+GEOGRAPHIC_EPSILON_METERS>=(d.minMoveMeters??Infinity))&&!questionRestriction(s,d,env,s.curses.flatMap(c=>(c.effects??[]).map(e=>e.id)),'kontrolní text otázky pro kontrolu dostupnosti'));requireValue(candidates.length,'Není jiná kompatibilní otázka pro Randomize.');const free=q.definition.rewardPolicy===null&&q.phase!=='awaiting_second_measurement';q.definition=structuredClone(candidates[Math.floor(nextRandom(s)*candidates.length)]);delete q.matchingReferences;if(free)q.definition.rewardPolicy=null;for(const curse of s.curses)for(const effect of curse.effects??[])if(q.rewardModifierIds?.includes(effect.id)&&effect.spec.kind==='reward_draw'&&q.definition.rewardPolicy)q.definition.rewardPolicy.draw+=effect.spec.amount;if(s.rules.randomize.restartTimer&&q.phase!=='awaiting_second_measurement'){q.deadline=q.definition.timeoutSeconds===null?null:s.now+q.definition.timeoutSeconds*1000;if(q.phase)q.responseStartedAt=s.now;}q.state='pending';if(q.phase&&q.phase!=='awaiting_second_measurement')q.phase='awaiting_response';delete q.error;delete q.errorCode;emit(s,'randomized',`Otázka změněna: ${q.definition.label}.`);
       }
       if(card.effect==='curse'){
         requireValue(s.version===1,'Prokletí nejprve připravte a zaplaťte casting cost.');

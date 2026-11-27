@@ -117,6 +117,15 @@ test('river and land questions use one versioned dataset across both phones, ded
  test.setTimeout(210_000);
  const {release,env}=await gameFixture();
  expect(release.schemaVersion).toBe(9);
+ const station=env.stops.find(stop=>stop.name==='Národní divadlo')!;
+ const zofin=release.data.pois.find(poi=>poi.name==='Ostrov Žofín')!.point;
+ const rightBank:[number,number]=[14.48,50.08];
+ async function setGps(role:'hunter'|'hider',point:[number,number]){
+  await page.getByLabel(`Longitude ${role}`,{exact:true}).fill(String(point[0]));
+  await page.getByLabel(`Latitude ${role}`,{exact:true}).fill(String(point[1]));
+  await page.getByRole('button',{name:role==='hunter'?'Nastavit GPS hledačů':'Nastavit GPS schovaného',exact:true}).click();
+  await expect.poll(async()=>(await stored(page)).state.fixes[role]?.point).toEqual(point);
+ }
  const index=readGameReleaseIndex(JSON.parse(await readFile('data/releases/current.json','utf8')));
  let current=index.versions.find(entry=>entry.releaseId===PRE_RIVER_RELEASE_ID)!;
  let catalogueAvailable=true;
@@ -156,17 +165,15 @@ test('river and land questions use one versioned dataset across both phones, ded
  for(const role of ['hunter','hider'])await phone(page,role).getByRole('button',{name:'Jsem připraven',exact:true}).click();
  await page.getByRole('button',{name:'Pozastavit simulaci',exact:true}).click();
  const hider=phone(page,'hider');
- await hider.getByTestId('station-search').locator('summary').click();
- await hider.locator('.station-list button').first().click();
+ await setGps('hider',station.point);
+ const stationSearch=hider.getByTestId('station-search');
+ await stationSearch.locator('summary').click();
+ await stationSearch.getByLabel('Hledat stanoviště').fill(station.id);
+ await stationSearch.getByRole('button',{name:/Národní divadlo/}).click();
  await hider.getByRole('button',{name:'Potvrdit stanoviště',exact:true}).click();
  await page.getByRole('button',{name:'Konec 45 minut',exact:true}).click();
  await expect.poll(async()=>(await stored(page)).state.phase).toBe('seeking');
-
- async function setHunter(point:[number,number]){
-  await page.getByLabel('Longitude hunter',{exact:true}).fill(String(point[0]));
-  await page.getByLabel('Latitude hunter',{exact:true}).fill(String(point[1]));
-  await page.getByRole('button',{name:'Nastavit GPS hledačů',exact:true}).click();
- }
+ expect((await stored(page)).state.station?.id).toBe(station.id);
  async function ask(group:string,name:string,description:string,count:number){
   await tab(page,'hunter','Otázky');
   await phone(page).getByRole('button',{name:new RegExp(group)}).click();
@@ -181,10 +188,10 @@ test('river and land questions use one versioned dataset across both phones, ded
   return q;
  }
 
- await setHunter(release.data.pidSnapshot.stops.find(stop=>stop.name==='Zličín')!.point);
+ await setGps('hunter',release.data.pidSnapshot.stops.find(stop=>stop.name==='Zličín')!.point);
  const river=await ask('Measuring','Vzdálenost k řece','Jsi blíž, nebo dál od Vltavy nebo Berounky než já?',1);
  expect(env.resolve(river)).toMatchObject({state:'known',answer:'BLÍŽ'});
- await setHunter([14.41,50.0863]);
+ await setGps('hunter',[14.41,50.0863]);
  await page.getByRole('button',{name:'+5 minut',exact:true}).click();
  await expect.poll(async()=>(await stored(page)).state.questions[0]?.answer).toBe('BLÍŽ');
  expect((await stored(page)).state.questions[0]).toMatchObject({hunterFix:river.hunterFix,targetPoint:river.targetPoint});
@@ -193,25 +200,44 @@ test('river and land questions use one versioned dataset across both phones, ded
  await expect(phone(page,'hider').locator('.offered-card')).toHaveCount(3);
  await phone(page,'hider').locator('.offered-card').first().click();
 
- await setHunter([14.41317,50.07812]);
+ await setGps('hunter',rightBank);
+ await setGps('hider',zofin);
  const land=await ask('Matching','Pevnina','Jsi na stejné pevninské části jako já?',2);
+ expect(land).toMatchObject({definition:{target:'gps'},hunterFix:{point:rightBank},targetFix:{point:zofin},targetPoint:zofin});
  expect(env.resolve(land)).toMatchObject({state:'known',answer:'NE'});
+ await setGps('hider',station.point);
  await phone(page,'hider').getByRole('button',{name:'Odpovědět nyní'}).click();
  await expect.poll(async()=>(await stored(page)).state.questions[1]?.answer).toBe('NE');
- // Move the hunter's pin away so the island itself receives the map click.
- await setHunter([14.48,50.08]);
- const before=(await stored(page)).state;
- expect(before.rewards.map(r=>r.policy)).toEqual([{draw:3,keep:1},{draw:3,keep:1}]);
- expect(before.hand).toHaveLength(1);
- expect(before.deductions?.map(d=>d.parameters.resolver)).toEqual(['river_measuring','land_matching']);
- expect(JSON.stringify(before.deductions)).not.toContain(JSON.stringify(before.station!.point));
+ expect((await stored(page)).state.questions[1]).toMatchObject({hunterFix:land.hunterFix,targetFix:land.targetFix});
 
- await expect(phone(page).getByTestId('last-answer')).toContainText('NE');
+ await setGps('hunter',[14.41317,50.07812]);
+ await setGps('hider',zofin);
+ const sameIsland=await ask('Matching','Pevnina','Jsi na stejné pevninské části jako já?',3);
+ expect(env.resolve(sameIsland)).toMatchObject({state:'known',answer:'ANO'});
+ // Move the hunter's pin away so the island itself receives the map click.
+ await setGps('hunter',rightBank);
+ await phone(page,'hider').getByRole('button',{name:'Odpovědět nyní'}).click();
+ await expect.poll(async()=>(await stored(page)).state.questions[2]?.answer).toBe('ANO');
+ const before=(await stored(page)).state;
+ expect(before.rewards.map(r=>r.policy)).toEqual([{draw:3,keep:1},{draw:3,keep:1},{draw:3,keep:1}]);
+ expect(before.hand).toHaveLength(1);
+ expect(before.deductions?.map(d=>[d.parameters.resolver,d.geometryTarget])).toEqual([['river_measuring','station'],['land_matching','gps'],['land_matching','gps']]);
+ expect(JSON.stringify(before.deductions)).not.toContain(JSON.stringify(before.station!.point));
+ expect(JSON.stringify(before.deductions)).not.toContain(JSON.stringify(zofin));
+
+ await expect(phone(page).getByTestId('last-answer')).toContainText('ANO');
  await phone(page).getByRole('button',{name:'Zobrazit mapu a vrstvy'}).click();
  await expect(map(page)).toHaveAttribute('data-deduction-state','ready',{timeout:60_000});
- await expect(map(page)).toHaveAttribute('data-deduction-count','2');
+ await expect(map(page)).toHaveAttribute('data-deduction-count','1');
+ await map(page).getByRole('button',{name:'Dedukce',exact:true}).click();
+ await map(page).getByLabel('Rozhodný cíl').selectOption('gps');
+ await map(page).getByLabel('Okamžik GPS').selectOption(land.id);
+ await expect(map(page)).toHaveAttribute('data-deduction-state','ready',{timeout:60_000});
+ await expect(map(page)).toHaveAttribute('data-deduction-count','1');
+ await expect(map(page).locator('[data-public-layer="guide-exclude"]')).not.toHaveCount(0);
  await expect(map(page).locator('[data-public-layer="excluded"]')).not.toHaveCount(0);
  await expect(phone(page).locator('[data-map-marker="station"]')).toHaveCount(0);
+ await expect(phone(page).locator(`[data-marker-point="${zofin.join(',')}"]`)).toHaveCount(0);
  await map(page).getByRole('button',{name:'Vrstvy',exact:true}).click();
  const panel=map(page).getByRole('region',{name:'Vrstvy mapy'});
  await expect(panel.getByRole('link',{name:'CC BY 4.0',exact:true})).toHaveAttribute('href','https://creativecommons.org/licenses/by/4.0/deed.en');
@@ -229,7 +255,7 @@ test('river and land questions use one versioned dataset across both phones, ded
  await expect(map(page).locator('.leaflet-popup')).toContainText('Ostrov Žofín');
 
  await page.reload();
- await expect(map(page)).toHaveAttribute('data-deduction-count','2',{timeout:60_000});
+ await expect(map(page)).toHaveAttribute('data-deduction-count','1',{timeout:60_000});
  const loaded=(await stored(page)).state;
  expect(loaded.releaseId).toBe(release.releaseId);
  expect(loaded.questions).toEqual(before.questions);

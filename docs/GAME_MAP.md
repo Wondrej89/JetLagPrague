@@ -8,7 +8,7 @@ Zvolte Small / Medium / Large a založte novou partii. Přímo na **každém tel
 
 Historické exporty zůstávají čitelné. Starým hrám se automatická dedukce ani nový protokol Move potichu nezapínají. Nové hry mají `mapVersion: 1` a `moveVersion: 2`; uložená starší pravidla se nepřepisují.
 
-Nejde o implementaci multiplayeru. Lokální souhlas za dvě role není serverový souhlas skutečných účastníků. Game Core odmítne vytvořit `live` partii s automatickým zakreslováním na základě simulátorového souhlasu. Ostrý transport musí ověřit jednotlivé účastníky, jejich souhlasy a neměnnou konfiguraci na autorizovaném serveru; nyní takový transport není připojený.
+Automatické zakreslování v simulátoru vychází z místní dohody obou rolí. V herní místnosti přijímá souhlasy server samostatně od každé ověřené týmové relace. [Multiplayer a nasazení](MULTIPLAYER.md).
 
 ## Vrstvy během otázky
 
