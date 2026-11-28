@@ -1,17 +1,17 @@
 {
   "format": "jetlag-praha-pid-catalog",
   "schemaVersion": 2,
-  "file": "snapshot-125899e5ce0d0bc7d048575b34a2eb177db7bbbe6fe5086d55524d8dea2ccc5d.json.gz",
-  "checksum": "125899e5ce0d0bc7d048575b34a2eb177db7bbbe6fe5086d55524d8dea2ccc5d",
-  "serviceDate": "2026-11-27",
-  "downloadedAt": "2026-11-27T13:41:45.914Z",
+  "file": "snapshot-83b21e52a356b47541e4832813dbdb5277a9b1d621c0cbcab530d520a8677632.json.gz",
+  "checksum": "83b21e52a356b47541e4832813dbdb5277a9b1d621c0cbcab530d520a8677632",
+  "serviceDate": "2026-11-28",
+  "downloadedAt": "2026-11-28T08:15:05.201Z",
   "quality": {
     "status": "verified",
     "issues": [
       "685 skupin má místní nejednoznačnost; tyto uzly vyžadují revizi, ostatní zůstávají ověřené."
     ],
     "unmappedActiveIds": [],
-    "groupsGeneratedAt": "2026-11-27T04:11:13",
+    "groupsGeneratedAt": "2026-11-28T04:12:02",
     "reviewGroupIds": [
       "gtfs-stop:U100V1",
       "gtfs-stop:U100V2",
@@ -702,9 +702,19 @@
   },
   "versions": [
     {
+      "file": "snapshot-83b21e52a356b47541e4832813dbdb5277a9b1d621c0cbcab530d520a8677632.json.gz",
+      "id": "pid:2026-11-28:83b21e52a356b47541e4832813dbdb5277a9b1d621c0cbcab530d520a8677632",
+      "checksum": "83b21e52a356b47541e4832813dbdb5277a9b1d621c0cbcab530d520a8677632",
+      "serviceDate": "2026-11-28",
+      "adapterVersion": "pid-gtfs-v1",
+      "preparedAt": "2026-11-28T08:15:24.718Z",
+      "downloadedAt": "2026-11-28T08:15:05.201Z",
+      "quality": "verified"
+    },
+    {
       "file": "snapshot-125899e5ce0d0bc7d048575b34a2eb177db7bbbe6fe5086d55524d8dea2ccc5d.json.gz",
-      "id": "pid:2026-11-27:125899e5ce0d0bc7d048575b34a2eb177db7bbbe6fe5086d55524d8dea2ccc5d",
       "checksum": "125899e5ce0d0bc7d048575b34a2eb177db7bbbe6fe5086d55524d8dea2ccc5d",
+      "id": "pid:2026-11-27:125899e5ce0d0bc7d048575b34a2eb177db7bbbe6fe5086d55524d8dea2ccc5d",
       "serviceDate": "2026-11-27",
       "adapterVersion": "pid-gtfs-v1",
       "preparedAt": "2026-11-27T13:42:09.649Z",
